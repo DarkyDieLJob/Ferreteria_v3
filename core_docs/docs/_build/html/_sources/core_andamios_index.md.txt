@@ -1,0 +1,3 @@
+# Documentacion aislada de andamios
+```{include} ../../core_andamios/docs/core_andamios/index.md
+```

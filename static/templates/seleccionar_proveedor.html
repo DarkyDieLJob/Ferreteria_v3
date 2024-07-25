@@ -1,0 +1,142 @@
+{% load static %}
+<!-- seleccionar_proveedor.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <title>Seleccionar Proveedor</title>
+    <script>
+        function cargarDatos() {
+            var proveedor_id = document.getElementById('proveedor').value;
+            fetch('/crear_modificar_lista_pedidos/' + proveedor_id)
+                .then(response => response.json())
+                .then(data => {
+                    var tabla = document.getElementById('tabla');
+                    tabla.innerHTML = '';
+                    data.forEach(item => {
+                        var fila = document.createElement('tr');
+                        fila.innerHTML = '<td class="id" style="display: none;">' + item.id + '</td><td>' + item.item.descripcion + '</td><td>' + item.cantidad + '</td>';
+                        tabla.appendChild(fila);
+                    });
+                });
+        }
+
+    </script>
+    <style>
+    .modal {
+        display: none; /* Oculta el modal por defecto */
+        position: fixed; /* Posición fija */
+        z-index: 1; /* Sitúa el modal encima de todo */
+        left: 0;
+        top: 0;
+        width: 100%; /* Ancho completo */
+        height: 100%; /* Altura completa */
+        overflow: auto; /* Habilita el scroll si es necesario */
+        background-color: rgb(0,0,0); /* Color de fondo */
+        background-color: rgba(0,0,0,0.4); /* Color de fondo con opacidad */
+    }
+    
+    .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto; /* 15% desde arriba y centrado */
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%; /* Podrías ajustar esto a tus necesidades */
+    }
+    
+    </style>
+</head>
+<body>
+    <select id="proveedor" onchange="cargarDatos()">
+        {% for proveedor in proveedores %}
+            <option value="{{ proveedor.id }}">{{ proveedor.text_display }}</option>
+        {% endfor %}
+    </select>
+    <table class="table table-striped w-70">
+        <thead class="bg-secondary text-white sticky-top">
+            <tr>
+                <th>Descripción</th>
+                <th>Cantidad</th>
+            </tr>
+        </thead>
+        <tbody id="tabla">
+        </tbody>
+    </table>
+    <div id="miModal" class="modal">
+        <div class="modal-content">
+            <span class="close">×</span>
+            <form id="miFormulario">
+                {% csrf_token %}
+                <input type="hidden" id="id_articulo" name="id_articulo">
+                <label for="cantidad">Cantidad:</label><br>
+                <input type="number" id="cantidad" name="cantidad"><br>
+                <label for="barras">Barras:</label><br>
+                <input type="number" id="barras" name="barras"><br>
+                <input type="submit" value="Enviar">
+            </form>
+        </div>
+    </div>
+    
+
+    <script>
+        
+        // Obtén la referencia a tu tabla y a tu modal
+        var tabla = document.getElementById('tabla');
+        var modal = document.getElementById('miModal');
+
+        // Cuando el usuario hace clic en una fila de la tabla, muestra el modal
+        tabla.addEventListener('click', function(event) {
+            var fila = event.target.parentNode;
+            var id_articulo = fila.getElementsByClassName('id')[0].textContent;  // Aquí asumimos que el ID del artículo está en la primera celda
+            document.getElementById('id_articulo').value = id_articulo;
+            var cantidad = fila.getElementsByTagName('td')[2].textContent;
+            document.getElementById('cantidad').value = cantidad;
+            modal.style.display = "block";  // Muestra el modal
+            document.getElementById('cantidad').focus();  // Enfoca el campo de cantidad
+        });
+        
+        // Cuando el usuario hace clic en el botón de cierre del modal, cierra el modal
+        var span = document.getElementsByClassName("close")[0];
+        span.onclick = function() {
+            modal.style.display = "none";  // Oculta el modal
+        }
+
+        var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        // Cuando el usuario envía el formulario, envía los datos al endpoint y actualiza la tabla
+        var formulario = document.getElementById('miFormulario');
+        formulario.addEventListener('submit', function(event) {
+            event.preventDefault();
+            var id_articulo = document.getElementById('id_articulo').value;
+            var cantidad = document.getElementById('cantidad').value;
+            fetch('/cambiar_cantidad_pedido/'+ id_articulo + '/' + cantidad + '/', {
+                method: 'POST',
+                body: JSON.stringify({id_articulo: id_articulo, cantidad: cantidad}),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status == 'ok') {
+                    // Aquí puedes buscar la fila por ID y actualizar la cantidad
+                    var filas = tabla.getElementsByTagName('tr');
+                    var fila;
+                    for (var i = 0; i < filas.length; i++) {
+                        if (filas[i].cells[0].textContent == id_articulo) {
+                            fila = filas[i];
+                            break;
+                        }
+                    }
+                    fila.children[2].textContent = data.nueva_cantidad;
+                }
+            })
+            .catch(error => console.error('Error:', error))
+            .finally(() => {
+                modal.style.display = "none";  // Oculta el modal
+            });
+        });
+        
+    </script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+{% extends 'base2.html' %}
+
+{% block form_content %}
+<div style="display: flex; align-items: center;">
+    <h1>Planilla Diaria</h1>
+    <button onclick="window.location.href='/vista_cierre_z'" style="margin-left: 10px;">Cierre Fiscal Z</button>
+</div>
+
+<div class="display-flex" style="display: flex; gap: 10px;">
+    {% for total in totales %}
+        {% if total.total != None %}
+            <div class="card" style="width: 200px; height: 150px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                <h5>{{ total.nombre }}</h5>
+                $ {{ total.total }} <br>
+                cant: {{ total.cantidad }}
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block base_content %}
+    {% for total in totales %}
+        {% if total.total != None %}
+            <div class="toggle-container">
+                <h3 class="toggle-heading">Tabla {{ total.nombre }}</h3>
+                <div class="table-wrapper hidden">
+                    <div class="card">
+                    <table class="table table-striped w-100">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Cajero</th>
+                                <th>Cliente</th>
+                                <th>Metodo de Pago</th>
+                                <th>Monto</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for dato in total.datos %}
+                                    <tr>
+                                        <td>{{ dato.fecha }}</td>
+                                        <td>{{ dato.usuario }}</td>
+                                        <td>{{ dato.cliente }}</td>
+                                        <td>{{ dato.metodo_de_pago }}</td>
+                                        <td>$ {{ dato.total }}</td>
+                                        <td>
+                                            <button>Editar</button>
+                                            <button>Reimprimir</button>
+                                        </td>
+                                    </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
+
+<script>
+    const toggleHeadings = document.querySelectorAll('.toggle-heading');
+    const tableWrappers = document.querySelectorAll('.table-wrapper');
+
+    toggleHeadings.forEach((heading, index) => {
+        heading.addEventListener('click', () => {
+            tableWrappers[index].classList.toggle('hidden');
+        });
+    });
+</script>
+
+<style>
+    .table-wrapper.hidden {
+        display: none;
+    }
+</style>
+{% endblock %}

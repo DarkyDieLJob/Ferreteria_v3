@@ -1,0 +1,52 @@
+{% extends 'base.html'%}
+<!-- base_carrito.html -->
+
+{% block base_content%}
+
+
+
+<div class="row py-2"> 
+	
+	{% if caja == 0 %}
+	<div class="col-sm card d-none" >
+	{% else %}
+		{% if caja == 2 %}
+		<div class="col-sm card d-none" >
+		{% else %}
+		<div class="col-sm card" >
+		{% endif %}
+	{% endif %}
+		<div class="card">
+		{% block carrito1_content%}
+		{% endblock %}
+		</div>
+	</div> 
+
+	<div class="col-sm card">
+		<div class="card">
+
+		{% block buscador_content%}
+		{% endblock %}
+		</div>
+	</div>
+	
+
+	{% if caja == 0 %}
+	<div class="col-sm card d-none" >
+	{% else %}
+		{% if caja == 1 %}
+		<div class="col-sm card d-none" >
+		{% else %}
+		<div class="col-sm card" >
+		{% endif %}
+	{% endif %}
+		<div class="card">
+		{% block carrito2_content%}
+		{% endblock %}
+		</div>
+	</div> 
+
+	 
+	
+</div>
+{% endblock %}

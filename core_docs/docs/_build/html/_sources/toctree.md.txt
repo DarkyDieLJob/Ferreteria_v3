@@ -1,0 +1,8 @@
+```{toctree}
+---
+maxdepth: 2
+hidden: true
+---
+La mejor instalacion papá!! <instalacion>
+Inicio <index>
+```

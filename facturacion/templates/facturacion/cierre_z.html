@@ -1,0 +1,45 @@
+{% extends 'base2.html' %}
+
+{% block form_content %}
+<div style="display: flex; align-items: center;">
+    <h1>Cierres Fiscales</h1>
+    <form method="post" action="{% url 'cierres-fiscales' %}">
+        {% csrf_token %}
+        <button type="submit" class="submit">Cierre Fiscal Z</button>
+    </form>
+</div>
+
+
+{% endblock %}
+
+{% block base_content %}
+            
+<table class="table table-striped w-100">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>cant_doc_fiscales</th>
+            <th>monto_iva_doc_fiscal</th>
+            <th>monto_ventas_doc_fiscal</th>
+            <th>ultimo_doc_a</th>
+            <th>ultimo_doc_b</th>
+            <th>zeta_numero</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for dato in cierres_fiscales %}
+            <tr>
+                <td>{{ dato.fecha }}</td>
+                <td>{{ dato.cant_doc_fiscales }}</td>
+                <td>{{ dato.monto_iva_doc_fiscal }}</td>
+                <td>{{ dato.monto_ventas_doc_fiscal }}</td>
+                <td>{{ dato.ultimo_doc_a }}</td>
+                <td>{{ dato.ultimo_doc_b }}</td>
+                <td>{{ dato.zeta_numero }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+{% endblock %}

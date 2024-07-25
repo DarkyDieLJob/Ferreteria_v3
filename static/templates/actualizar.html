@@ -1,0 +1,115 @@
+{% load custom_filters %}
+<!-- actualizar.html -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title">Actualizado de Listas</h5>
+        <ul class="nav nav-tabs card-header-tabs" data-bs-tabs="tabs">
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="true" data-bs-toggle="tab" href="#email">Email de hoy y etiquetado</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#actualizar">Actualizar</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#descargar">Descargar las listas procesadas</a>
+            </li>
+        </ul>
+    </div>
+    <form method="POST" class="card-body tab-content">
+        {% csrf_token %}
+        <div class="tab-pane active" id="email">
+            <div class="py-2">
+                <table class="table table-striped w-auto">
+                    <thead class="bg-secondary text-white sticky-top">
+                        <tr>
+                            <th>Listo?</th>
+                            <th>Fecha</th>
+                            <th>[ xls o xlsx ]</th>
+                            <th>Proveedor</th>
+                            <th>Proveedor</th>
+                            <th>Hoja</th>
+                            <th>Hoja</th>
+                            <th>Borrar?</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for d, hojas in datos|zip_lists:hojas_por_item %}
+                        <tr>
+                            <td><input type="checkbox" name="elemento_seleccionado" value="{{ d.id }}:{{ forloop.counter }}"{% if d.listo %}checked{% endif %}></td>
+                            <td>{{ d.fecha }}</td>
+                            <td>{{ d.descripcion }}</td>
+                            <td>{{ d.proveedor }}</td>
+                            <td>{{ form.proveedor.as_widget }}</td>
+                            <td>{{ d.hoja }}</td>
+                            <td>
+                                <select name="hoja_{{ d.id }}">
+                                    {% for hoja in hojas %}
+                                        <option value="{{ hoja }}">{{ hoja }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td><input type="checkbox" name="seleccionado_borrar" value="{{ d.id }}"></td>
+                        </tr>
+                    {% endfor %}
+
+                    </tbody>
+                </table>
+                <input class="btn btn-primary" type="submit" value="Enviar">
+            </div>
+        </div>
+        <div class="tab-pane" id="actualizar">
+            <div class="py-2">
+                <table class="table table-striped w-auto">
+                    <thead class="bg-secondary text-white sticky-top">
+                        <tr>
+                            <th>Fecha</th>
+                            <th>[ xls o xlsx ]</th>
+                            <th>Proveedor</th>
+                            <th>Hoja</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for sp in seleccion_planillas %}
+                        <tr>
+                            <td>{{ sp.fecha }}</td>
+                            <td>{{ sp.descripcion }}</td>
+                            <td>{{ sp.proveedor }}</td>
+                            <td>{{ sp.hoja }}</td>
+                        </tr>
+                    {% endfor %}
+
+                    </tbody>
+                </table>
+                <input type="hidden" name="seleccionados" value="{{ seleccionados }}">
+                <button class="btn btn-primary" type="submit">Actualizar</button>
+            </div>
+        </div>
+        <div class="tab-pane" id="descargar">
+            <div class="py-2">
+                <table class="table table-striped w-auto">
+                    <thead class="bg-secondary text-white sticky-top">
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Proveedor</th>
+                            <th>Descargar xls</th>
+                            <th>Descargar ods</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for sp in seleccion_descargar %}
+                        <tr>
+                            <td>{{ sp.fecha }}</td>
+                            <td>{{ sp.proveedor }}</td>
+                            <td><a href="/{{ sp.link_descarga }}">XLS</a></td>
+                            <td><a href="/{{ sp.link_descarga_ods }}">ODS</a></td>
+                        </tr>
+                    {% endfor %}
+
+                    </tbody>
+                </table>
+                <button class="btn btn-primary" type="submit">Descargar todo</button>
+            </div>
+        </div>
+    </form>
+</div>
+

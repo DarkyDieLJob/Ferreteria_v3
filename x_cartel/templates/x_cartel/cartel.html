@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Importar la fuente Anton desde Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+</head>
+<body>
+<form id="myForm" method="post">{% csrf_token %}
+    <div style="width: 50%; float: left; font-size: 60px;">
+        
+        <div style="display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between;">
+                <label for="descripcion">Descripción:</label>
+                <div style="display: flex; justify-content: space-between;">
+                    <textarea type="text" id="descripcion" name="descripcion" style="font-size: 40px;">{{cartel.descripcion}}</textarea>
+                    <input type="number" id="tamano_descripcion" name="tamano_descripcion" value="{{cartel.tamano_descripcion}}" style="font-size: 40px;">
+                </div>
+            </div>
+            <br>
+            <div style="display: flex; justify-content: space-between;">
+                <label for="texto_final">Precio de lista:</label>
+                <div style="display: flex; justify-content: space-between;">
+                    <textarea type="text" id="texto_final" name="texto_final" style="font-size: 40px;">{{cartel.texto_final}}</textarea>
+                    <input type="number" id="tamano_texto_final" name="tamano_texto_final" value="{{cartel.tamano_texto_final}}" style="font-size: 40px;">
+                </div>
+            </div>
+            <br>
+            <div style="display: flex; justify-content: space-between;">
+                <label for="final">Final:</label>
+                <div style="display: flex; justify-content: space-between;">
+                    <textarea type="text" id="final" name="final" style="font-size: 40px;">{{cartel.final}}</textarea>
+                    <input type="number" id="tamano_final" name="tamano_final" value="{{cartel.tamano_final}}" style="font-size: 40px;">
+                </div>
+            </div>
+            <br>
+            <div style="display: flex; justify-content: space-between;">
+                <label for="texto_final_efectivo">Texto Contado Efectivo:</label>
+                <div style="display: flex; justify-content: space-between;">
+                    <textarea type="text" id="texto_final_efectivo" name="texto_final_efectivo" style="font-size: 40px;">{{cartel.texto_final_efectivo}}</textarea>
+                    <input type="number" id="tamano_texto_final_efectivo" name="tamano_texto_final_efectivo" value="{{cartel.tamano_texto_final_efectivo}}" style="font-size: 40px;">
+                </div>
+            </div>
+            <br>
+            <div style="display: flex; justify-content: space-between;">
+                <label for="final_efectivo">$ Contado Efectivo:</label>
+                <div style="display: flex; justify-content: space-between;">
+                    <textarea type="text" id="final_efectivo" name="final_efectivo" style="font-size: 40px;">{{cartel.final_efectivo}}</textarea>
+                    <input type="number" id="tamano_final_efectivo" name="tamano_final_efectivo" value="{{cartel.tamano_final_efectivo}}" style="font-size: 40px;">
+                </div>
+            </div>
+        </div>       
+
+        <!-- Agrega aquí los campos de entrada para las otras variables -->
+    </div>
+    <button type="submit">Guardar</button>
+</form>
+<button onclick="imprimir()">Imprimir</button>
+<div id="cartel" style="width: 792px; height: 1121px; background-color: #f5f5f5; margin: auto; border: 1px solid #000000; text-align: center; float: right;">
+    <span id="span_descripcion" style="font-size: 150px; font-weight: bold; text-decoration: underline; font-family: 'Anton', sans-serif;"></span>
+    <span id="span_texto_final" style="font-size: 150px; font-family: 'Anton', sans-serif;"></span>
+    <span id="span_final" style="font-size: 150px; font-family: 'Anton', sans-serif;"></span>
+    <span id="span_texto_final_efectivo" style="font-size: 150px; font-family: 'Anton', sans-serif;"></span>
+    <span id="span_final_efectivo" style="font-size: 150px; font-family: 'Anton', sans-serif;"></span>
+
+    <!-- Agrega aquí los spans para las otras variables -->
+</div>
+
+
+<script>
+    function imprimir() {
+        var contenido = document.getElementById('cartel').outerHTML;
+        var ventana = window.open('', '_blank');
+        ventana.document.write('<html><head><title>Imprimir</title><style>body { margin: 0; padding: 0; }</style></head><body>');
+        ventana.document.write(contenido);
+        ventana.document.write('</body></html>');
+        ventana.document.close();
+        ventana.print();
+    }
+    
+    // Función para agregar listeners a los campos de entrada y los spans
+    function agregarListeners(idCampo, idSpan) {
+        document.getElementById(idCampo).addEventListener('input', function() {
+            document.getElementById(idSpan).innerText = this.value;
+        });
+        document.getElementById('tamano_' + idCampo).addEventListener('input', function() {
+            document.getElementById(idSpan).style.fontSize = this.value + 'px';
+        });
+    }
+    
+    // Función para inicializar los spans
+    function inicializarSpan(idCampo, idSpan) {
+        document.getElementById(idSpan).innerText = document.getElementById(idCampo).value;
+        document.getElementById(idSpan).style.fontSize = document.getElementById('tamano_' + idCampo).value + 'px';
+    }
+    
+    // Inicializar los spans
+    inicializarSpan('descripcion', 'span_descripcion');
+    inicializarSpan('texto_final', 'span_texto_final');
+    inicializarSpan('final', 'span_final');
+    inicializarSpan('texto_final_efectivo', 'span_texto_final_efectivo');
+    inicializarSpan('final_efectivo', 'span_final_efectivo');
+    
+    // Agrega los listeners a los campos de entrada y los spans
+    agregarListeners('descripcion', 'span_descripcion');
+    agregarListeners('texto_final', 'span_texto_final');
+    agregarListeners('final', 'span_final');
+    agregarListeners('texto_final_efectivo', 'span_texto_final_efectivo');
+    agregarListeners('final_efectivo', 'span_final_efectivo');
+    // Agrega aquí los listeners para las otras variables
+</script>
+</body>
+</html>
