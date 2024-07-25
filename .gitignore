@@ -63,7 +63,8 @@ db.sqlite3-journal
 /media/pendorchito.csv
 mp_access_token.txt
 token.json
-mp.jsonservice_credentials.json
+mp.json
+service_credentials.json
 *.pyc
 __pycache__/
 Scraping/
