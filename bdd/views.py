@@ -991,7 +991,9 @@ def agregar_articulo_a_carrito(request, id_articulo):
                 articulo.save()
             
             # Add diferencia de cantidad to Pedido
-            pedido, pedido_created = Lista_Pedidos.objects.get_or_create(item=item, defaults={'cantidad': data.get('cantidad'),})
+            pedido, pedido_created = Lista_Pedidos.objects.get_or_create(proveedor=item.proveedor, item=item, defaults={'cantidad': data.get('cantidad'),})
+            print("pedido creado: ", pedido_created)
+            print(pedido)
             if not pedido_created:
                 pedido.cantidad = F('cantidad') + data.get('cantidad')
                 pedido.save()

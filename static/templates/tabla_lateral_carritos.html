@@ -23,13 +23,13 @@
             <input type="hidden" id="usuario" name="usuario" value="">
             <input type="hidden" id="carrito_id" name="carrito_id" value="">
             <input type="hidden" id="articulos_vendidos" name="articulos_vendidos" value="">
-            <select id="cliente_id" name="cliente_id">
+            <select id="cliente_id" name="cliente_id" required>
                 <option value="">-------</option>
             </select>
             <input type="text" id="buscar_cliente" placeholder="Buscar cliente">
             <select id="metodo_de_pago" name="metodo_de_pago"></select>
             <input type="hidden" id="total" name="total" value="">
-            <button type="submit" class="btn btn-primary">Cerrar Transacción</button>
+            <button id="enviar-transaccion"  type="submit" class="btn btn-primary">Cerrar Transacción</button>
             <button type="button" class="btn btn-secondary" id="nuevoCliente"> + Cliente</button>
             <!--
 
@@ -66,11 +66,11 @@
     <div class="card">
         <form id="formArticuloSinRegistro" method="post">
             <div class= "row p-0 m-0">
-                <input type="text" id="descripcion" name="descripcion" placeholder="Descripción">
+                <input type="text" id="descripcion" name="descripcion" placeholder="Descripción" required>
             </div>
             <div class= "colum p-0 m-0">
-                <input type="number" id="cantidad" name="cantidad" placeholder="Cantidad">
-                <input type="number" id="precio" name="precio" placeholder="Precio">
+                <input type="number" id="cantidad" name="cantidad" placeholder="Cantidad" required>
+                <input type="number" id="precio" name="precio" placeholder="Precio" required>
                 <button type="submit" class="btn btn-primary">Agregar Artículo</button>
             </div>
         </form>
@@ -79,7 +79,7 @@
 
 <div class="p-3">
     <div class="card">
-        <table class="table">
+        <table id="tabla-articulos" class="table">
             <thead>
                 <tr>
                     <th>Item</th>
@@ -96,8 +96,16 @@
 </div>
 
 </div>
-
 <script>
+    document.getElementById('enviar-transaccion').addEventListener('click', function(event) {
+      const tablaArticulos = document.getElementById('tabla-articulos');
+      console.log(tablaArticulos.rows.length)
+      if (tablaArticulos.rows.length < 4 ) {
+        event.preventDefault(); // Evita que se envíe el formulario
+        alert('No hay artículos en el carrito. Agrega al menos uno antes de enviar la transacción.');
+      }
+    });
+
     document.getElementById('nuevoCliente').onclick = function () {
         window.location.href = "/facturacion/clientes/";
     };
