@@ -99,11 +99,13 @@ def registrar_articulos_vendidos(request_dict):
             cliente_id = 1
         else:
             cliente_id = request_dict['id_cliente']
-            
+        
+        print("cliente_id: ")
+        print(cliente_id)
         transaccion.cliente = Cliente.objects.get(id=cliente_id)
     
     
-        ticket_factura = TicketFactura(transaccion.id)
+        ticket_factura = TicketFactura(transaccion)
         json = ticket_factura.get_ticket_json()    
     
     return {

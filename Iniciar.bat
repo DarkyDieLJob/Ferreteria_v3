@@ -1,5 +1,5 @@
 @echo off
-cd C:/Users/Programar/Documents/GitHub/Ferreteria_v3
+cd C:/Users/LaFerreteria/Documents/GitHub/Ferreteria_v3
 IF NOT EXIST "venv" (
     echo El entorno virtual no existe.
     pause
@@ -13,7 +13,7 @@ IF %ERRORLEVEL% NEQ 0 (
 )
 python manage.py makemigrations
 python manage.py migrate
-python manage.py runserver 192.168.0.231:8000
+python manage.py runserver 192.168.1.104:8000
 IF %ERRORLEVEL% NEQ 0 (
     echo Error al iniciar el servidor Django.
     pause

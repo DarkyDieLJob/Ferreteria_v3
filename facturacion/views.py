@@ -44,22 +44,27 @@ def procesar_transaccion(request):
         registro_dic = registrar_articulos_vendidos(request_dict)
         
         json = registro_dic["json"]
+        print("boleta json: ")
+        print(json)
 
         for boleta in json:
             try:
                 rta = asyncio.run(conectar_a_websocket(boleta))
                 print("Respuesta: ")
                 print(rta)
-                articulos = registro_dic["articulos"]
-                articulos.delete()
-                articulos_sin_registro = registro_dic["articulos_sin_registro"]
-                articulos_sin_registro.delete()
-                transaccion = registro_dic["transaccion"]
-                transaccion.save()
             except asyncio.CancelledError as e:
                 print("ticket cancelado")
             except asyncio.TimeoutError as e:
                 print("tiempo de respuesta excedido")
+            except Exception as e:
+                print("sin boletas??")
+                print(e)
+        articulos = registro_dic["articulos"]
+        articulos.delete()
+        articulos_sin_registro = registro_dic["articulos_sin_registro"]
+        articulos_sin_registro.delete()
+        transaccion = registro_dic["transaccion"]
+        transaccion.save()
 
 
     return HttpResponse(status=200)
@@ -86,7 +91,10 @@ def agregar_articulo_sin_registro(request):
 
     # Get the Carrito instance
     carrito = Carrito.objects.get(id=carrito_id)
-
+    contador = ArticuloSinRegistro.objects.filter(carrito=carrito, descripcion__icontains=descripcion).count()
+    print("contador: ",contador)
+    if (contador + 1) > 1:
+        descripcion += str(contador + 1)
     # Create the ArticuloSinRegistro instance
     articulo_sin_registro, created = ArticuloSinRegistro.objects.get_or_create(
         descripcion=descripcion,

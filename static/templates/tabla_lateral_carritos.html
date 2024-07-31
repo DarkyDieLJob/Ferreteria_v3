@@ -8,13 +8,14 @@
     }
 </style>
 
-<div id="tablaCarrito" class="position-fixed top-0 end-0 bg-light" style="width: 50%; height: 100%; overflow: auto; display: none;">
+<div id="tablaCarrito" class="position-fixed top-0 end-0 bg-secondary" style="width: 50%; height: 100%; overflow: auto; display: none;">
     
 <div class="p-3">
     <div class='row'>
         <button id="cerrarCarrito" class="btn btn-secondary">Cerrar</button>
     </div>
 </div>
+
 
 <div class="p-3">
     <div class="card">
@@ -66,11 +67,11 @@
     <div class="card">
         <form id="formArticuloSinRegistro" method="post">
             <div class= "row p-0 m-0">
-                <input type="text" id="descripcion" name="descripcion" placeholder="Descripción" required>
+                <input type="text" id="descripcion" name="descripcion" placeholder="Descripción" value="Generico" required>
             </div>
             <div class= "colum p-0 m-0">
-                <input type="number" id="cantidad" name="cantidad" placeholder="Cantidad" required>
-                <input type="number" id="precio" name="precio" placeholder="Precio" required>
+                <input type="number" id="cantidad" name="cantidad" placeholder="Cantidad" value="1" required>
+                <input type="number" id="precio" name="precio" placeholder="Precio" value="" required>
                 <button type="submit" class="btn btn-primary">Agregar Artículo</button>
             </div>
         </form>
@@ -352,6 +353,7 @@
                     console.log(data)
                     llenarCarrito($("#tablaCarrito").data("nombre"));
                     console.log('tabla rellenada...')
+                    $("#formArticuloSinRegistro").trigger("reset");
                 }
             });
         });

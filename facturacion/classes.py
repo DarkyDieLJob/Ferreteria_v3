@@ -145,8 +145,8 @@ class TicketFactura():
     cantidad = 1
     PRINTNAME = "IMPRESORA_FISCAL"
 
-    def __init__(self, transaccion_id):
-        self.transaccion = Transaccion.objects.get(id=transaccion_id)
+    def __init__(self, transaccion):
+        self.transaccion = transaccion
         
         self.formas_pago = FormasPago(self.transaccion)
         print("get_cliente_id: ", self.transaccion.get_cliente_id())
