@@ -9,45 +9,45 @@ fake.add_provider(CuitProvider)
 
 
 @pytest.mark.django_db
-def test_marca_creation(marca):
-    assert isinstance(marca, Marca)
+def test_marca_creation(articulos):
+    assert isinstance(articulos.marca, Marca)
     
 @pytest.mark.django_db
-def test_categoria_creation(categoria):
-    assert isinstance(categoria, Categoria)
+def test_categoria_creation(articulos):
+    assert isinstance(articulos.categoria, Categoria)
 
 @pytest.mark.django_db
-def test_cartel_creation(cartel):
-    assert isinstance(cartel, Cartel)
+def test_cartel_creation(articulos):
+    assert isinstance(articulos.cartel, Cartel)
     
 @pytest.mark.django_db
-def test_proveedor_creation(proveedor):
-    assert isinstance(proveedor, Proveedor)
+def test_proveedor_creation(articulos):
+    assert isinstance(articulos.proveedor, Proveedor)
     
 @pytest.mark.django_db
-def test_articulo_creation(articulo):
-    assert isinstance(articulo, Articulo)
-    assert isinstance(articulo.marca, Marca)
-    assert isinstance(articulo.categoria, Categoria)
+def test_articulo_creation(articulos):
+    assert isinstance(articulos.articulo, Articulo)
+    assert isinstance(articulos.articulo.marca, Marca)
+    assert isinstance(articulos.articulo.categoria, Categoria)
 
 @pytest.mark.django_db
-def test_codigo_barras_creation(codigo_barras):
-    assert isinstance(codigo_barras, CodigoBarras)
-    assert isinstance(codigo_barras.articulo, Articulo)
+def test_codigo_barras_creation(articulos):
+    assert isinstance(articulos.codigo_barras, CodigoBarras)
+    assert isinstance(articulos.codigo_barras.articulo, Articulo)
 
 @pytest.mark.django_db
-def test_articulo_proveedor_creation(articulo_proveedor, articulo, proveedor, cartel):
-    assert isinstance(articulo_proveedor, ArticuloProveedor)
-    assert isinstance(articulo, Articulo)
-    assert isinstance(proveedor, Proveedor)
-    assert isinstance(cartel, Cartel)
+def test_articulo_proveedor_creation(articulos):
+    assert isinstance(articulos.articulo_proveedor, ArticuloProveedor)
+    assert isinstance(articulos.articulo, Articulo)
+    assert isinstance(articulos.proveedor, Proveedor)
+    assert isinstance(articulos.cartel, Cartel)
 
 @pytest.mark.django_db
-def test_articulo_proveedor_creation_fail(articulo, proveedor, cartel):
+def test_articulo_proveedor_creation_fail(articulos):
     with pytest.raises(Exception):
         ArticuloProveedor.objects.create(
-        articulo=articulo,
-        proveedor=proveedor,
+        articulo=articulos.articulo,
+        proveedor=articulos.proveedor,
         codigo_base="CB123",
         descripcion="Descripción del artículo",
         precio_base=100.0,
@@ -57,5 +57,5 @@ def test_articulo_proveedor_creation_fail(articulo, proveedor, cartel):
         precio_contado=110.0,
         precio_cantidad=90.0,
         precio_cantidad_contado=80.0,
-        cartel=cartel,
+        cartel=articulos.cartel,
     )
