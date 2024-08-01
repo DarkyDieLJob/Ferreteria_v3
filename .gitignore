@@ -15,7 +15,6 @@ Sin.fis
 SECRET_KEY.txt
 migrations/
 db.sqlite3
-settings.py
 core_config/settings.py
 3D.csv
 Amaya.csv
@@ -46,3 +45,4 @@ YAYI.csv
 3D.csv
 Hersol.csv
 
+core_config/settings.py
