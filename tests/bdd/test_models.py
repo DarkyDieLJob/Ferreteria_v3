@@ -3,7 +3,8 @@ import pytest
 from bdd.models import ListaProveedores, Proveedor, Sub_Carpeta, Sub_Titulo, Tipo_Cartel, Archivo, Sector
 from bdd.models import Cajonera, Cajon, Marca, Item, Cod_Barras, Lista_Pedidos, NavBar, Muro, Plantilla
 from bdd.models import Contenedor, Modelo_Campos, Formulario_Campos, Formulario_Campos_Contiene
-from bdd.modles import Formulario_Campos_Empieza_Con, Armador
+from bdd.models import Formulario_Campos_Empieza_Con, Armador, Tipo_Registro, Registros, Compras
+from bdd.models import Listado_Planillas, Carrito, Articulo, ArticuloSinRegistro
 
 
 @pytest.mark.django_db
@@ -93,3 +94,31 @@ def test_plantilla_creation(bdd):
 @pytest.mark.django_db
 def test_plantilla_creation(bdd):
     assert isinstance(bdd.plantilla, Armador)
+
+@pytest.mark.django_db
+def test_tipo_registro_creation(bdd):
+    assert isinstance(bdd.tipo_registro, Tipo_Registro)
+
+@pytest.mark.django_db
+def test_Registros_creation(bdd):
+    assert isinstance(bdd.registros, Registros)
+
+@pytest.mark.django_db
+def test_compras_creation(bdd):
+    assert isinstance(bdd.compras, Compras)
+
+@pytest.mark.django_db
+def test_listado_planillas_creation(bdd):
+    assert isinstance(bdd.listado_planillas, Listado_Planillas) 
+
+@pytest.mark.django_db
+def test_carrito_creation(bdd):
+    assert isinstance(bdd.carrito, Carrito)
+
+@pytest.mark.django_db
+def test_articulo_creation(bdd):
+    assert isinstance(bdd.articulo, Articulo)
+
+@pytest.mark.django_db
+def test_articulo_sin_registro_creation(bdd):
+    assert isinstance(bdd.articulo_sin_registro, ArticuloSinRegistro)

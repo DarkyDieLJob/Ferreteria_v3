@@ -3,7 +3,8 @@ from ddf import G
 from bdd.models import ListaProveedores, Proveedor, Sub_Carpeta, Sub_Titulo, Tipo_Cartel, Archivo, Sector
 from bdd.models import Cajonera, Cajon, Marca, Item, Cod_Barras, Lista_Pedidos, NavBar, Muro, Plantilla
 from bdd.models import Contenedor, Modelo_Campos, Formulario_Campos, Formulario_Campos_Contiene
-from bdd.modles import Formulario_Campos_Empieza_Con, Armador
+from bdd.models import Formulario_Campos_Empieza_Con, Armador, Tipo_Registro, Registros, Compras
+from bdd.models import Listado_Planillas, Carrito, Articulo, ArticuloSinRegistro
 
 class AppBdd:
     def __init__(self):
@@ -29,6 +30,13 @@ class AppBdd:
         self.formulario_campos_contiene = G(Formulario_Campos_Contiene)
         self.formulario_campos_empieza_con = G(Formulario_Campos_Empieza_Con)
         self.armador = G(Armador)
+        self.tipo_registro = G(Tipo_Registro)
+        self.registros = G(Registros)
+        self.compras = G(Compras)
+        self.listado_planillas = G(Listado_Planillas)
+        self.carrito = G(Carrito)
+        self.articulo = G(Articulo)
+        self.articulo_sin_registro = G(ArticuloSinRegistro)
 
 @pytest.fixture
 def bdd():
