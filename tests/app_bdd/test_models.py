@@ -57,7 +57,7 @@ def test_cod_barras_creation(bdd):
 
 @pytest.mark.django_db
 def test_item_creation(bdd):
-    assert isinstance(bdd.item, Lista_Pedidos)
+    assert isinstance(bdd.lista_pedidos, Lista_Pedidos)
 
 @pytest.mark.django_db
 def test_nav_bar_creation(bdd):
@@ -73,7 +73,7 @@ def test_plantilla_creation(bdd):
 
 @pytest.mark.django_db
 def test_contenedor_creation(bdd):
-    assert isinstance(bdd.plantilla, Contenedor)
+    assert isinstance(bdd.contenedor, Contenedor)
 
 @pytest.mark.django_db
 def test_plantilla_creation(bdd):
@@ -93,7 +93,7 @@ def test_plantilla_creation(bdd):
 
 @pytest.mark.django_db
 def test_plantilla_creation(bdd):
-    assert isinstance(bdd.plantilla, Armador)
+    assert isinstance(bdd.armador, Armador)
 
 @pytest.mark.django_db
 def test_tipo_registro_creation(bdd):
