@@ -17,6 +17,6 @@ python manage.py runserver 192.168.1.104:8000
 IF %ERRORLEVEL% NEQ 0 (
     echo Error al iniciar el servidor Django.
     pause
-    exit /b
+    python manage.py runserver 192.168.0.231:8000
 )
 pause

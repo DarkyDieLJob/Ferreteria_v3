@@ -15,7 +15,7 @@ from django.apps import apps
 import os
 import io
 from googleapiclient.http import MediaIoBaseDownload
-#import pandas as pd
+import pandas as pd
 #from google.oauth2.credentials import Credentials
 #from allauth.socialaccount.models import SocialToken
 import mercadopago
@@ -603,7 +603,7 @@ class Actualizar(MiVista):
 
                 # Elimina el registro de la base de datos
                 old_file.delete()
-                
+
         for latest_file in latest_files:
             # Obtén el proveedor y la fecha del archivo más reciente
             proveedor = latest_file['proveedor']
