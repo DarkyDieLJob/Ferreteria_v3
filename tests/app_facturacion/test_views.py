@@ -7,6 +7,20 @@ class FacturacionTestCase(TestCase):
     def setUpTestData(cls):
         # Se ejecuta una vez por clase, antes de todos los tests
         cls.facturacion = facturacion()  # Asumiendo que 'facturacion' es tu fixture principal
+        cls.clientes = [
+            cls.facturacion.cliente.responsable_inscripto,
+            cls.facturacion.cliente.exento,
+            cls.facturacion.cliente.consumidor_final,
+        ]
+        cls.metodos_pago = [
+            cls.facturacion.metodos_pago.efectivo_sin_ticket,
+            cls.facturacion.metodos_pago.efectivo_con_ticket,
+            cls.facturacion.metodos_pago.credito,
+            cls.facturacion.metodos_pago.debito,
+            cls.facturacion.metodos_pago.mercado_pago,
+            cls.facturacion.metodos_pago.cuenta_dni,
+            cls.facturacion.metodos_pago.maestro,
+        ]
 
     def test_obtener_todos_los_clientes(self):
         # Utiliza los datos de prueba creados en setUpTestData
@@ -16,22 +30,11 @@ class FacturacionTestCase(TestCase):
         self.assertEqual(len(data['clientes']), 3)
 
     def test_transaccion(self):
-        clientes = [
-            self.facturacion.cliente.responsable_inscripto,
-            self.facturacion.cliente.exento,
-            self.facturacion.cliente.consumidor_final,
-        ]
-        metodos_pago = [
-            self.facturacion.metodos_pago.efectivo_sin_ticket,
-            self.facturacion.metodos_pago.efectivo_con_ticket,
-            # ... otros métodos de pago
-        ]
-
-        for cliente in clientes:
-            for metodo_pago in metodos_pago:
+        for cliente in self.clientes:
+            for metodo_pago in self.metodos_pago:
                 if metodo_pago == self.facturacion.metodos_pago.efectivo_sin_ticket:
                     # Crear transacción con método de pago efectivo sin ticket
-                    
+                    self.client.get()
                     # Esperar que la transacción falle
                     with self.assertRaises(Exception):
                         # Llamada a la función que crea la transacción

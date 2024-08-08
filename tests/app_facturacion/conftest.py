@@ -18,6 +18,12 @@ class MetodoPagoFixture:
         self.cuenta_dni = G(MetodoPago, display='Cuenta DNI')
         self.maestro = G(MetodoPago, display='Maestro')
 
+class ArticuloVendido:
+    def __init__(self):
+        self.vendido_sin_registro = G(ArticuloVendido)
+        self.vendido_con_registro = G(ArticuloVendido)
+        self.vendido_con_sin_registro = G(ArticuloVendido)
+
 class AppFacturacion:
     def __init__(self, cliente, metodo_pago):
         self.cliente = cliente
