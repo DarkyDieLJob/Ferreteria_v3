@@ -31,6 +31,7 @@ class FacturacionTestCase(TestCase):
             for metodo_pago in metodos_pago:
                 if metodo_pago == self.facturacion.metodos_pago.efectivo_sin_ticket:
                     # Crear transacción con método de pago efectivo sin ticket
+                    
                     # Esperar que la transacción falle
                     with self.assertRaises(Exception):
                         # Llamada a la función que crea la transacción
