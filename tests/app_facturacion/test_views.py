@@ -30,11 +30,16 @@ class FacturacionTestCase(TestCase):
         self.assertEqual(len(data['clientes']), 3)
 
     def test_transaccion(self):
+        data = {}
         for cliente in self.clientes:
+            data['cliente_id'] = cliente.id
+
             for metodo_pago in self.metodos_pago:
+                data['metodo_de_pago'] = metodo_pago.id
                 if metodo_pago == self.facturacion.metodos_pago.efectivo_sin_ticket:
                     # Crear transacción con método de pago efectivo sin ticket
-                    self.client.get()
+                    response = self.client.get('procesar_transaccion', data=data)
+                    
                     # Esperar que la transacción falle
                     with self.assertRaises(Exception):
                         # Llamada a la función que crea la transacción
