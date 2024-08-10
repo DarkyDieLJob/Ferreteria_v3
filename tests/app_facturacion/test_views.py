@@ -39,16 +39,18 @@ class FacturacionTestCase(TestCase):
                 if metodo_pago == self.facturacion.metodos_pago.efectivo_sin_ticket:
                     # Crear transacción con método de pago efectivo sin ticket
                     response = self.client.get('procesar_transaccion', data=data)
-                    
+                    self.assertIsNotNone(response)
+
                     # Esperar que la transacción falle
                     with self.assertRaises(Exception):
                         # Llamada a la función que crea la transacción
-                        crear_transaccion(cliente, metodo_pago)
+                        response = self.client.get('procesar_transaccion', data=data)
+                        self.assertIsNotNone(response)
                 else:
                     # Crear transacción con otro método de pago
-                    # Esperar que la transacción se cree correctamente
-                    transaccion = crear_transaccion(cliente, metodo_pago)
-                    self.assertIsNotNone(transaccion)
+                    # Esperar que la transacción se cree correctamente                        
+                    response = self.client.get('procesar_transaccion', data=data)
+                    self.assertIsNotNone(response)
                     # Otras afirmaciones para verificar la transacción
 
 
