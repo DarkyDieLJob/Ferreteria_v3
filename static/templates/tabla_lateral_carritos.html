@@ -185,8 +185,8 @@
                     
                     
                     // Añadir el total al final
-                    tbody.append('<tr><td>Total</td><td></td><td>' + data[nombre].total + '</td></tr>');
-                    tbody.append('<tr><td>Total Efectivo</td><td></td><td>' + data[nombre].total_efectivo + '</td></tr>');
+                    tbody.append('<tr><td>Total</td><td></td><td>' + data[nombre].total + '</td></td><td></tr>');
+                    tbody.append('<tr><td>Total Efectivo</td><td></td><td>' + data[nombre].total_efectivo + '</td></td><td></tr>');
                     // Guardamos el nombre del carrito que estamos mostrando
                     $("#tablaCarrito").data("nombre", nombre);
                     // Guardamos el ID del carrito en el campo oculto
@@ -296,6 +296,10 @@
                     $("#cliente_id").val();
                     $("#total").val(data[nombre].total);
                     $("#total_efectivo").val(data[nombre].total_efectivo);
+
+                    console.log(data[nombre].total);
+                    console.log(data[nombre].total_efectivo);
+                    console.log($("#formTransaccion").serialize());
                     // Aquí enviamos los datos del formulario a tu servidor
                     $.ajax({
                         url: '/procesar_transaccion/',

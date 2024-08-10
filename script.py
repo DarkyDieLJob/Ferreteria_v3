@@ -149,6 +149,15 @@ def dibujo():
         time.sleep(0.5)
 
 
+    
+def provando():
+    
+    primero = True
+    segundo = False
+    tercero = True
+    
+    if (primero or segundo) and tercero:
+        print("si")
 
 if __name__ == '__main__':
-    pass
+    provando()
