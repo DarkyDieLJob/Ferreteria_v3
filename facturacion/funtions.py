@@ -55,7 +55,7 @@ def registrar_articulos_vendidos(request_dict):
     print("metodo de pago: ", metodo_de_pago_display)
     print("total: ", request_dict['total'])
     print("total_efectivo: ", request_dict['total_efectivo'])
-    if (metodo_de_pago_display == "Efectivo con Tricket" or metodo_de_pago_display == "Efectivo S/ Ticket") and request_dict['total_efectivo']:
+    if (metodo_de_pago_display == "Efectivo con Tricket" or metodo_de_pago_display == "Efectivo S/Ticket") and request_dict['total_efectivo']:
         monto_abonado = request_dict['total_efectivo']
     else:
         monto_abonado = request_dict['total']
