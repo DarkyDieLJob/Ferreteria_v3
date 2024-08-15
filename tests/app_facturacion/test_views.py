@@ -22,16 +22,26 @@ class SetAtributos:
             self.facturacion.metodos_pago.maestro,
         ]
 
-@pytest.fixture(scope="class")
-def set_atributos(facturacion):
-    return SetAtributos(facturacion)
 
-@pytest.mark.parametrize("facturacion", [facturacion])
-class FacturacionTestCase(TestCase, SetAtributos):
+
+class FacturacionTestCase(TestCase):
     def __init__(self, facturacion, *args, **kwargs):
         super().__init__(facturacion, *args, **kwargs)
-        
-        self.set_atributos = set_atributos(facturacion)
+        self.facturacion = facturacion
+        self.clientes = [
+            self.facturacion.cliente.responsable_inscripto,
+            self.facturacion.cliente.exento,
+            self.facturacion.cliente.consumidor_final,
+        ]
+        self.metodos_pago = [
+            self.facturacion.metodos_pago.efectivo_sin_ticket,
+            self.facturacion.metodos_pago.efectivo_con_ticket,
+            self.facturacion.metodos_pago.credito,
+            self.facturacion.metodos_pago.debito,
+            self.facturacion.metodos_pago.mercado_pago,
+            self.facturacion.metodos_pago.cuenta_dni,
+            self.facturacion.metodos_pago.maestro,
+        ]
 
     def test_obtener_todos_los_clientes(self):
         # Utiliza los datos de prueba creados en setUpTestData
@@ -42,7 +52,7 @@ class FacturacionTestCase(TestCase, SetAtributos):
 
     def test_transaccion(self):
         data = {}
-        for cliente in self.set_atributos.clientes:
+        for cliente in self.clientes:
             data['cliente_id'] = cliente.id
 
             for metodo_pago in self.metodos_pago:
@@ -64,7 +74,9 @@ class FacturacionTestCase(TestCase, SetAtributos):
                     self.assertIsNotNone(response)
                     # Otras afirmaciones para verificar la transacción
 
-
+@pytest.fixture(scope="class")
+def facturacion_test_case(facturacion):
+    return SetAtributos(facturacion)
 
 
 
