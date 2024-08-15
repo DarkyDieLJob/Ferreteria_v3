@@ -1,26 +1,37 @@
+import pytest
 from django.test import TestCase
-from .models import Cliente
-from .views import obtener_clientes
+from facturacion.models import Cliente
+from facturacion.views import obtener_cliente
+from .conftest import facturacion
 
-class FacturacionTestCase(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        # Se ejecuta una vez por clase, antes de todos los tests
-        cls.facturacion = facturacion()  # Asumiendo que 'facturacion' es tu fixture principal
-        cls.clientes = [
-            cls.facturacion.cliente.responsable_inscripto,
-            cls.facturacion.cliente.exento,
-            cls.facturacion.cliente.consumidor_final,
+class SetAtributos:
+    def __init__(self, facturacion):
+        self.facturacion = facturacion
+        self.clientes = [
+            self.facturacion.cliente.responsable_inscripto,
+            self.facturacion.cliente.exento,
+            self.facturacion.cliente.consumidor_final,
         ]
-        cls.metodos_pago = [
-            cls.facturacion.metodos_pago.efectivo_sin_ticket,
-            cls.facturacion.metodos_pago.efectivo_con_ticket,
-            cls.facturacion.metodos_pago.credito,
-            cls.facturacion.metodos_pago.debito,
-            cls.facturacion.metodos_pago.mercado_pago,
-            cls.facturacion.metodos_pago.cuenta_dni,
-            cls.facturacion.metodos_pago.maestro,
+        self.metodos_pago = [
+            self.facturacion.metodos_pago.efectivo_sin_ticket,
+            self.facturacion.metodos_pago.efectivo_con_ticket,
+            self.facturacion.metodos_pago.credito,
+            self.facturacion.metodos_pago.debito,
+            self.facturacion.metodos_pago.mercado_pago,
+            self.facturacion.metodos_pago.cuenta_dni,
+            self.facturacion.metodos_pago.maestro,
         ]
+
+@pytest.fixture(scope="class")
+def set_atributos(facturacion):
+    return SetAtributos(facturacion)
+
+@pytest.mark.parametrize("facturacion", [facturacion])
+class FacturacionTestCase(TestCase, SetAtributos):
+    def __init__(self, facturacion, *args, **kwargs):
+        super().__init__(facturacion, *args, **kwargs)
+        
+        self.set_atributos = set_atributos(facturacion)
 
     def test_obtener_todos_los_clientes(self):
         # Utiliza los datos de prueba creados en setUpTestData
@@ -31,7 +42,7 @@ class FacturacionTestCase(TestCase):
 
     def test_transaccion(self):
         data = {}
-        for cliente in self.clientes:
+        for cliente in self.set_atributos.clientes:
             data['cliente_id'] = cliente.id
 
             for metodo_pago in self.metodos_pago:
