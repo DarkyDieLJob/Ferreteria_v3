@@ -4,8 +4,10 @@ from facturacion.models import Cliente
 from facturacion.views import obtener_cliente
 from .conftest import facturacion
 
-class SetAtributos:
-    def __init__(self, facturacion):
+
+class FacturacionTestCase(TestCase, SetAtributos):
+    def __init__(self, facturacion, *args, **kwargs):
+        super().__init__(facturacion, *args, **kwargs)
         self.facturacion = facturacion
         self.clientes = [
             self.facturacion.cliente.responsable_inscripto,
@@ -21,17 +23,6 @@ class SetAtributos:
             self.facturacion.metodos_pago.cuenta_dni,
             self.facturacion.metodos_pago.maestro,
         ]
-
-@pytest.fixture(scope="class")
-def set_atributos(facturacion):
-    return SetAtributos(facturacion)
-
-@pytest.mark.parametrize("facturacion", [facturacion])
-class FacturacionTestCase(TestCase, SetAtributos):
-    def __init__(self, facturacion, *args, **kwargs):
-        super().__init__(facturacion, *args, **kwargs)
-        
-        self.set_atributos = set_atributos(facturacion)
 
     def test_obtener_todos_los_clientes(self):
         # Utiliza los datos de prueba creados en setUpTestData
@@ -66,5 +57,8 @@ class FacturacionTestCase(TestCase, SetAtributos):
 
 
 
+@pytest.fixture(scope="class")
+def set_atributos(facturacion):
+    return SetAtributos(facturacion)
 
 
