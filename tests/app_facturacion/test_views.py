@@ -3,11 +3,12 @@ from pytest import mark
 from facturacion.models import Cliente
 from facturacion.views import obtener_cliente
 import json
-from .conftest import FacturacionFixtureTestCase
 from django.contrib.auth.models import User
-from .factories import UserFactory
+from .factories import UserFactory, ClienteFactory
+from django.test import TestCase
 
-class FacturacionTestCase(FacturacionFixtureTestCase):
+
+class FacturacionTestCase(TestCase):
     def setUp(self):
         self.user = UserFactory()
         self.assertTrue(User.objects.filter(id=self.user.id).exists())
@@ -23,6 +24,9 @@ class FacturacionTestCase(FacturacionFixtureTestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_prueba_post(self):
+
+        cliente_exento = ClienteFactory.exento
+        print(cliente_excento)
         data = {
             "dato":200,
         }
@@ -31,11 +35,9 @@ class FacturacionTestCase(FacturacionFixtureTestCase):
             data=data,
             content_type='application/json'
             )
-        self.assertEqual(response_post.status_code, 200)
+        self.assertEqual(response_post.status_code, 201)
 
     def test_procesar_transaccion(self):
-        #self.facturacion = self.facturacion_class()
-        print(self.facturacion.cliente.excento)
         response_get = self.client.get("/procesar_transaccion/")
         self.assertEqual(response_get.status_code, 200)
         data = {
