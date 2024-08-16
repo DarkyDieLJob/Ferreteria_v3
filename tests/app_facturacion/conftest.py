@@ -1,6 +1,8 @@
 import pytest
 from ddf import G
 from facturacion.models import Cliente, ArticuloVendido , MetodoPago, Transaccion, CierreZ
+from django.test import TestCase
+
 
 class ClienteFixture:
     def __init__(self):
@@ -57,3 +59,5 @@ def facturacion():
         ArticuloVendidoFixture(),
         MetodoPagoFixture()
         )
+
+

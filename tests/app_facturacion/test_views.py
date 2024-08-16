@@ -1,12 +1,18 @@
 import pytest
 from pytest import mark
-from django.test import TestCase
 from facturacion.models import Cliente
 from facturacion.views import obtener_cliente
 import json
+from .conftest import FacturacionFixtureTestCase
+from django.contrib.auth.models import User
+from .factories import UserFactory
 
+class FacturacionTestCase(FacturacionFixtureTestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.assertTrue(User.objects.filter(id=self.user.id).exists())
+        self.client.force_login(self.user)
 
-class FacturacionTestCase(TestCase):
     def test_obtener_todos_los_clientes(self):
         # Utiliza los datos de prueba creados en setUpTestData
         response = self.client.get('/obtener_cliente/')
@@ -28,6 +34,8 @@ class FacturacionTestCase(TestCase):
         self.assertEqual(response_post.status_code, 200)
 
     def test_procesar_transaccion(self):
+        #self.facturacion = self.facturacion_class()
+        print(self.facturacion.cliente.excento)
         response_get = self.client.get("/procesar_transaccion/")
         self.assertEqual(response_get.status_code, 200)
         data = {
