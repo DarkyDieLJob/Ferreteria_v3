@@ -4,7 +4,8 @@ from .models import Cliente, MetodoPago, Transaccion
 from django.contrib.auth.models import User
 from django.http import HttpResponse
 from .models import ArticuloVendido
-
+from schema import Schema, And, Use
+import json
 
 def ciclo(fiscal=ComandoFiscal):
     i = 1
@@ -31,17 +32,37 @@ def cliente_to_dict(cliente):
     }
     return data
 
-def request_on_procesar_transaccion_to_dict(request):
-    data = {
-        "nombre_usuario" : request.POST.get('usuario'),
-        "carrito_id" : request.POST.get('carrito_id'),
-        "id_cliente" : request.POST.get('cliente_id'),
-        "total" : request.POST.get('total'),
-        "total_efectivo" : request.POST.get('total_efectivo'),
-        "articulos_vendidos" : request.POST.get('articulos_vendidos'),
-        "id_metodo_de_pago" : request.POST.get('metodo_de_pago'),
+def mapear_datos(data):
+    return {
+        "nombre_usuario": data["usuario"],
+        "carrito_id": data["carrito_id"],
+        "id_cliente": data["cliente_id"],
+        "total": data["total"],
+        "total_efectivo": data["total_efectivo"],
+        "articulos_vendidos": data["articulos_vendidos"],
+        "id_metodo_de_pago": data["metodo_de_pago"],
     }
-    return data
+
+
+def request_on_procesar_transaccion_to_dict(request):
+    schema = Schema({
+        "usuario": str,
+        "carrito_id": int,
+        "cliente_id": int,
+        "total": float,
+        "total_efectivo": float,
+        "articulos_vendidos": list,
+        "metodo_de_pago": int,
+    })
+
+    try:
+        data = json.loads(request.body)
+        schema.validate(data)  # Validación de los datos
+        
+        return mapear_datos(data)
+    except (json.JSONDecodeError, SchemaError) as e:
+        # Manejar el error, por ejemplo, devolver un mensaje de error personalizado
+        return {'error': str(e)}
 
 def registrar_articulos_vendidos(request_dict):
     try:
