@@ -22,4 +22,5 @@ class ClienteFactory(factory.django.DjangoModelFactory):
 
 class FacturacionFactory(factory.django.DjangoModelFactory):
     @classmethod
-    def get_cliente
+    def get_usuario():
+        return UserFactory()

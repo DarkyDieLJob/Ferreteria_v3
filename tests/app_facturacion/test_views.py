@@ -4,8 +4,9 @@ from facturacion.models import Cliente
 from facturacion.views import obtener_cliente
 import json
 from django.contrib.auth.models import User
-from .factories import UserFactory, ClienteFactory
+from .factories import UserFactory, FacturacionFactory
 from django.test import TestCase
+from .conftest import AppFacturacion
 
 
 class FacturacionTestCase(TestCase):
@@ -24,9 +25,8 @@ class FacturacionTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_prueba_post(self):
-
-        cliente_exento = ClienteFactory.exento
-        print(cliente_excento)
+        app_Facturacion = AppFacturacion()
+        print(app_Facturacion.metodo_pago.efectivo_con_ticket.display)
         data = {
             "dato":200,
         }

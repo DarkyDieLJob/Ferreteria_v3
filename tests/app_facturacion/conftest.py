@@ -44,19 +44,15 @@ class ArticuloVendidoFixture:
 
 
 class AppFacturacion:
-    def __init__(self, cliente, articulo_vendido, metodo_pago):
-        self.cliente = cliente
-        self.articulo_vendido = articulo_vendido
-        self.metodo_pago = metodo_pago
+    def __init__(self):
+        self.cliente = ClienteFixture()
+        self.articulo_vendido = ArticuloVendidoFixture()
+        self.metodo_pago = MetodoPagoFixture()
         self.transaccion = G(Transaccion)
         self.cierre_z = G(CierreZ)
 
 @pytest.fixture
 def facturacion():
-    return AppFacturacion(
-        ClienteFixture(),
-        ArticuloVendidoFixture(),
-        MetodoPagoFixture()
-        )
+    return AppFacturacion()
 
 
