@@ -6,6 +6,7 @@ from bdd.models import Contenedor, Modelo_Campos, Formulario_Campos, Formulario_
 from bdd.models import Formulario_Campos_Empieza_Con, Armador, Tipo_Registro, Registros, Compras
 from bdd.models import Listado_Planillas, Carrito, Articulo, ArticuloSinRegistro
 
+
 class AppBdd:
     def __init__(self):
         self.lista_proveedores = G(ListaProveedores)

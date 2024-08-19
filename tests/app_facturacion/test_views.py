@@ -42,23 +42,29 @@ class FacturacionTestCase(TestCase):
         response_get = self.client.get("/procesar_transaccion/")
         self.assertEqual(response_get.status_code, 200)
 
-        
-        data = {
-            'usuario': self.default_models.user.admin.username,
-            'carrito_id': self.default_models.carrito.id,
-            'cliente_id': 1,
-            'total': 100.0,
-            'total_efectivo': 90.0,
-            'articulos_vendidos': [],  # Lista vacía
-            'metodo_de_pago': 1
-        }
+        for transaccion in AppFacturacion().transaccion.get_transacciones():
+            articulos_vendidos = list()
+            for articulo_vendido in transaccion.articulos_vendidos.all():
+                articulos_vendidos.append(articulo_vendido.get_item())
 
-        response_post = self.client.post(
-            "/procesar_transaccion/",
-            data=data,
-            content_type='application/json',
-        )
-        self.assertEqual(response_post.status_code, 200)
+            data = {
+                'usuario': transaccion.usuario.username,
+                'carrito_id': self.default_models.carrito.id,
+                'cliente_id': transaccion.cliente.pk,
+                'total': 100.0,
+                'total_efectivo': 90.0,
+                'articulos_vendidos': articulos_vendidos,  # Lista vacía
+                'metodo_de_pago': 1
+            }
+
+            response_post = self.client.post(
+                "/procesar_transaccion/",
+                data=data,
+                content_type='application/json',
+            )
+
+            print("Response_post: ", response_post)
+            self.assertEqual(response_post.status_code, 200)
 
 
 

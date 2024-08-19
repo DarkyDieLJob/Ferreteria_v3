@@ -43,13 +43,18 @@ class MetodoPagoFixture:
 class ArticuloVendidoFixture:
     def __init__(self):
         self.vendido_con_registro = G(
-            ArticuloVendido
+            ArticuloVendido,
+            item=ItemFixture().item,
             )
-        print(self.vendido_con_registro.pk)
+        self.vendido_con_registro_no_asci = G(
+            ArticuloVendido,
+            item=ItemFixture().item_descripcion_no_asci,
+        )
 
     def get_articulos_vendidos(self):
         return [
             self.vendido_con_registro,
+            self.vendido_con_registro_no_asci,
         ]
 
 class TransaccionFixture:

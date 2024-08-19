@@ -64,10 +64,11 @@ def procesar_transaccion(request):
         print(request_dict)
         
         registro_dic = registrar_articulos_vendidos(request_dict)
+        print("registro_dic: ")
         print(registro_dic)
         json_data = registro_dic["json"]
         print("boleta json: ")
-        print(json)
+        print(json_data)
 
         for boleta in json_data:
             try:

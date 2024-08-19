@@ -76,7 +76,7 @@ def registrar_articulos_vendidos(request_dict):
     print("metodo de pago: ", metodo_de_pago_display)
     print("total: ", request_dict['total'])
     print("total_efectivo: ", request_dict['total_efectivo'])
-    if metodo_de_pago_display == "Efectivo con Ticket" and request_dict['total_efectivo']:
+    if (metodo_de_pago_display == "Efectivo con Ticket" or metodo_de_pago_display == "Efectivo S/Ticket") and request_dict['total_efectivo']:
         monto_abonado = request_dict['total_efectivo']
     else:
         monto_abonado = request_dict['total']
@@ -114,8 +114,6 @@ def registrar_articulos_vendidos(request_dict):
     json = {}
     
     if request_dict['id_metodo_de_pago'] != 1 and request_dict['id_cliente'] != None:
-        #fiscal = ComandoFiscal(request_dict['carrito_id'], request_dict['id_cliente'], metodo_de_pago_display, monto_abonado)
-        #ciclo_desborde(fiscal)
         if request_dict['id_cliente'] == '':
             cliente_id = 1
         else:
