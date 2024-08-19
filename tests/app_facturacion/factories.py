@@ -2,6 +2,9 @@
 import pytest
 from ddf import G
 from facturacion.models import Cliente, ArticuloVendido , MetodoPago, Transaccion, CierreZ, Transaccion
+from tests.conftest import DefaultModels
+from tests.app_bdd.factories import ItemFixture
+from bdd.models import Item
 
 
 class ClienteFixture:
@@ -39,10 +42,50 @@ class MetodoPagoFixture:
 
 class ArticuloVendidoFixture:
     def __init__(self):
-        self.vendido_sin_registro = G(ArticuloVendido)
-        self.vendido_con_registro = G(ArticuloVendido)
-        self.vendido_con_sin_registro = G(ArticuloVendido)
+        self.vendido_con_registro = G(
+            ArticuloVendido
+            )
+        print(self.vendido_con_registro.pk)
+
+    def get_articulos_vendidos(self):
+        return [
+            self.vendido_con_registro,
+        ]
 
 class TransaccionFixture:
+    '''
+    cliente
+    usuario
+    articulos_vendidos
+    metodo_de_pago
+    fecha
+    total
+    '''
     def __init__(self):
-        self.tansaccion = G(Transaccion)
+        self.efectivo_con_ticket_consumidor_final = G(
+            Transaccion,
+            cliente=ClienteFixture().consumidor_final,
+            usuario=DefaultModels().user.admin,
+            articulos_vendidos=ArticuloVendidoFixture().get_articulos_vendidos(),
+            )
+
+        self.efectivo_con_ticket_cliente_responsable_inscripto = G(
+            Transaccion,
+            cliente=ClienteFixture().responsable_inscripto,
+            usuario=DefaultModels().user.admin,
+            articulos_vendidos=ArticuloVendidoFixture().get_articulos_vendidos(),
+            )
+
+        self.efectivo_con_ticket_cliente_exento = G(
+            Transaccion,
+            cliente=ClienteFixture().exento,
+            usuario=DefaultModels().user.admin,
+            articulos_vendidos=ArticuloVendidoFixture().get_articulos_vendidos(),
+            )
+
+    def get_transacciones(self):
+        return [
+            self.efectivo_con_ticket_consumidor_final,
+            self.efectivo_con_ticket_cliente_responsable_inscripto,
+            self.efectivo_con_ticket_cliente_exento,
+        ]

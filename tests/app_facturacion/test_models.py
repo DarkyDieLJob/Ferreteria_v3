@@ -11,9 +11,7 @@ def test_cliente_creation(facturacion):
 
 @pytest.mark.django_db
 def test_articulo_vendido_creation(facturacion):
-    assert isinstance(facturacion.articulo_vendido.vendido_sin_registro, ArticuloVendido)
     assert isinstance(facturacion.articulo_vendido.vendido_con_registro, ArticuloVendido)
-    assert isinstance(facturacion.articulo_vendido.vendido_con_sin_registro, ArticuloVendido)
 
 @pytest.mark.django_db
 def test_metodo_pago_creation(facturacion):
@@ -27,7 +25,8 @@ def test_metodo_pago_creation(facturacion):
 
 @pytest.mark.django_db
 def test_transaccion_creation(facturacion):
-    assert isinstance(facturacion.transaccion, Transaccion)
+    assert isinstance(facturacion.transaccion.efectivo_con_ticket_consumidor_final, Transaccion)
+    assert isinstance(facturacion.transaccion.efectivo_con_ticket_cliente_exento, Transaccion)
 
 @pytest.mark.django_db
 def test_cierre_z_creation(facturacion):
