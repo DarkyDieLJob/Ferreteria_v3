@@ -6,7 +6,6 @@ import json
 import os
 
 IP_BEW_SOCKET = os.environ.get('IP_BEW_SOCKET', 'default_value')
-print(IP_BEW_SOCKET)
 
 async def conectar_a_websocket(data):
 	uri = IP_BEW_SOCKET  # Cambia la IP y el puerto según tu servidor
