@@ -2,16 +2,38 @@
 import pytest
 from ddf import G
 from facturacion.models import Cliente, ArticuloVendido , MetodoPago, Transaccion, CierreZ, Transaccion
+from tests.app_bdd.factories import ItemFixture, CarritoFixture
 from tests.conftest import DefaultModels
-from tests.app_bdd.factories import ItemFixture
 from bdd.models import Item
+from faker import Faker
+
+fake = Faker()
+
 
 
 class ClienteFixture:
     def __init__(self):
-        self.exento = G(Cliente, responsabilidad_iva='E')
-        self.responsable_inscripto = G(Cliente, responsabilidad_iva='I')
-        self.consumidor_final = G(Cliente, responsabilidad_iva='C')
+        self.exento = G(
+            Cliente,
+            razon_social = fake.user_name(),
+            cuit_dni = fake.random_int(min=1000000000, max=9999999999),
+            responsabilidad_iva='E',
+            tipo_documento = 'CUIT',
+        )
+        self.responsable_inscripto = G(
+            Cliente,
+            razon_social = fake.user_name(),
+            cuit_dni = fake.random_int(min=1000000000, max=9999999999),
+            responsabilidad_iva='I',
+            tipo_documento = 'CUIT',
+        )
+        self.consumidor_final = G(
+            Cliente,
+            razon_social = fake.user_name(),
+            cuit_dni = fake.random_int(min=1000000000, max=9999999999),
+            responsabilidad_iva='C',
+            tipo_documento = 'DNI',
+        )
 
     def get_clientes(self):
         return [
@@ -41,7 +63,9 @@ class MetodoPagoFixture:
         ]
 
 class ArticuloVendidoFixture:
-    def __init__(self):
+    def __init__(self, carrito=None):
+        if carrito == None:
+            carrito = CarritoFixture()
         self.vendido_con_registro = G(
             ArticuloVendido,
             item=ItemFixture().item,
@@ -66,29 +90,35 @@ class TransaccionFixture:
     fecha
     total
     '''
-    def __init__(self):
+    def __init__(self, usuario=None, carrito=None):
+        if usuario == None:
+            usuario = DefaultModels().user.admin
+        
+        if carrito == None:
+            carrito = CarritoFixture().carrito_admin
+
         metodo_pago_fixture = MetodoPagoFixture()
         self.efectivo_con_ticket_consumidor_final = G(
             Transaccion,
             cliente=ClienteFixture().consumidor_final,
-            usuario=DefaultModels().user.admin,
-            articulos_vendidos=ArticuloVendidoFixture().get_articulos_vendidos(),
+            usuario=usuario,
+            articulos_vendidos=ArticuloVendidoFixture(carrito).get_articulos_vendidos(),
             metodo_de_pago=metodo_pago_fixture.efectivo_con_ticket,
             )
 
         self.efectivo_con_ticket_cliente_responsable_inscripto = G(
             Transaccion,
             cliente=ClienteFixture().responsable_inscripto,
-            usuario=DefaultModels().user.admin,
-            articulos_vendidos=ArticuloVendidoFixture().get_articulos_vendidos(),
+            usuario=usuario,
+            articulos_vendidos=ArticuloVendidoFixture(carrito).get_articulos_vendidos(),
             metodo_de_pago=metodo_pago_fixture.efectivo_con_ticket,
             )
 
         self.efectivo_con_ticket_cliente_exento = G(
             Transaccion,
             cliente=ClienteFixture().exento,
-            usuario=DefaultModels().user.admin,
-            articulos_vendidos=ArticuloVendidoFixture().get_articulos_vendidos(),
+            usuario=usuario,
+            articulos_vendidos=ArticuloVendidoFixture(carrito).get_articulos_vendidos(),
             metodo_de_pago=metodo_pago_fixture.efectivo_con_ticket,
             )
 

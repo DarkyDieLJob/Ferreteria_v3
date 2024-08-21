@@ -5,21 +5,27 @@ from facturacion.views import obtener_cliente
 import json
 from django.test import TestCase
 from .conftest import AppFacturacion
+from .factories import TransaccionFixture, ClienteFixture
 from tests.app_bdd.conftest import AppBdd
 from tests.app_bdd.factories import CarritoFixture
 from tests.conftest import DefaultModels
-from django.contrib.auth.models import User
+from tests.factories import UserFixture
+
+from bdd.models import Articulo, ArticuloSinRegistro
 
 
 class FacturacionTestCase(TestCase):
     def setUp(self):
         # Limpiar la base de datos
-        self.app_Facturacion = AppFacturacion()
-        self.app_bdd = AppBdd()
-        self.carrito_admin = CarritoFixture().carrito_admin
         self.default_models = DefaultModels()
-        self.user_admin = self.default_models.user.admin
-        self.assertTrue(User.objects.filter(id=self.user_admin.id).exists())
+        self.app_Facturacion = AppFacturacion(usuario=self.default_models.user.admin,)
+        self.app_bdd = AppBdd()
+
+        self.usuario = self.app_Facturacion.transaccion.efectivo_con_ticket_cliente_exento.usuario
+
+        self.carrito_admin = CarritoFixture(usuario=self.default_models.user.admin).carrito_admin
+        self.user_admin = self.app_Facturacion.transaccion.efectivo_con_ticket_cliente_exento.usuario
+
         self.client.force_login(self.user_admin)
 
     def test_obtener_todos_los_clientes(self):
@@ -47,29 +53,34 @@ class FacturacionTestCase(TestCase):
         response_get = self.client.get("/procesar_transaccion/")
         self.assertEqual(response_get.status_code, 200)
 
-        for transaccion in AppFacturacion().transaccion.get_transacciones():
-            articulos_vendidos = list()
-            for articulo_vendido in transaccion.articulos_vendidos.all():
-                articulos_vendidos.append(articulo_vendido.get_item())
 
-            data = {
-                'usuario': transaccion.usuario.username,
-                'carrito_id': self.carrito_admin.id,
-                'cliente_id': transaccion.cliente.pk,
-                'total': 100.0,
-                'total_efectivo': 90.0,
-                'articulos_vendidos': articulos_vendidos,  # Lista vacía
-                'metodo_de_pago': transaccion.metodo_de_pago.id
-            }
+        articulos = Articulo.objects.filter(carrito=self.carrito_admin)
+        articulos_sin_registro = ArticuloSinRegistro.objects.filter(carrito=self.carrito_admin)
+        articulos_juntos = list(articulos)+list(articulos_sin_registro)
 
-            response_post = self.client.post(
-                "/procesar_transaccion/",
-                data=data,
-                content_type='application/json',
-            )
+        clientes = ClienteFixture().get_clientes()
+        transacciones = TransaccionFixture().get_transacciones()
+        for cliente in clientes:
+            for transaccion in transacciones:
 
-            print("Response_post: ", response_post)
-            self.assertEqual(response_post.status_code, 200)
+                data = {
+                    'usuario': self.carrito_admin.usuario.username,
+                    'carrito_id': self.carrito_admin.id,
+                    'cliente_id': cliente.pk,
+                    'total': 100.0,
+                    'total_efectivo': 90.0,
+                    'articulos_vendidos': articulos_juntos,  # Lista vacía
+                    'metodo_de_pago': transaccion.metodo_de_pago.id
+                }
+
+                response_post = self.client.post(
+                    "/procesar_transaccion/",
+                    data=data,
+                    content_type='application/json',
+                )
+
+                print("Response_post: ", response_post)
+                self.assertEqual(response_post.status_code, 200)
 
 
 

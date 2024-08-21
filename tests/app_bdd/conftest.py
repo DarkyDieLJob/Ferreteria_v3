@@ -9,7 +9,7 @@ from bdd.models import Listado_Planillas, Carrito, Articulo, ArticuloSinRegistro
 from .factories import CarritoFixture, ArticuloFixture, ArticuloSinRegistroFixture
 
 class AppBdd:
-    def __init__(self):
+    def __init__(self, usuario=None):
         self.lista_proveedores = G(ListaProveedores)
         self.proveedores = G(Proveedor)
         self.sub_carpeta = G(Sub_Carpeta)
@@ -36,9 +36,11 @@ class AppBdd:
         self.registros = G(Registros)
         self.compras = G(Compras)
         self.listado_planillas = G(Listado_Planillas)
-        self.carrito = CarritoFixture()
-        self.articulo = ArticuloFixture()
-        self.articulo_sin_registro = ArticuloSinRegistroFixture()
+        self.carrito = CarritoFixture(usuario)
+        self.articulo = ArticuloFixture(self.carrito.carrito_admin)
+        self.articulo_sin_registro = ArticuloSinRegistroFixture(self.carrito.carrito_admin)
+
+        #aca planteamos si el carrito es de admin o comun y en el fixture que sea directamente reflejo del modelo.
 
 @pytest.fixture
 def bdd():

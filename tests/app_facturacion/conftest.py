@@ -4,11 +4,11 @@ from .factories import ClienteFixture, ArticuloVendidoFixture, MetodoPagoFixture
 
 
 class AppFacturacion:
-    def __init__(self):
+    def __init__(self, usuario=None, carrito=None):
         self.cliente = ClienteFixture()
-        self.articulo_vendido = ArticuloVendidoFixture()
+        self.articulo_vendido = ArticuloVendidoFixture(carrito)
         self.metodo_pago = MetodoPagoFixture()
-        self.transaccion = TransaccionFixture()
+        self.transaccion = TransaccionFixture(usuario, carrito)
         self.cierre_z = G(CierreZ)
 
 @pytest.fixture

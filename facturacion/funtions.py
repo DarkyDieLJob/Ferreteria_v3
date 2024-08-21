@@ -96,7 +96,8 @@ def registrar_articulos_vendidos(request_dict):
         metodo_de_pago=metodo_de_pago,  # Aquí asignamos la instancia de MetodoPago, no el ID.
         total=monto_abonado,
     )
-    
+    print("Listado de articulos buscados segun carrito: ")
+    print(list(articulos)+list(articulos_sin_registro))
     for articulo in list(articulos) + list(articulos_sin_registro):
         # Crea una instancia de ArticuloVendido con los detalles proporcionados
         if isinstance(articulo, Articulo):

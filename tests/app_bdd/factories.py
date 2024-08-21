@@ -27,10 +27,12 @@ class ItemFixture:
         ]
 
 class CarritoFixture:
-    def __init__(self):
+    def __init__(self, usuario=None):
+        if usuario == None:
+            usuario = UserFixture().admin
         self.carrito_admin = G(
             Carrito,
-            usuario=UserFixture().admin,
+            usuario=usuario,
         )
 
     def get_usuario(self):
@@ -39,12 +41,13 @@ class CarritoFixture:
         ]
 
 class ArticuloFixture:
-    def __init__(self):
-        carrito_admin = CarritoFixture().carrito_admin
+    def __init__(self, carrito=None):
+        if carrito == None:
+            carrito = CarritoFixture().carrito_admin
         self.articulo_asci_carrito_admin = G(
             Articulo,
             item=ItemFixture().item,
-            carrito = carrito_admin,
+            carrito = carrito,
             precio = 100.0,
             precio_efectivo = 90.0,
             )
@@ -52,7 +55,7 @@ class ArticuloFixture:
         self.articulo_no_asci_carrito_admin = G(
             Articulo,
             item=ItemFixture().item_descripcion_no_asci,
-            carrito = carrito_admin,
+            carrito = carrito,
             precio = 100.0,
             precio_efectivo = 90.0,
         )
@@ -64,19 +67,20 @@ class ArticuloFixture:
         ]
     
 class ArticuloSinRegistroFixture:
-    def __init__(self):
-        carrito_admin = CarritoFixture().carrito_admin
+    def __init__(self, carrito=None):
+        if carrito == None:
+            carrito = CarritoFixture().carrito_admin
         self.articulo_sr_asci_carrito_admin = G(
             ArticuloSinRegistro,
             descripcion=ItemFixture().item.descripcion,
-            carrito = carrito_admin,
+            carrito = carrito,
             precio = 100.0,    
         )
 
         self.articulo_sr_no_asci_carrito_admin = G(
             ArticuloSinRegistro,
             descripcion=ItemFixture().item_descripcion_no_asci.descripcion,
-            carrito = carrito_admin,
+            carrito = carrito,
             precio = 100.0,           
         )
 
