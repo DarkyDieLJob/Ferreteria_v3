@@ -17,6 +17,7 @@ migrations/
 db.sqlite3
 settings.py
 core_config/settings.py
+core_config/settings_tests.py
 3D.csv
 Amaya.csv
 Bauen.csv
