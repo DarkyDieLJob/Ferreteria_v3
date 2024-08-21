@@ -113,12 +113,14 @@ def test_listado_planillas_creation(bdd):
 
 @pytest.mark.django_db
 def test_carrito_creation(bdd):
-    assert isinstance(bdd.carrito, Carrito)
+    assert isinstance(bdd.carrito.carrito_admin , Carrito)
 
 @pytest.mark.django_db
 def test_articulo_creation(bdd):
-    assert isinstance(bdd.articulo, Articulo)
+    assert isinstance(bdd.articulo.articulo_asci_carrito_admin, Articulo)
+    assert isinstance(bdd.articulo.articulo_no_asci_carrito_admin, Articulo)
 
 @pytest.mark.django_db
 def test_articulo_sin_registro_creation(bdd):
-    assert isinstance(bdd.articulo_sin_registro, ArticuloSinRegistro)
+    assert isinstance(bdd.articulo_sin_registro.articulo_sr_asci_carrito_admin, ArticuloSinRegistro)
+    assert isinstance(bdd.articulo_sin_registro.articulo_sr_no_asci_carrito_admin, ArticuloSinRegistro)

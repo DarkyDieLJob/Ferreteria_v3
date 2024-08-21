@@ -67,11 +67,13 @@ class TransaccionFixture:
     total
     '''
     def __init__(self):
+        metodo_pago_fixture = MetodoPagoFixture()
         self.efectivo_con_ticket_consumidor_final = G(
             Transaccion,
             cliente=ClienteFixture().consumidor_final,
             usuario=DefaultModels().user.admin,
             articulos_vendidos=ArticuloVendidoFixture().get_articulos_vendidos(),
+            metodo_de_pago=metodo_pago_fixture.efectivo_con_ticket,
             )
 
         self.efectivo_con_ticket_cliente_responsable_inscripto = G(
@@ -79,6 +81,7 @@ class TransaccionFixture:
             cliente=ClienteFixture().responsable_inscripto,
             usuario=DefaultModels().user.admin,
             articulos_vendidos=ArticuloVendidoFixture().get_articulos_vendidos(),
+            metodo_de_pago=metodo_pago_fixture.efectivo_con_ticket,
             )
 
         self.efectivo_con_ticket_cliente_exento = G(
@@ -86,6 +89,7 @@ class TransaccionFixture:
             cliente=ClienteFixture().exento,
             usuario=DefaultModels().user.admin,
             articulos_vendidos=ArticuloVendidoFixture().get_articulos_vendidos(),
+            metodo_de_pago=metodo_pago_fixture.efectivo_con_ticket,
             )
 
     def get_transacciones(self):

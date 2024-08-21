@@ -6,6 +6,7 @@ from bdd.models import Contenedor, Modelo_Campos, Formulario_Campos, Formulario_
 from bdd.models import Formulario_Campos_Empieza_Con, Armador, Tipo_Registro, Registros, Compras
 from bdd.models import Listado_Planillas, Carrito, Articulo, ArticuloSinRegistro
 
+from .factories import CarritoFixture, ArticuloFixture, ArticuloSinRegistroFixture
 
 class AppBdd:
     def __init__(self):
@@ -35,9 +36,9 @@ class AppBdd:
         self.registros = G(Registros)
         self.compras = G(Compras)
         self.listado_planillas = G(Listado_Planillas)
-        self.carrito = G(Carrito)
-        self.articulo = G(Articulo)
-        self.articulo_sin_registro = G(ArticuloSinRegistro)
+        self.carrito = CarritoFixture()
+        self.articulo = ArticuloFixture()
+        self.articulo_sin_registro = ArticuloSinRegistroFixture()
 
 @pytest.fixture
 def bdd():

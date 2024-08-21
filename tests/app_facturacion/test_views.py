@@ -5,13 +5,18 @@ from facturacion.views import obtener_cliente
 import json
 from django.test import TestCase
 from .conftest import AppFacturacion
+from tests.app_bdd.conftest import AppBdd
+from tests.app_bdd.factories import CarritoFixture
 from tests.conftest import DefaultModels
 from django.contrib.auth.models import User
+
 
 class FacturacionTestCase(TestCase):
     def setUp(self):
         # Limpiar la base de datos
         self.app_Facturacion = AppFacturacion()
+        self.app_bdd = AppBdd()
+        self.carrito_admin = CarritoFixture().carrito_admin
         self.default_models = DefaultModels()
         self.user_admin = self.default_models.user.admin
         self.assertTrue(User.objects.filter(id=self.user_admin.id).exists())
@@ -49,12 +54,12 @@ class FacturacionTestCase(TestCase):
 
             data = {
                 'usuario': transaccion.usuario.username,
-                'carrito_id': self.default_models.carrito.id,
+                'carrito_id': self.carrito_admin.id,
                 'cliente_id': transaccion.cliente.pk,
                 'total': 100.0,
                 'total_efectivo': 90.0,
                 'articulos_vendidos': articulos_vendidos,  # Lista vacía
-                'metodo_de_pago': 1
+                'metodo_de_pago': transaccion.metodo_de_pago.id
             }
 
             response_post = self.client.post(

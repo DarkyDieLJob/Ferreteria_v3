@@ -69,6 +69,8 @@ def registrar_articulos_vendidos(request_dict):
         usuario = User.objects.get(username=request_dict['nombre_usuario'])
     except User.DoesNotExist:
         return HttpResponse(status=500)
+    
+    print("username: ",usuario.username)
         
     metodo_de_pago = MetodoPago.objects.get(id=request_dict['id_metodo_de_pago'])
     
