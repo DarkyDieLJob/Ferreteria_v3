@@ -39,7 +39,6 @@ def mapear_datos(data):
         "id_cliente": data["cliente_id"],
         "total": data["total"],
         "total_efectivo": data["total_efectivo"],
-        "articulos_vendidos": data["articulos_vendidos"],
         "id_metodo_de_pago": data["metodo_de_pago"],
     }
 
@@ -51,7 +50,6 @@ def request_on_procesar_transaccion_to_dict(request):
         "cliente_id": int,
         "total": float,
         "total_efectivo": float,
-        "articulos_vendidos": list,
         "metodo_de_pago": int,
     })
 
@@ -83,7 +81,7 @@ def registrar_articulos_vendidos(request_dict):
     else:
         monto_abonado = request_dict['total']
     print("Monto abonado: ", monto_abonado)
-    
+    print("carrito_id: ", request_dict['carrito_id'])
     carrito = Carrito.objects.get(id=request_dict['carrito_id'])
     
     # Obtén los Articulo y ArticuloSinRegistro del carrito

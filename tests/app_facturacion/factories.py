@@ -80,6 +80,12 @@ class ArticuloVendidoFixture:
             self.vendido_con_registro,
             self.vendido_con_registro_no_asci,
         ]
+    
+    def get_articulos_vendidos_data(self):
+        return [
+            self.vendido_con_registro.get_item(),
+            self.vendido_con_registro_no_asci.get_item(),
+        ]
 
 class TransaccionFixture:
     '''

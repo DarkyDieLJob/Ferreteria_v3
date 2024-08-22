@@ -7,11 +7,10 @@ from django.test import TestCase
 from .conftest import AppFacturacion
 from .factories import TransaccionFixture, ClienteFixture
 from tests.app_bdd.conftest import AppBdd
-from tests.app_bdd.factories import CarritoFixture
+from tests.app_bdd.factories import CarritoFixture, ArticuloFixture, ArticuloSinRegistroFixture
 from tests.conftest import DefaultModels
 from tests.factories import UserFixture
 
-from bdd.models import Articulo, ArticuloSinRegistro
 
 
 class FacturacionTestCase(TestCase):
@@ -19,11 +18,11 @@ class FacturacionTestCase(TestCase):
         # Limpiar la base de datos
         self.default_models = DefaultModels()
         self.app_Facturacion = AppFacturacion(usuario=self.default_models.user.admin,)
-        self.app_bdd = AppBdd()
+        self.app_bdd = AppBdd(usuario=self.default_models.user.admin)
 
         self.usuario = self.app_Facturacion.transaccion.efectivo_con_ticket_cliente_exento.usuario
 
-        self.carrito_admin = CarritoFixture(usuario=self.default_models.user.admin).carrito_admin
+        self.carrito_admin = self.app_bdd.carrito.carrito_admin
         self.user_admin = self.app_Facturacion.transaccion.efectivo_con_ticket_cliente_exento.usuario
 
         self.client.force_login(self.user_admin)
@@ -53,11 +52,6 @@ class FacturacionTestCase(TestCase):
         response_get = self.client.get("/procesar_transaccion/")
         self.assertEqual(response_get.status_code, 200)
 
-
-        articulos = Articulo.objects.filter(carrito=self.carrito_admin)
-        articulos_sin_registro = ArticuloSinRegistro.objects.filter(carrito=self.carrito_admin)
-        articulos_juntos = list(articulos)+list(articulos_sin_registro)
-
         clientes = ClienteFixture().get_clientes()
         transacciones = TransaccionFixture().get_transacciones()
         for cliente in clientes:
@@ -66,10 +60,9 @@ class FacturacionTestCase(TestCase):
                 data = {
                     'usuario': self.carrito_admin.usuario.username,
                     'carrito_id': self.carrito_admin.id,
-                    'cliente_id': cliente.pk,
+                    'cliente_id': cliente.id,
                     'total': 100.0,
-                    'total_efectivo': 90.0,
-                    'articulos_vendidos': articulos_juntos,  # Lista vacía
+                    'total_efectivo': 90.0, # Lista vacía
                     'metodo_de_pago': transaccion.metodo_de_pago.id
                 }
 
@@ -81,6 +74,9 @@ class FacturacionTestCase(TestCase):
 
                 print("Response_post: ", response_post)
                 self.assertEqual(response_post.status_code, 200)
+                articulo = ArticuloFixture(carrito=self.carrito_admin)
+                articulo_sin_registro = ArticuloSinRegistroFixture(carrito=self.carrito_admin)
+
 
 
 
