@@ -20,9 +20,11 @@ async def conectar_a_websocket(data):
 			respuesta = await websocket.recv()
 			while True:
 				if respuesta:
+					print("Respuesta recibida desde websocket: ")
 					print(respuesta)
 					return respuesta
 		except websockets.ConnectionClosedError as e:
 			print(e)
+			print(respuesta)
 			return e
 				
