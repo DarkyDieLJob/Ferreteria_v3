@@ -143,7 +143,7 @@ class TicketItem():
 
 class TicketFactura():
     cantidad = 1
-    PRINTNAME = "IMPRESORA_RED"
+    PRINTNAME = "IMPRESORA_FISCAL"
 
     def __init__(self, transaccion):
         self.transaccion = transaccion
