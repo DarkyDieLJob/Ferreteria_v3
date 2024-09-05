@@ -143,7 +143,7 @@ class TicketItem():
 
 class TicketFactura():
     cantidad = 1
-    PRINTNAME = "IMPRESORA_FISCAL"
+    PRINTNAME = "IMPRESORA_RED"
 
     def __init__(self, transaccion):
         self.transaccion = transaccion
@@ -180,7 +180,7 @@ class TicketFactura():
             ticket_json["printTicket"].update(self.cabecera.get_cabezera_json())
             ticket_json["printTicket"].update(self.get_items_json(self.formas_pago.get_efectivo(), self.cabecera.get_boleta_a()))
             ticket_json["printTicket"].update(self.formas_pago.get_formas_pago_json(self.cantidad))
-            ticket_json.update({"printerName": "IMPRESORA_FISCAL"})
+            ticket_json.update({"printerName": self.PRINTNAME})
             json.append(ticket_json)
         print("Desde ticket:")    
         print(json)

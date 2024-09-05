@@ -320,99 +320,102 @@ class MiVista(TemplateView):
 
 
         try:
-            with open('./mp_access_token.txt', 'r') as f:
-                sdk = mercadopago.SDK(f.read().strip())
-            # Establece el rango de tiempo para los últimos 30 minutos
-            end_date = datetime.now()
-            begin_date = end_date - timedelta(minutes=30)
+            if settings.INTERNET:
+                with open('./mp_access_token.txt', 'r') as f:
+                    sdk = mercadopago.SDK(f.read().strip())
+                # Establece el rango de tiempo para los últimos 30 minutos
+                end_date = datetime.now()
+                begin_date = end_date - timedelta(minutes=30)
 
-            filters = {
-                "range": "date_created",
-                "begin_date": begin_date.strftime('%Y-%m-%dT%H:%M:%SZ'),
-                "end_date": end_date.strftime('%Y-%m-%dT%H:%M:%SZ')
-            }
+                filters = {
+                    "range": "date_created",
+                    "begin_date": begin_date.strftime('%Y-%m-%dT%H:%M:%SZ'),
+                    "end_date": end_date.strftime('%Y-%m-%dT%H:%M:%SZ')
+                }
 
-            result = sdk.payment().search(filters=filters)
+                result = sdk.payment().search(filters=filters)
 
-            if "results" in result["response"]:
-                payments = result["response"]["results"]
-                payment_data = []
-                for py in payments:
-                    for charge in py['charges_details']:
-                        date_string = charge['date_created']
-                    try:
-                        identificador = py["payer_id"]
-                    except:
-                        pass
-                    try:
-                        identificador = py["payer"]["id"]
-                    except:
-                        pass
-                    date = datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S.%f%z")
-                    hour = date.strftime("%H:%M:%S")
-                    total_paid_amount = py['transaction_details']['total_paid_amount']
-                    status = py['status']
-                    payment_data.append({
-                        'hora': hour,
-                        'total_pagado': total_paid_amount,
-                        'estado': status,
-                        'id': identificador,
-                    })
-                payment_data.reverse()
-            else:
-                print("Error al buscar pagos:", result["response"])
-
-            context['payments'] = payment_data
-
-            # Establece el rango de tiempo para el último día
-            end_date = datetime.now()
-            begin_date = end_date - timedelta(days=1)
-
-            filters = {
-                "range": "date_created",
-                "begin_date": begin_date.strftime('%Y-%m-%dT%H:%M:%SZ'),
-                "end_date": end_date.strftime('%Y-%m-%dT%H:%M:%SZ')
-            }
-
-            result = sdk.payment().search(filters=filters)
-
-            if "results" in result["response"]:
-                payments = result["response"]["results"]
-                payment_data = []
-                date_string = end_date.strftime('%Y-%m-%dT%H:%M:%SZ')
-                for py in payments:
-                    for charge in py['charges_details']:
-                        date_string = charge['date_created']
-                    try:
-                        identificador = py["payer_id"]
-                    except:
-                        pass
-                    try:
-                        identificador = py["payer"]["id"]
-                    except:
-                        pass
-                    try:
-                        date = datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S.%f%z")
-                    except ValueError:
+                if "results" in result["response"]:
+                    payments = result["response"]["results"]
+                    payment_data = []
+                    for py in payments:
+                        for charge in py['charges_details']:
+                            date_string = charge['date_created']
                         try:
-                            date = datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%SZ")
-                        except ValueError:
-                            print("Formato de fecha desconocido: ", date_string)
-                    hour = date.strftime("%H:%M:%S")
-                    total_paid_amount = py['transaction_details']['total_paid_amount']
-                    status = py['status']
-                    payment_data.append({
-                        'hora': hour,
-                        'total_pagado': total_paid_amount,
-                        'estado': status,
-                        'id': identificador,
-                    })
-                payment_data.reverse()
-            else:
-                print("Error al buscar pagos:", result["response"])
+                            identificador = py["payer_id"]
+                        except:
+                            pass
+                        try:
+                            identificador = py["payer"]["id"]
+                        except:
+                            pass
+                        date = datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S.%f%z")
+                        hour = date.strftime("%H:%M:%S")
+                        total_paid_amount = py['transaction_details']['total_paid_amount']
+                        status = py['status']
+                        payment_data.append({
+                            'hora': hour,
+                            'total_pagado': total_paid_amount,
+                            'estado': status,
+                            'id': identificador,
+                        })
+                    payment_data.reverse()
+                else:
+                    print("Error al buscar pagos:", result["response"])
 
-            context['tabla_mp'] = payment_data
-            context['today'] = datetime.now().strftime('%Y-%m-%d')
+                context['payments'] = payment_data
+
+                # Establece el rango de tiempo para el último día
+                end_date = datetime.now()
+                begin_date = end_date - timedelta(days=1)
+
+                filters = {
+                    "range": "date_created",
+                    "begin_date": begin_date.strftime('%Y-%m-%dT%H:%M:%SZ'),
+                    "end_date": end_date.strftime('%Y-%m-%dT%H:%M:%SZ')
+                }
+
+                result = sdk.payment().search(filters=filters)
+
+                if "results" in result["response"]:
+                    payments = result["response"]["results"]
+                    payment_data = []
+                    date_string = end_date.strftime('%Y-%m-%dT%H:%M:%SZ')
+                    for py in payments:
+                        for charge in py['charges_details']:
+                            date_string = charge['date_created']
+                        try:
+                            identificador = py["payer_id"]
+                        except:
+                            pass
+                        try:
+                            identificador = py["payer"]["id"]
+                        except:
+                            pass
+                        try:
+                            date = datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S.%f%z")
+                        except ValueError:
+                            try:
+                                date = datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%SZ")
+                            except ValueError:
+                                print("Formato de fecha desconocido: ", date_string)
+                        hour = date.strftime("%H:%M:%S")
+                        total_paid_amount = py['transaction_details']['total_paid_amount']
+                        status = py['status']
+                        payment_data.append({
+                            'hora': hour,
+                            'total_pagado': total_paid_amount,
+                            'estado': status,
+                            'id': identificador,
+                        })
+                    payment_data.reverse()
+                else:
+                    print("Error al buscar pagos:", result["response"])
+
+                context['tabla_mp'] = payment_data
+                context['today'] = datetime.now().strftime('%Y-%m-%d')
+            else:
+                context['payments'] = []
         except Exception as e:
             print(e)
 
