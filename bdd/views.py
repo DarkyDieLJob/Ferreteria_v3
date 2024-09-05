@@ -416,6 +416,7 @@ class MiVista(TemplateView):
                 context['today'] = datetime.now().strftime('%Y-%m-%d')
             else:
                 context['payments'] = []
+                
         except Exception as e:
             print(e)
 
