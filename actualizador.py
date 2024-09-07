@@ -1,5 +1,5 @@
 import os
-os.environ['DJANGO_SETTINGS_MODULE'] = 'mysite.settings'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'core_config.settings'
 import django
 django.setup()
 
