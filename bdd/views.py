@@ -534,6 +534,7 @@ class Actualizar(MiVista):
     def get_context_data(self, **kwargs):
         self.context = super().get_context_data(**kwargs)
         self.context['lista_html'] = ['actualizar.html',]
+        self.context['payments'] = []
 
 
         patoba = Patoba(request=self.request)
