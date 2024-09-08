@@ -15,7 +15,7 @@ from django.apps import apps
 import os
 import io
 from googleapiclient.http import MediaIoBaseDownload
-#import pandas as pd
+import pandas as pd
 #from google.oauth2.credentials import Credentials
 #from allauth.socialaccount.models import SocialToken
 import mercadopago
@@ -23,7 +23,7 @@ from datetime import datetime, timedelta
 from .classes import Patoba
 #from googleapiclient.errors import HttpError
 from django.http import HttpResponse
-#from .correo import get_emails
+from .funtions import get_emails
 import ast
 from django.conf import settings as cosnt
 import requests
@@ -534,7 +534,6 @@ class Actualizar(MiVista):
     def get_context_data(self, **kwargs):
         self.context = super().get_context_data(**kwargs)
         self.context['lista_html'] = ['actualizar.html',]
-        self.context['payments'] = []
 
 
         patoba = Patoba(request=self.request)

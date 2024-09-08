@@ -11,8 +11,6 @@
         <title>{% block title %}  {% endblock%}</title>
         <link rel="stylesheet" type="text/css" href="{% static 'admin/css/widgets.css' %}">
         <link rel="shortcut icon" type="image/png" href="/media/imagenes/favicon.ico"/>
-        <!--<script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script> -->
-        <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> -->
         <script src="{% static 'jquery/jquery.js' %}"></script>
 
         <style>
@@ -58,10 +56,6 @@
     </head>
     <body data-usuario="{{ user.get_username }}">
         <script src="{% static 'cookies/js-cookies3.min.js' %}"></script>
-
-
-
-
         <script src="{% static 'bootstrap/js/bootstrap.bundle.js' %}"></script>
         <script src="{% static 'quagga/quagga.js' %}"></script>
         {% load socialaccount %}
@@ -132,50 +126,6 @@
         {% endif %}
 
     <script>
-        document.getElementById('scan-button').addEventListener('click', function() {
-            Quagga.init({
-                inputStream: {
-                    name: "Live",
-                    type: "LiveStream",
-                    target: document.querySelector('#scanner-container'),
-                    constraints: {
-                        width: 480,
-                        height: 320,
-                        facingMode: "environment"
-                    },
-                },
-                decoder: {
-                    readers: ["code_128_reader",
-                        "ean_reader",
-                        "ean_8_reader",
-                        "code_39_reader",
-                        "code_39_vin_reader",
-                        "codabar_reader",
-                        "upc_reader",
-                        "upc_e_reader",
-                        "i2of5_reader",
-                        "2of5_reader",
-                        "code_93_reader",
-                        ]
-                },
-            }, function(err) {
-                if (err) {
-                    console.log(err);
-                    return;
-                }
-                console.log("Initialization finished. Ready to start");
-                Quagga.start();
-            });
-
-            Quagga.onDetected(function(data) {
-                document.querySelector('[name="codigo_de_barras"]').value = data.codeResult.code;
-                document.querySelector('#resultado').innerHTML = data.codeResult.code;
-                Quagga.stop();
-            });
-        });
-        document.getElementById('scan-button').addEventListener('click', function() {
-            console.log('Botón clickeado');
-        });
 
         // Verifica si hay nuevos pagos cuando se carga la página
         window.addEventListener('load', function() {
