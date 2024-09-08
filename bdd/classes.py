@@ -8,7 +8,7 @@ import io
 from zipfile import ZipFile
 from .models import Item, Proveedor
 from django.db.models import Q
-#import pandas as pd
+import pandas as pd
 
 SCOPES = ["https://www.googleapis.com/auth/drive",
           "https://www.googleapis.com/auth/drive.file",
