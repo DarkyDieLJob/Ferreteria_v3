@@ -158,6 +158,10 @@ class MiVista(TemplateView):
         # Seteo basico desde el armador, futuro andamio
         
         context = super().get_context_data(**kwargs)
+
+        context['version'] = settings.VERSION
+
+
         context['barra_de_navegacion'] = NavBar.objects.all()
         self.ruta_actual = self.request.path
         context['ruta_actual'] = self.ruta_actual

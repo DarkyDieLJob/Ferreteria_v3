@@ -58,12 +58,14 @@
         <script src="{% static 'cookies/js-cookies3.min.js' %}"></script>
         <script src="{% static 'bootstrap/js/bootstrap.bundle.js' %}"></script>
         <script src="{% static 'quagga/quagga.js' %}"></script>
+
+        
         {% load socialaccount %}
 
         {% if ruta_actual != '/imprimir/tabla/' %}
         <nav class="navbar navbar-expand-lg bg-info">
           <div class="container-fluid">
-            <a class="navbar-brand" href="/">Ferreteria Paoli</a>
+            <a class="navbar-brand" href="/">Ferreteria Paoli V-{{version}}</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
               <span class="navbar-toggler-icon"></span>
             </button>
@@ -96,6 +98,7 @@
                 {% else %}
                   <a class="nav-link btn" href="{% url 'login'%}?next={{request.path}}">Ingresar</a>
                 {% endif %}
+                <a class="nav-link btn" href="">Registro de cambios {{version}}</a>
               </div>
             </div>
           </div>
