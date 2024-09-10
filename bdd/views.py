@@ -159,7 +159,9 @@ class MiVista(TemplateView):
         
         context = super().get_context_data(**kwargs)
 
-        context['version'] = settings.VERSION
+        with open('package.json', 'r') as f:
+            data = json.load(f)
+            context['version'] = data['version']
 
 
         context['barra_de_navegacion'] = NavBar.objects.all()
