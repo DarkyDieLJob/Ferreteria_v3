@@ -1,4 +1,18 @@
 {% load static %}
-<div>
-    {{ changelog|safe }}
-</div>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Changelog</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                {{ changelog|safe }}
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

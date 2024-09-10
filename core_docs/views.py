@@ -33,9 +33,10 @@ def serve_docs(request, path):
         # Si el archivo no se encuentra, puedes redirigir a 'index.html' como página predeterminada
         return serve(request, 'index.html', document_root=document_root)
 
-import markdown
+import markdown2
 
 def changeLog(request):
-    with open('CHANGELOG.md', 'r') as f:
-        changelog = markdown.markdown(f.read())
-    return render(request, 'change_log.html', {'changelog': changelog})
+    with open('CHANGELOG.md', 'r', encoding='utf-8') as f:
+        markdown_text = f.read()
+        html = markdown2.markdown(markdown_text)
+    return render(request, 'change_log.html', {'changelog': html})
