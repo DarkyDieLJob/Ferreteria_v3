@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.2.2](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.2.0...v3.2.2) (2024-09-10)
+
+
+### Bug Fixes
+
+* **Static Templates:** :art: Estilizado del template change_log ([0846166](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/08461665133702363099106222a2d92446d63d68))
+* **Static Templates:** :zap: No se capturaba el cambio de version ([2205130](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/2205130f68bea3e0b9377e4bdfe6ab874e57c6a9))
+
 ### [3.2.1](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.2.0...v3.2.1) (2024-09-10)
 
 
