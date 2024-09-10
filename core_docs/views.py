@@ -2,6 +2,8 @@
 from django.conf import settings
 from django.views.static import serve
 from django.http import Http404
+from django.shortcuts import render
+
 
 def serve_docs(request, path):
     """
@@ -30,3 +32,10 @@ def serve_docs(request, path):
     except Http404:
         # Si el archivo no se encuentra, puedes redirigir a 'index.html' como página predeterminada
         return serve(request, 'index.html', document_root=document_root)
+
+import markdown
+
+def changeLog(request):
+    with open('CHANGELOG.md', 'r') as f:
+        changelog = markdown.markdown(f.read())
+    return render(request, 'change_log.html', {'changelog': changelog})
