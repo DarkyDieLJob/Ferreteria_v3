@@ -35,6 +35,7 @@ def serve_docs(request, path):
 
 import markdown2
 import emojis
+import os
 
 def changeLog(request):
     dir_file = os.path.join(settings.BASE_DIR, 'CHANGELOG.md')
