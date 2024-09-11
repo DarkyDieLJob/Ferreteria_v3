@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.2.5](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.2.4...v3.2.5) (2024-09-11)
+
+
+### Bug Fixes
+
+* **Static Templates:** :bug: se cambia la ruta del chagelog.md ([f0cd7af](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/f0cd7af70f6b5bbae8c92550b315c30a2f7977d3))
+
 ### [3.2.4](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.2.3...v3.2.4) (2024-09-11)
 
 
