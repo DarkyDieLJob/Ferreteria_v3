@@ -37,7 +37,8 @@ import markdown2
 import emojis
 
 def changeLog(request):
-    with open('CHANGELOG.md', 'r', encoding='utf-8') as f:
+    dir_file = os.path.join(settings.BASE_DIR, 'CHANGELOG.md')
+    with open(dir_file, 'r', encoding='utf-8') as f:
         markdown_text = f.read()
         html = markdown2.markdown(markdown_text)
         change_log = emojis.encode(html)
