@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.2.4](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.2.3...v3.2.4) (2024-09-11)
+
+
+### Bug Fixes
+
+* **Static Templates:** :bug: Se  cambia la forma de tomar la ruta para el archivo package.json ([7520935](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/7520935cfbf07d7ab283a0be2c6733da05f56b4b))
+
 ### [3.2.3](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.2.2...v3.2.3) (2024-09-11)
 
 
