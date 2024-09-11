@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.2.6](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.2.5...v3.2.6) (2024-09-11)
+
+
+### Bug Fixes
+
+* **core_docs:** :bug: se agrego import os al view ([309a133](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/309a133af2e9dca0a58af5a322aed9148de171e1))
+
 ### [3.2.5](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.2.4...v3.2.5) (2024-09-11)
 
 
