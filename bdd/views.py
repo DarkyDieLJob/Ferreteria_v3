@@ -158,8 +158,8 @@ class MiVista(TemplateView):
         # Seteo basico desde el armador, futuro andamio
         
         context = super().get_context_data(**kwargs)
-
-        with open('package.json', 'r') as f:
+        dir_file = os.path.join(settings.BASE_DIR, 'package.json')
+        with open(dir_file, 'r') as f:
             data = json.load(f)
             context['version'] = data['version']
 
