@@ -34,9 +34,11 @@ def serve_docs(request, path):
         return serve(request, 'index.html', document_root=document_root)
 
 import markdown2
+import emojis
 
 def changeLog(request):
     with open('CHANGELOG.md', 'r', encoding='utf-8') as f:
         markdown_text = f.read()
         html = markdown2.markdown(markdown_text)
-    return render(request, 'change_log.html', {'changelog': html})
+        change_log = emojis.encode(html)
+    return render(request, 'change_log.html', {'changelog': change_log})
