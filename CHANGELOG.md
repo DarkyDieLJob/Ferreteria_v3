@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.2.7](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.2.6...v3.2.7) (2024-09-12)
+
+
+### Bug Fixes
+
+* **Static Templates:** :bug: Correccion: Se agrego procesado de totales en efectivo faltante. ([b4f362e](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/b4f362ea10b713f4971126758e05dfb69ce2133e))
+
 ### [3.2.6](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.2.5...v3.2.6) (2024-09-11)
 
 
