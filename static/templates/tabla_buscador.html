@@ -58,7 +58,7 @@
 
 <div id="ModalCarrito" class="modal">
     <div class="modal-content">
-        <span class="close">×</span>
+        <span class="close_carrito">×</span>
         <form id="miFormularioCarrito">
             {% csrf_token %}
             <input type="hidden" id="id_articulo" name="id_articulo">
@@ -229,11 +229,15 @@
             });
         });
     
-        // Cuando el usuario hace clic en el botón de cierre del modal, cierra el modal
-        var span = document.getElementsByClassName("close")[0];
-        span.onclick = function() {
-            document.getElementById('miModal').style.display = "none";  // Oculta el modal
-        }
+        
+        // Obtén el elemento con la clase 'close'
+        var close_carrito = document.querySelector('.close_carrito');
+
+        // Añade un controlador de eventos de clic
+        close_carrito.addEventListener('click', function() {
+            // Oculta el modal
+            document.getElementById('ModalCarrito').style.display = 'none';
+        });
     
         var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
         // Cuando el usuario envía el formulario, envía los datos al endpoint
