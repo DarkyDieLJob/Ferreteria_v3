@@ -9,6 +9,8 @@ from zipfile import ZipFile
 from .models import Item, Proveedor
 from django.db.models import Q
 import pandas as pd
+import os
+from django.conf import settings
 
 SCOPES = ["https://www.googleapis.com/auth/drive",
           "https://www.googleapis.com/auth/drive.file",
@@ -550,8 +552,9 @@ class Patoba():
         xlsx_data = response.content
 
         file_name = f'{spreadsheets["properties"]["title"]}.xlsx'
+
         try:
-            file_path = f'/home/darkydiel/pagina-pf-paoli/media/descargas/{file_name}'
+            file_path = os.path.join(settings.MEDIA_ROOT, 'descargas', file_name)
 
             if default_storage.exists(file_path):
                 default_storage.delete(file_path)
@@ -568,7 +571,7 @@ class Patoba():
 
         try:
             # Crea un objeto ExcelWriter para guardar en formato xlsx
-            file_path_xlsx = f'/home/darkydiel/mysite/media/descargas/{spreadsheets["properties"]["title"]}-{sp.fecha}.xlsx'
+            file_path_xlsx = os.path.join(settings.MEDIA_ROOT, 'descargas', f"{spreadsheets['properties']['title']}-{sp.fecha}.xlsx")
             if default_storage.exists(file_path_xlsx):
                 default_storage.delete(file_path_xlsx)
             xlsx_writer = pd.ExcelWriter(file_path_xlsx)
@@ -581,7 +584,7 @@ class Patoba():
 
         try:
             # Crea un objeto ExcelWriter para guardar en formato ods
-            file_path_ods = f'/home/darkydiel/pagina-pf-paoli/media/descargas/{spreadsheets["properties"]["title"]}-{sp.fecha}.ods'
+            file_path_ods = os.path.join(settings.MEDIA_ROOT, 'descargas', f"{spreadsheets['properties']['title']}-{sp.fecha}.ods")
             if default_storage.exists(file_path_ods):
                 default_storage.delete(file_path_ods)
             ods_writer = pd.ExcelWriter(file_path_ods, engine='odf')

@@ -30,6 +30,7 @@
             <input type="text" id="buscar_cliente" placeholder="Buscar cliente">
             <select id="metodo_de_pago" name="metodo_de_pago"></select>
             <input type="hidden" id="total" name="total" value="">
+            <input type="hidden" id="total_efectivo" name="total_efectivo" value="">
             <button id="enviar-transaccion"  type="submit" class="btn btn-primary">Cerrar Transacción</button>
             <button type="button" class="btn btn-secondary" id="nuevoCliente"> + Cliente</button>
             <!--
@@ -70,8 +71,8 @@
                 <input type="text" id="descripcion" name="descripcion" placeholder="Descripción" value="Generico" required>
             </div>
             <div class= "colum p-0 m-0">
-                <input type="number" id="cantidad" name="cantidad" placeholder="Cantidad" value="1" required>
-                <input type="number" id="precio" name="precio" placeholder="Precio" value="" required>
+                <input type="number" id="cantidad" name="cantidad" placeholder="Cantidad" step="0.01" value="1" required>
+                <input type="number" id="precio" name="precio" placeholder="Precio" step="0.01" value="" required>
                 <button type="submit" class="btn btn-primary">Agregar Artículo</button>
             </div>
         </form>
@@ -185,8 +186,8 @@
                     
                     
                     // Añadir el total al final
-                    tbody.append('<tr><td>Total</td><td></td><td>' + data[nombre].total + '</td></tr>');
-                    tbody.append('<tr><td>Total Efectivo</td><td></td><td>' + data[nombre].total_efectivo + '</td></tr>');
+                    tbody.append('<tr><td>Total</td><td></td><td>' + data[nombre].total + '</td></td><td></tr>');
+                    tbody.append('<tr><td>Total Efectivo</td><td></td><td>' + data[nombre].total_efectivo + '</td></td><td></tr>');
                     // Guardamos el nombre del carrito que estamos mostrando
                     $("#tablaCarrito").data("nombre", nombre);
                     // Guardamos el ID del carrito en el campo oculto
@@ -296,6 +297,10 @@
                     $("#cliente_id").val();
                     $("#total").val(data[nombre].total);
                     $("#total_efectivo").val(data[nombre].total_efectivo);
+
+                    console.log(data[nombre].total);
+                    console.log(data[nombre].total_efectivo);
+                    console.log($("#formTransaccion").serialize());
                     // Aquí enviamos los datos del formulario a tu servidor
                     $.ajax({
                         url: '/procesar_transaccion/',

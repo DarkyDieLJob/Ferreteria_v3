@@ -13,6 +13,13 @@ from bdd.models import  Item, Sub_Carpeta, Sub_Titulo, ListaProveedores
 import os
 import csv
 
+import unicodedata
+
+def limpiar_texto(texto):
+    """Limpia un texto convirtiendo caracteres no ASCII a su equivalente ASCII."""
+    texto = unicodedata.normalize('NFKD', texto)
+    texto = texto.encode('ASCII', 'ignore').decode('ASCII')
+    return texto
 
 def validar_digitos_str(cadena):
     # Validar que el input es una cadena
@@ -75,11 +82,10 @@ def crear_o_actualizar_registro(row):
     try:
         item, created = Item.objects.get_or_create(codigo=row['codigo'], defaults=row)
         item.marcar_actualizado()
-        item.save()
         if not created:
             for key, value in row.items():
                 setattr(item, key, value)
-                item.marcar_actualizado()
+        item.descripcion = limpiar_texto(row.pop('descripcion'))
         item.save()
     except Exception as e:
         print('Error al intentar guardar: ', row['codigo'], flush=True)
@@ -135,6 +141,7 @@ def crear_o_actualizar_registros_en_lotes(rows, tamaño_lote):
                     if item.final_efectivo <= 0:
                         item.final_efectivo = row['final']
                     item.marcar_actualizado()  # Cambiar el campo 'actualizado' a 1
+                    item.descripcion = limpiar_texto(row['descripcion'])
                     items_para_actualizar.append(item)
                 except Exception as e:
                     print('Error al intentar guardar: ', row['codigo'], flush=True)

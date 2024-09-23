@@ -5,8 +5,9 @@ import django
 django.setup()
 
 from bdd.models import  Item, Lista_Pedidos
-
-
+from facturacion.models import Cliente
+import re
+from django.db.models import F
 
 
 def principal():
@@ -149,6 +150,34 @@ def dibujo():
         time.sleep(0.5)
 
 
+    
+def probando():
+    
+    primero = True
+    segundo = False
+    tercero = True
+    
+    if (primero or segundo) and tercero:
+        print("si")
+
+def quitar_guiones_cuit():
+    clientes = Cliente.objects.all()
+    cliente_list = []
+
+    for cliente in clientes:
+        cliente.cuit_dni = cliente.cuit_dni.replace('-', '')
+        cliente_list.append(cliente)
+
+        if len(cliente_list) == 10000:
+            with transaction.atomic():
+                Cliente.objects.bulk_update(cliente_list, ['cuit_dni'])
+            cliente_list = []
+
+    # Procesar los registros restantes (si hay menos de 10000)
+    if cliente_list:
+        with transaction.atomic():
+            Cliente.objects.bulk_update(cliente_list, ['cuit_dni'])
 
 if __name__ == '__main__':
-    pass
+    #probando()
+    quitar_guiones_cuit()

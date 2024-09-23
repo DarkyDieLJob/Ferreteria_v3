@@ -12,8 +12,10 @@
     <tbody>
         {% for dato in datos %}
             <tr class="card-row" tabindex="0" data-id="{{ dato.id }}" data-codigo="{{ dato.codigo }}" data-descripcion="{{ dato.descripcion }}" data-final-rollo="{{ dato.final_rollo }}" data-final="{{ dato.final }}" data-final-efectivo="{{ dato.final_efectivo }}" data-final-rollo-efectivo="{{ dato.final_rollo_efectivo }}">
-                <td><h6>{{ dato.codigo }}</h6></td>
-                <td><h6>{{ dato.descripcion }}</h6></td>
+                <td class="{% if not dato.actualizado %}text-danger{% endif %}">  <h6>{{ dato.codigo }}</h6>
+                </td>
+                <td class="{% if not dato.actualizado %}text-danger{% endif %}">  <h6>{{ dato.descripcion }}</h6>
+                </td>
                 <td>
                     <button class="btn btn-success ver" id="ver-{{ dato.id }}" display="inline-block">Ver</button>
                     <button class="btn btn-success agregar" id="agregar-{{ dato.id }}" style="display: none;">Al carrito</button>
@@ -58,7 +60,7 @@
 
 <div id="ModalCarrito" class="modal">
     <div class="modal-content">
-        <span class="close">×</span>
+        <span class="close_carrito">×</span>
         <form id="miFormularioCarrito">
             {% csrf_token %}
             <input type="hidden" id="id_articulo" name="id_articulo">
@@ -72,7 +74,6 @@
     
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/js-cookie@3"></script>
 <script>
     let csrftoken = Cookies.get('csrftoken');
     window.addEventListener('load', () => {
@@ -230,11 +231,15 @@
             });
         });
     
-        // Cuando el usuario hace clic en el botón de cierre del modal, cierra el modal
-        var span = document.getElementsByClassName("close")[0];
-        span.onclick = function() {
-            document.getElementById('miModal').style.display = "none";  // Oculta el modal
-        }
+        
+        // Obtén el elemento con la clase 'close'
+        var close_carrito = document.querySelector('.close_carrito');
+
+        // Añade un controlador de eventos de clic
+        close_carrito.addEventListener('click', function() {
+            // Oculta el modal
+            document.getElementById('ModalCarrito').style.display = 'none';
+        });
     
         var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
         // Cuando el usuario envía el formulario, envía los datos al endpoint
