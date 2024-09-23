@@ -12,8 +12,10 @@
     <tbody>
         {% for dato in datos %}
             <tr class="card-row" tabindex="0" data-id="{{ dato.id }}" data-codigo="{{ dato.codigo }}" data-descripcion="{{ dato.descripcion }}" data-final-rollo="{{ dato.final_rollo }}" data-final="{{ dato.final }}" data-final-efectivo="{{ dato.final_efectivo }}" data-final-rollo-efectivo="{{ dato.final_rollo_efectivo }}">
-                <td><h6>{{ dato.codigo }}</h6></td>
-                <td><h6>{{ dato.descripcion }}</h6></td>
+                <td class="{% if not dato.actualizado %}text-danger{% endif %}">  <h6>{{ dato.codigo }}</h6>
+                </td>
+                <td class="{% if not dato.actualizado %}text-danger{% endif %}">  <h6>{{ dato.descripcion }}</h6>
+                </td>
                 <td>
                     <button class="btn btn-success ver" id="ver-{{ dato.id }}" display="inline-block">Ver</button>
                     <button class="btn btn-success agregar" id="agregar-{{ dato.id }}" style="display: none;">Al carrito</button>
