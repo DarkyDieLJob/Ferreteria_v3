@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.3.0](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.2.7...v3.3.0) (2024-10-05)
+
+
+### Features
+
+* **Celery:** :zap: Se agrego soporte para ejecutar tareas en segundo plano. ([c8c1528](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/c8c15281ec4790bd4dd9dbfe62897d49871d60d6))
+
+
+### Bug Fixes
+
+* **BDD:** :zap: Se quitan los guiones a los cuit ([3567247](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/3567247564f0c5d8399cbb97b274f524cd34140b))
+* **Static Templates:** :art: Marcado en rojo los articulos desactualizados ([2cd7121](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/2cd7121180a3cc6cc63add151d489d73f0228cce))
+* **Static Templates:** :bug: No cerraba el modal de agregar al carrito ([8591f51](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/8591f514808e09b56e1f8e7d09242455c481ba94))
+* **Static Templates:** :zap: Situando puntero en barras ([90bcd81](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/90bcd818be3efcd7938f6c08dc5650f8530e2b78))
+
 ### [3.2.7](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.2.6...v3.2.7) (2024-09-12)
 
 
