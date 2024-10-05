@@ -1,19 +1,13 @@
 import os
-
-os.environ['DJANGO_SETTINGS_MODULE'] = 'core_config.settings'
-import django
-django.setup()
-
 from bdd.classes import Patoba
 from django.conf import settings as const
-
-
 from x_cartel.models import Carteles, CartelesCajon
 from bdd.models import  Item, Sub_Carpeta, Sub_Titulo, ListaProveedores
 import os
 import csv
-
 import unicodedata
+
+os.environ['DJANGO_SETTINGS_MODULE'] = 'core_config.settings'
 
 def limpiar_texto(texto):
     """Limpia un texto convirtiendo caracteres no ASCII a su equivalente ASCII."""
