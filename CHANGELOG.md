@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.3.1](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.3.0...v3.3.1) (2024-10-05)
+
+
+### Bug Fixes
+
+* **Celery:** :bug: Se elimino un error por el cual se iniciaba la configuracion circularmente. ([941cdc2](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/941cdc235024836dd4d6bce6d95dbea50183dc74))
+
 ## [3.3.0](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.2.7...v3.3.0) (2024-10-05)
 
 
