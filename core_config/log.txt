@@ -1646,3 +1646,4 @@ AttributeError: module 'celery.app' has no attribute 'send_task'
 2024-10-03 09:56:13,593 - INFO - Refreshing credentials due to a 401 response. Attempt 1/2.
 2024-10-04 21:53:41,426 - INFO - /app/actualizador/actualizador_csv.py changed, reloading.
 2024-10-04 21:54:01,429 - INFO - /app/actualizador/actualizador_csv.py changed, reloading.
+2024-10-04 22:15:05,827 - INFO - /app/core_config/celery.py changed, reloading.
