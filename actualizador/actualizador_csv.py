@@ -191,7 +191,7 @@ def buscar_modificar_registros_lotes(csv_file, filtro):
         crear_o_actualizar_registros_en_lotes(rows, 10000)
     print('cargado: ', filtro, flush=True)
     
-def principal():
+def principal_csv():
     patoba = Patoba(None)
     
     proveedores = ListaProveedores.objects.filter(hay_csv_pendiente=True)
@@ -240,20 +240,21 @@ def principal():
         
     print("fin", flush=True)
 
-def apply_custom_round():
-    # Obtén todos los objetos del modelo Item
+def apply_custom_round(batch_size=10000):
     items = Item.objects.all()
+    total_items = items.count()
+    offset = 0
 
-    # Aplica la función de redondeo a los campos necesarios
-    for item in items:
-        item.final = custom_round(item.final)
-        item.final_efectivo = custom_round(item.final_efectivo)
-        item.final_rollo = custom_round(item.final_rollo)
-        item.final_rollo_efectivo = custom_round(item.final_rollo_efectivo)
+    while offset < total_items:
+        batch = items[offset:offset + batch_size]
+        for item in batch:
+            item.final = custom_round(item.final)
+            item.final_efectivo = custom_round(item.final_efectivo)
+            item.final_rollo = custom_round(item.final_rollo)
+            item.final_rollo_efectivo = custom_round(item.final_rollo_efectivo)
 
-    # Guarda los cambios en la base de datos usando bulk_update
-    Item.objects.bulk_update(items, ['final', 'final_efectivo', 'final_rollo', 'final_rollo_efectivo'])
-    
+        Item.objects.bulk_update(batch, ['final', 'final_efectivo', 'final_rollo', 'final_rollo_efectivo'])
+        offset += batch_size 
 def mostrara_boletas(bool):
     from boletas.models import Boleta
     
@@ -336,5 +337,5 @@ if __name__ == "__main__":
     #asociar_proveedores()
     
     
-    principal()
+    principal_csv()
     apply_custom_round()
