@@ -1,6 +1,7 @@
 /media/pendorchito.csv
 mp_access_token.txt
 token.json
+log.txt
 *.pyc
 __pycache__/
 Scraping/
