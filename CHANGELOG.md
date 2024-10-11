@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.4.0](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.3.1...v3.4.0) (2024-10-11)
+
+
+### Features
+
+* **Celery:** :fire: Se elimina el soporte a celery. Se inicia el soporte a hilos nativos. ([d07224c](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/d07224c1f13f4fbfb5b7cb023b4bd89061e3b6e5))
+
+
+### Bug Fixes
+
+* **Celery:** :bug: corregido error en ip de celery ([4056442](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/40564425490678d5954fe25fe42f2fd3fa815ada))
+* **Celery:** :bug: Eliminado linea problematica. ([1913085](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/1913085d6da8329aa9a255c1c27d3679cd8d3dc3))
+
 ### [3.3.1](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.3.0...v3.3.1) (2024-10-05)
 
 
