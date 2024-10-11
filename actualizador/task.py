@@ -14,7 +14,7 @@ def tirar_comando(self, comando="ls"):
 
 class HiloManager():
     def __init__(self):
-        self._hilos = {
+        self.hilos = {
             'hilo':threading.Thread(target=None),
         }
 
