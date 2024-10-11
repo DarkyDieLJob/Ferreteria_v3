@@ -30,15 +30,15 @@ class HiloManager():
         self.iniciar_hilo(nuevo)
 
 
-@shared_task
+#@shared_task
 def recoleccion():
     pass
 
-@shared_task
+#@shared_task
 def etiquetado():
     pass
 
-@shared_task
+#@shared_task
 def procesar():
     pass
 
