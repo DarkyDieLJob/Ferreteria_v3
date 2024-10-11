@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.4.1](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.4.0...v3.4.1) (2024-10-11)
+
+
+### Bug Fixes
+
+* **Celery:** :bug: No se lansaban las tareas ([67662de](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/67662deb509d75a56d7c2356a8d29b71c053366b))
+
 ## [3.4.0](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.3.1...v3.4.0) (2024-10-11)
 
 
