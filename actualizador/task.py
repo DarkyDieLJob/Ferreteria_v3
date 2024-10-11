@@ -1,5 +1,5 @@
-from celery import shared_task
 import subprocess
+import threading
 from core_config.log_config import logging
 from .actualizador_main import principal
 from .actualizador_csv import principal_csv, apply_custom_round
