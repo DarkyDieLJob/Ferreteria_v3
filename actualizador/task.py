@@ -68,7 +68,7 @@ def recolectar_procesar():
     '''
 
     hiloManager = HiloManager()
-    hiloManager.nuevo_hilo('principal', fake_principal)
+    hiloManager.nuevo_hilo('principal', principal)
     hiloManager.iniciar_hilo('principal')
 
     logging.info(hiloManager.hilos['principal'])
@@ -78,9 +78,9 @@ def recolectar_procesar():
 def actualizador():
     print("Se envio a actualizar via csv...")
     hiloManager = HiloManager()
-    hiloManager.nuevo_hilo('principal_csv', fake_principal_csv)
+    hiloManager.nuevo_hilo('principal_csv', principal_csv)
     hiloManager.iniciar_hilo('principal_csv')
-    hiloManager.agregar_proceso('principal_csv','apply_custom_round', fake_apply_custom_round)
+    hiloManager.agregar_proceso('principal_csv','apply_custom_round', apply_custom_round)
     logging.info(hiloManager.hilos['principal_csv'])
     logging.info(hiloManager.hilos['apply_custom_round'])
 

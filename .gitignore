@@ -1,7 +1,6 @@
 /media/pendorchito.csv
 mp_access_token.txt
 token.json
-log.txt
 *.pyc
 __pycache__/
 Scraping/
@@ -48,3 +47,5 @@ YAYI.csv
 3D.csv
 Hersol.csv
 
+actualizador/log.txt
+core_config/log.txt
