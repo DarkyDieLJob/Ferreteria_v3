@@ -1,0 +1,44 @@
+2024-10-11 15:07:21,450 - INFO - /app/actualizador/task.py changed, reloading.
+2024-10-11 15:07:53,637 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 15:07:53,643 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 15:07:53,647 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 15:07:53,883 - INFO - Refreshing credentials due to a 401 response. Attempt 1/2.
+2024-10-11 15:08:58,460 - INFO - <Thread(Thread-3 (actualizador), started daemon 139886025770752)>
+2024-10-11 15:08:58,461 - INFO - Iniciando fake-principal-csv
+2024-10-11 15:18:18,562 - INFO - Iniciando fake-applay-custom-round
+2024-10-11 15:18:18,562 - INFO - <Thread(Thread-5 (fake_principal_csv), stopped daemon 139885941884672)>
+2024-10-11 15:18:18,563 - INFO - <Thread(Thread-6 (fake_apply_custom_round), started daemon 139885941884672)>
+2024-10-11 16:00:53,076 - INFO - /app/actualizador/task.py changed, reloading.
+2024-10-11 16:01:18,694 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 16:01:18,702 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 16:01:18,710 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 16:01:18,944 - INFO - Refreshing credentials due to a 401 response. Attempt 1/2.
+2024-10-11 16:02:26,751 - INFO - <Thread(Thread-4 (actualizador), started daemon 140573262481152)>
+2024-10-11 16:02:26,752 - INFO - Iniciando fake-principal-csv
+2024-10-11 16:03:26,778 - INFO - Iniciando fake-applay-custom-round
+2024-10-11 16:03:26,778 - INFO - <Thread(Thread-6 (fake_principal_csv), stopped daemon 140573251995392)>
+2024-10-11 16:03:26,778 - INFO - <Thread(Thread-7 (fake_apply_custom_round), started daemon 140573251995392)>
+2024-10-11 16:08:13,389 - INFO - /app/actualizador/task.py changed, reloading.
+2024-10-11 16:08:27,720 - INFO - /app/actualizador/task.py changed, reloading.
+2024-10-11 16:09:05,758 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 16:09:05,764 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 16:09:05,769 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 16:09:06,021 - INFO - Refreshing credentials due to a 401 response. Attempt 1/2.
+2024-10-11 16:10:09,491 - INFO - <Thread(Thread-3 (actualizador), started daemon 140037473699584)>
+2024-10-11 16:10:09,493 - INFO - Iniciando fake-principal-csv
+2024-10-11 16:11:09,529 - INFO - Finalizando fake-principal-csv
+2024-10-11 16:11:09,530 - INFO - Iniciando fake-applay-custom-round
+2024-10-11 16:11:09,530 - INFO - <Thread(Thread-5 (fake_principal_csv), stopped daemon 140037463213824)>
+2024-10-11 16:11:09,531 - INFO - <Thread(Thread-6 (fake_apply_custom_round), started daemon 140037463213824)>
+2024-10-11 16:14:14,949 - INFO - /app/actualizador/task.py changed, reloading.
+2024-10-11 16:14:24,935 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 16:14:24,942 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 16:14:24,947 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 16:14:30,217 - INFO - Refreshing credentials due to a 401 response. Attempt 1/2.
+2024-10-11 16:15:35,628 - INFO - <Thread(Thread-3 (actualizador), started daemon 139675318617856)>
+2024-10-11 16:15:35,628 - INFO - Iniciando fake-principal-csv
+2024-10-11 16:16:35,639 - INFO - Finalizando fake-principal-csv
+2024-10-11 16:16:35,640 - INFO - Iniciando fake-applay-custom-round
+2024-10-11 16:16:35,640 - INFO - <Thread(Thread-5 (fake_principal_csv), stopped daemon 139675308132096)>
+2024-10-11 16:16:35,640 - INFO - <Thread(Thread-7 (fake_apply_custom_round), started daemon 139675308132096)>
+2024-10-11 16:17:35,681 - INFO - Finalizando fake-applay-custom-round

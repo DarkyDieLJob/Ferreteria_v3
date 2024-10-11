@@ -1647,3 +1647,121 @@ AttributeError: module 'celery.app' has no attribute 'send_task'
 2024-10-04 21:53:41,426 - INFO - /app/actualizador/actualizador_csv.py changed, reloading.
 2024-10-04 21:54:01,429 - INFO - /app/actualizador/actualizador_csv.py changed, reloading.
 2024-10-04 22:15:05,827 - INFO - /app/core_config/celery.py changed, reloading.
+2024-10-11 10:09:00,600 - WARNING - Not Found: /favicon.ico
+2024-10-11 10:09:11,744 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 10:09:11,753 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 10:09:11,759 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 10:09:15,717 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 10:09:15,724 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 10:09:15,730 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 10:13:24,599 - INFO - /app/actualizador/task.py changed, reloading.
+2024-10-11 10:13:36,255 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 10:13:36,259 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 10:13:36,263 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 10:13:39,822 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 10:13:39,827 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 10:13:39,832 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 10:13:39,959 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 10:13:39,976 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 10:13:39,996 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 10:13:40,735 - INFO - Refreshing credentials due to a 401 response. Attempt 1/2.
+2024-10-11 10:24:43,089 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 10:24:43,096 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 10:24:43,102 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 10:24:44,013 - INFO - Refreshing credentials due to a 401 response. Attempt 1/2.
+2024-10-11 10:52:55,802 - INFO - /app/actualizador/task.py changed, reloading.
+2024-10-11 12:33:47,709 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 12:33:47,719 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 12:33:47,725 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 12:33:47,990 - INFO - Refreshing credentials due to a 401 response. Attempt 1/2.
+2024-10-11 12:35:05,808 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 12:35:05,814 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 12:35:05,822 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 12:35:06,148 - INFO - Refreshing credentials due to a 401 response. Attempt 1/2.
+2024-10-11 12:37:46,186 - INFO - /app/actualizador/task.py changed, reloading.
+2024-10-11 12:38:04,148 - INFO - /app/actualizador/task.py changed, reloading.
+2024-10-11 12:47:35,487 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 12:47:35,496 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 12:47:35,503 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 12:47:35,767 - INFO - Refreshing credentials due to a 401 response. Attempt 1/2.
+2024-10-11 13:07:29,519 - INFO - /app/actualizador/task.py changed, reloading.
+2024-10-11 13:07:49,231 - INFO - /app/actualizador/task.py changed, reloading.
+2024-10-11 13:08:23,635 - INFO - /app/actualizador/task.py changed, reloading.
+2024-10-11 13:08:44,122 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 13:08:44,131 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 13:08:44,139 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 13:08:44,384 - INFO - Refreshing credentials due to a 401 response. Attempt 1/2.
+2024-10-11 13:31:02,555 - INFO - /app/actualizador/task.py changed, reloading.
+2024-10-11 13:31:42,635 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 13:31:42,642 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 13:31:42,648 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 13:31:42,886 - INFO - Refreshing credentials due to a 401 response. Attempt 1/2.
+2024-10-11 13:42:07,808 - ERROR - Internal Server Error: /actualizar/
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/generic/base.py", line 84, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/generic/base.py", line 119, in dispatch
+    return handler(request, *args, **kwargs)
+  File "/app/actualizador/views.py", line 126, in post
+    actualizar()
+  File "/app/actualizador/task.py", line 81, in actualizar
+    hiloManager.agregar_proceso('principal_csv','apply_custom_round', fake_apply_custom_round)
+  File "/app/actualizador/task.py", line 44, in agregar_proceso
+    self.nuevo_hilo(nuevo, proseso)
+NameError: name 'proseso' is not defined
+2024-10-11 13:49:28,062 - INFO - /app/actualizador/task.py changed, reloading.
+2024-10-11 13:50:20,555 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 13:50:20,562 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 13:50:20,567 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 13:50:20,809 - INFO - Refreshing credentials due to a 401 response. Attempt 1/2.
+2024-10-11 14:56:23,582 - INFO - /app/actualizador/task.py changed, reloading.
+2024-10-11 14:56:34,736 - INFO - /app/actualizador/task.py changed, reloading.
+2024-10-11 14:56:49,788 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 14:56:49,793 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 14:56:49,798 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 14:56:50,055 - INFO - Refreshing credentials due to a 401 response. Attempt 1/2.
+2024-10-11 14:57:57,504 - ERROR - Internal Server Error: /actualizar/
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/generic/base.py", line 84, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/generic/base.py", line 119, in dispatch
+    return handler(request, *args, **kwargs)
+  File "/app/actualizador/views.py", line 126, in post
+    actualizar()
+  File "/app/actualizador/task.py", line 86, in actualizar
+    HiloManager = HiloManager()
+UnboundLocalError: local variable 'HiloManager' referenced before assignment
+2024-10-11 14:58:41,499 - INFO - /app/actualizador/task.py changed, reloading.
+2024-10-11 14:59:11,037 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 14:59:11,044 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 14:59:11,049 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 14:59:11,329 - INFO - Refreshing credentials due to a 401 response. Attempt 1/2.
+2024-10-11 15:00:11,296 - ERROR - Internal Server Error: /actualizar/
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/generic/base.py", line 84, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/generic/base.py", line 119, in dispatch
+    return handler(request, *args, **kwargs)
+  File "/app/actualizador/views.py", line 126, in post
+    actualizar()
+  File "/app/actualizador/task.py", line 87, in actualizar
+    hiloManager.nuevo_hilo('actualizador', actualizardor)
+NameError: name 'actualizardor' is not defined
+2024-10-11 15:00:37,249 - INFO - /app/actualizador/task.py changed, reloading.
+2024-10-11 15:00:54,230 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 15:00:54,234 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 15:00:54,239 - INFO - file_cache is only supported with oauth2client<4.0.0
+2024-10-11 15:00:54,479 - INFO - Refreshing credentials due to a 401 response. Attempt 1/2.
+2024-10-11 15:06:23,061 - INFO - /app/actualizador/task.py changed, reloading.

@@ -1,8 +1,9 @@
 import subprocess
 import threading
-from core_config.log_config import logging
+from actualizador.log_config import logging
 from .actualizador_main import principal
 from .actualizador_csv import principal_csv, apply_custom_round
+import time
 
 def tirar_comando(self, comando="ls"):
     try:
@@ -11,6 +12,23 @@ def tirar_comando(self, comando="ls"):
     except subprocess.CalledProcessError as e:
         logging.error(f"Error al intentar enviar el comando {comando}")
         logging.error(e)
+
+def fake_principal():
+    logging.info("Iniciando fake-principal")
+    while True:
+        time.sleep(60)
+    logging.info("Finalizando fake-principal")
+
+def fake_principal_csv():
+    logging.info("Iniciando fake-principal-csv")
+    time.sleep(60)
+    logging.info("Finalizando fake-principal-csv")
+
+def fake_apply_custom_round():
+    logging.info("Iniciando fake-applay-custom-round")
+    time.sleep(60)
+    logging.info("Finalizando fake-applay-custom-round")
+
 
 class HiloManager():
     def __init__(self):
@@ -26,7 +44,7 @@ class HiloManager():
 
     def agregar_proceso(self, name, nuevo, proceso):
         self.hilos[name].join()
-        self.nuevo_hilo(nuevo, proseso)
+        self.nuevo_hilo(nuevo, proceso)
         self.iniciar_hilo(nuevo)
 
 
@@ -50,14 +68,28 @@ def recolectar_procesar():
     '''
 
     hiloManager = HiloManager()
-    hiloManager.nuevo_hilo('principal', principal)
+    hiloManager.nuevo_hilo('principal', fake_principal)
+    hiloManager.iniciar_hilo('principal')
+
+    logging.info(hiloManager.hilos['principal'])
     return f"Se registraron o procesaron planillas correctamente."
 
 
-#@shared_task
-def actualizar():
+def actualizador():
     print("Se envio a actualizar via csv...")
     hiloManager = HiloManager()
-    hiloManager.nuevo_hilo('principal_csv', principal_csv)
-    hiloManager.nuevo_hilo('apply_custom_round', apply_custom_round)
+    hiloManager.nuevo_hilo('principal_csv', fake_principal_csv)
+    hiloManager.iniciar_hilo('principal_csv')
+    hiloManager.agregar_proceso('principal_csv','apply_custom_round', fake_apply_custom_round)
+    logging.info(hiloManager.hilos['principal_csv'])
+    logging.info(hiloManager.hilos['apply_custom_round'])
+
+#@shared_task
+def actualizar():
+    hiloManager = HiloManager()
+    hiloManager.nuevo_hilo('actualizador', actualizador)
+    hiloManager.iniciar_hilo('actualizador')
+
+    logging.info(hiloManager.hilos['actualizador'])
+
     return f"Se actualizo la base de datos correctamente."
