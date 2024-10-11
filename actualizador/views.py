@@ -119,15 +119,11 @@ class Actualizar(MiVista):
             print("{}: ".format(name), self.request.POST.get(name))
         
         if self.request.POST.get("tipo-boton") == "enviar":
-            task = app.send_task('actualizador.task.recolectar_procesar')
-            print("id de la tarea 'enviar': ",task.id)
-            print(task)
+            recolectar_procesar()
             #return JsonResponse({'task_id': task.id})
 
         if self.request.POST.get("tipo-boton") == "actualizar":
-            task = app.send_task('actualizador.task.actualizar')
-            print("id de la tarea 'actualizar': ",task.id)
-            print(task)       
+            actualizar()    
 
             
         print("actualizar_planillas: ",self.request.POST.get("actualizar_planillas"))
