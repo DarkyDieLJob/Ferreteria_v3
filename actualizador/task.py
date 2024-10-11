@@ -19,7 +19,7 @@ class HiloManager():
         }
 
     def nuevo_hilo(self, name, proceso):
-        self.hilos[name] = threading.Trhead(target=proceso)
+        self.hilos[name] = threading.Thread(target=proceso)
     
     def iniciar_hilo(self, name):
         self.hilos[name].start()
