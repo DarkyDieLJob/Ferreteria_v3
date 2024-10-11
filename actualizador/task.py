@@ -12,6 +12,24 @@ def tirar_comando(self, comando="ls"):
         logging.error(f"Error al intentar enviar el comando {comando}")
         logging.error(e)
 
+class HiloManager():
+    def __init__(self):
+        self._hilos = {
+            'hilo':threading.Thread(target=None),
+        }
+
+    def nuevo_hilo(self, name, proceso):
+        self.hilos[name] = threading.Trhead(target=proceso)
+    
+    def iniciar_hilo(self, name):
+        self.hilos[name].start()
+
+    def agregar_proceso(self, name, nuevo, proceso):
+        self.hilos[name].join()
+        self.nuevo_hilo(nuevo, proseso)
+        self.iniciar_hilo(nuevo)
+
+
 @shared_task
 def recoleccion():
     pass
@@ -24,19 +42,22 @@ def etiquetado():
 def procesar():
     pass
 
-@shared_task
+#@shared_task
 def recolectar_procesar():
     '''
     Se va a cambiar a futuro cuando
      se refactorize el modo en el que se capuran las planillas.
     '''
-    principal()
+
+    hiloManager = HiloManager()
+    hiloManager.nuevo_hilo('principal', principal)
     return f"Se registraron o procesaron planillas correctamente."
 
 
-@shared_task
+#@shared_task
 def actualizar():
     print("Se envio a actualizar via csv...")
-    principal_csv()
-    apply_custom_round()
+    hiloManager = HiloManager()
+    hiloManager.nuevo_hilo('principal_csv', principal_csv)
+    hiloManager.nuevo_hilo('apply_custom_round', apply_custom_round)
     return f"Se actualizo la base de datos correctamente."
