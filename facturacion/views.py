@@ -214,16 +214,83 @@ def actualizar_cantidad_articulo_sin_registro(request):
     # Return the JSON response
     return JsonResponse({'status': 'success'}, status=200)
 
-from datetime import datetime
-from django.db.models import Sum
+from django.db.models import Sum, Count
+from datetime import datetime, date
+from dateutil.relativedelta import relativedelta
+
+class FacturacionMensual(TemplateView):
+    template_name = 'facturacion/facturacion_mensual.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["barra_de_navegacion"] = NavBar.objects.all()
+
+        # Obtener el primer y último día del mes actual
+        hoy = date.today()
+        primer_dia_mes = hoy.replace(day=1)
+        ultimo_dia_mes = hoy.replace(day=1) + relativedelta(months=1) - relativedelta(days=1)
+
+        # Obtener las transacciones del mes
+        transacciones = Transaccion.objects.filter(fecha__range=(primer_dia_mes, ultimo_dia_mes))
+
+        # Agrupar y calcular totales por año, mes, día y tipo de pago
+        datos_mensuales = transacciones.values('fecha__year', 'fecha__month', 'fecha__day', 'metodo_de_pago') \
+                                       .annotate(total=Sum('total'), cantidad=Count('id')) \
+                                       .order_by('fecha__year', 'fecha__month', 'fecha__day', 'metodo_de_pago')
+
+        # Organizar los datos en un diccionario anidado
+        datos_formateados = {}
+        for dato in datos_mensuales:
+            ano = dato['fecha__year']
+            mes = dato['fecha__month']
+            dia = dato['fecha__day']
+            metodo_pago = dato['metodo_de_pago']
+            total = dato['total']
+            cantidad = dato['cantidad']
+
+            if ano not in datos_formateados:
+                datos_formateados[ano] = {}
+            if mes not in datos_formateados[ano]:
+                datos_formateados[ano][mes] = {}
+            if dia not in datos_formateados[ano][mes]:
+                datos_formateados[ano][mes][dia] = {}
+            if metodo_pago not in datos_formateados[ano][mes][dia]:
+                datos_formateados[ano][mes][dia][metodo_pago] = {
+                    'total': total,
+                    'cantidad': cantidad,
+                    'transacciones': []
+                }
+
+            datos_formateados[ano][mes][dia][metodo_pago]['transacciones'].append(dato)
+
+        context['datos_mensuales'] = datos_formateados
+        print(datos_mensuales)
+        return context
 
 class Facturacion(TemplateView):
     template_name = 'facturacion/facturacion.html'
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["barra_de_navegacion"] = NavBar.objects.all()
-        fecha_actual = datetime.now()
-        transacciones = Transaccion.objects.filter(fecha__date=fecha_actual.date())
+
+        # Obtener los parámetros de fecha de la URL
+        year = self.kwargs.get('year')
+        month = self.kwargs.get('month')
+        day = self.kwargs.get('day')
+
+        # Si no hay parámetros, usar la fecha actual
+        if not all([year, month, day]):
+            fecha_actual = datetime.now().date()
+        else:
+            try:
+                fecha_actual = date(year, month, day)
+            except ValueError:
+                # Manejar errores de fecha inválida
+                return HttpResponse("Fecha inválida")
+
+        print(fecha_actual)
+        transacciones = Transaccion.objects.filter(fecha__date=fecha_actual)
+
         context["datos"] = transacciones
         
         context["totales"] = []

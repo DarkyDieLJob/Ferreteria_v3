@@ -1,0 +1,77 @@
+{% extends 'base2.html' %}
+
+{% block form_content %}
+<div class="month-container">
+    {% for año, datos_año in datos_mensuales.items %}
+        <h2>Año {{ año }}</h2>
+        <ul>
+            {% for mes, datos_mes in datos_año.items %}
+                <li class="month-item" data-month="{{ mes }}">Mes {{ mes }}</li>
+                <ul class="day-list hidden">
+                    {% for dia, datos_dia in datos_mes.items %}
+                        <li class="day-item" data-day="{{ dia }}">Día {{ dia }}</li>
+                        <div class="transactions hidden">
+                            <div class="card">
+                                <table class="table table-striped w-100">
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Cajero</th>
+                                            <th>Cliente</th>
+                                            <th>Metodo de Pago</th>
+                                            <th>Monto</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for metodo_pago, info in datos_dia.items %}
+                                            {% if info.total != None %}
+                                                <tr>
+                                                    <td>{{ info.transacciones.0.fecha }}</td>  <td>{{ info.transacciones.0.usuario }}</td>  <td>$ {{ info.total }}</td>
+                                                    <td>cnt: {{ info.cantidad }}</td>
+                                                    <td>
+                                                        <button>Editar</button>
+                                                        <button>Reimprimir</button>
+                                                    </td>
+                                                </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </ul>
+            {% endfor %}
+        </ul>
+    {% endfor %}
+</div>
+{% endblock %}
+
+<script>
+    const monthItems = document.querySelectorAll('.month-item');
+    const dayLists = document.querySelectorAll('.day-list');
+    const transactionContainers = document.querySelectorAll('.transactions');
+
+    monthItems.forEach(monthItem => {
+        monthItem.addEventListener('click', () => {
+            const dayList = monthItem.nextElementSibling;
+            dayList.classList.toggle('hidden');
+        });
+    });
+
+    dayLists.forEach(dayList => {
+        dayList.querySelectorAll('.day-item').forEach(dayItem => {
+            dayItem.addEventListener('click', () => {
+                const transactionContainer = dayItem.nextElementSibling;
+                transactionContainer.classList.toggle('hidden');
+            });
+        });
+    });
+</script>
+
+<style>
+    .hidden {
+        display: none;
+    }
+</style>
