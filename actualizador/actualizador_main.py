@@ -11,7 +11,6 @@ from django.conf import settings as cosnt
 from asgiref.sync import sync_to_async
 from django.conf import settings
 import json
-import os
 import openpyxl
 import csv
 
