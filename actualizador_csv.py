@@ -1,4 +1,8 @@
 import os
+os.environ['DJANGO_SETTINGS_MODULE'] = 'core_config.settings'
+import django
+django.setup()
+
 from django.conf import settings as const
 from bdd.classes import Patoba
 from x_cartel.models import Carteles, CartelesCajon

@@ -1,4 +1,8 @@
 import os
+os.environ['DJANGO_SETTINGS_MODULE'] = 'core_config.settings'
+import django
+django.setup()
+
 import io
 from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload
 import pandas as pd
