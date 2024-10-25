@@ -1,10 +1,5 @@
 import os
-import django
 from django.conf import settings as const
-
-os.environ['DJANGO_SETTINGS_MODULE'] = 'core_config.settings'
-django.setup()
-
 from bdd.classes import Patoba
 from x_cartel.models import Carteles, CartelesCajon
 from bdd.models import  Item, Sub_Carpeta, Sub_Titulo, ListaProveedores

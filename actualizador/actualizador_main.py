@@ -1,5 +1,4 @@
 import os
-import django
 import io
 from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload
 import pandas as pd
@@ -13,9 +12,6 @@ from django.conf import settings
 import json
 import openpyxl
 import csv
-
-os.environ['DJANGO_SETTINGS_MODULE'] = 'core_config.settings'
-django.setup()
 
 
 def registrar_log(texto):
