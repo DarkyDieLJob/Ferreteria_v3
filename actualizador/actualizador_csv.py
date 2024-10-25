@@ -1,8 +1,8 @@
 import os
 from django.conf import settings as const
-from bdd.classes import Patoba
-from x_cartel.models import Carteles, CartelesCajon
-from bdd.models import  Item, Sub_Carpeta, Sub_Titulo, ListaProveedores
+from ..bdd.classes import Patoba
+from ..x_cartel.models import Carteles, CartelesCajon
+from ..bdd.models import  Item, Sub_Carpeta, Sub_Titulo, ListaProveedores
 import csv
 import unicodedata
 

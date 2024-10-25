@@ -3,9 +3,9 @@ import io
 from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload
 import pandas as pd
 from openpyxl.writer.excel import save_virtual_workbook
-from bdd.models import Listado_Planillas, Item, Sub_Carpeta, Sub_Titulo, ListaProveedores
-from bdd.classes import Patoba
-from bdd.funtions import get_emails
+from ..bdd.models import Listado_Planillas, Item, Sub_Carpeta, Sub_Titulo, ListaProveedores
+from ..bdd.classes import Patoba
+from ..bdd.funtions import get_emails
 from django.conf import settings as cosnt
 from asgiref.sync import sync_to_async
 from django.conf import settings
