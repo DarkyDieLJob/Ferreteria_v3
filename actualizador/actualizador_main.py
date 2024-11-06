@@ -312,7 +312,7 @@ def principal():
         lista_proveedor.hay_csv_pendiente = True
         lista_proveedor.save()
 
-    print("fin")
+    print("fin1")
 
 if __name__ == '__main__':
     principal()
