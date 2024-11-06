@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.5.1](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.5.0...v3.5.1) (2024-11-06)
+
+
+### Bug Fixes
+
+* **Celery:** :bug: Correccion en actualizadores ([a0e45bf](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/a0e45bf05ef1d53fc2b36ce4fa732e0c21ab110e))
+* **Celery:** :bug: correcciones en actualizadores ([5fa63f1](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/5fa63f1c2e10d7551b049f39d5c7755c1d8e4671))
+* **Celery:** :bug: Implementando estructura anterior de actualizadores ([13be22a](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/13be22a871ed9b80b71ea0c4b1389de3de547036))
+* **Celery:** :bug: Moar correcciones a la estructura anterios de los actualizadores ([f628ff3](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/f628ff3e3e391bb67349100aab72c99e20a252e1))
+* **Celery:** :bug: Moar correcciones a los actualizadores ([f7c9464](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/f7c9464408def8361ddeeee5f7dbaae0da3c7ebc))
+* **Celery:** :zap: Agregado algunos prints en procesadores. ([71813ac](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/71813ac25609623d31cb39af36e655f46f794ae6))
+
 ## [3.5.0](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.4.3...v3.5.0) (2024-10-24)
 
 
