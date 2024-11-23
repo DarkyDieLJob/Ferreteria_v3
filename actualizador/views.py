@@ -2,7 +2,7 @@ from django.shortcuts import render
 from bdd.views import MiVista, MyForm
 from bdd.classes import Patoba
 from bdd.models import Listado_Planillas, Proveedor
-from .task import recolectar_procesar, actualizar
+from .task import recolectar_procesar, actualizar, ejecutar_cola_tareas
 from core_config.celery import app
 import io
 from googleapiclient.http import MediaIoBaseDownload
@@ -117,14 +117,14 @@ class Actualizar(MiVista):
         lista = ["tipo-boton",]
         for name in lista:
             print("{}: ".format(name), self.request.POST.get(name))
-        
+        '''
         if self.request.POST.get("tipo-boton") == "enviar":
             recolectar_procesar()
             #return JsonResponse({'task_id': task.id})
 
         if self.request.POST.get("tipo-boton") == "actualizar":
-            actualizar()    
-
+            ejecutar_cola_tareas()    
+        '''
             
         print("actualizar_planillas: ",self.request.POST.get("actualizar_planillas"))
 

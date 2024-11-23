@@ -3,7 +3,9 @@ import threading
 from actualizador.log_config import logging
 from .actualizador_main import principal
 from .actualizador_csv import principal_csv, apply_custom_round
+import queue
 import time
+import datetime
 
 def tirar_comando(self, comando="ls"):
     try:
@@ -46,6 +48,37 @@ class HiloManager():
         self.hilos[name].join()
         self.nuevo_hilo(nuevo, proceso)
         self.iniciar_hilo(nuevo)
+
+
+
+class ColaTareas:
+    def __init__(self):
+        self.cola_tareas = queue.Queue()
+        self.hilo_principal = threading.Thread(target=self.ejecutar_tareas)
+        self.hora_inicio = datetime.time(23, 59)  # Hora de inicio: 00:00
+        self.fecha_inicio = datetime.date.today()  # Fecha de inicio: hoy
+
+    def agregar_tarea(self, tarea):
+        self.cola_tareas.put(tarea)
+
+    def ejecutar_tareas(self):
+        ahora = datetime.datetime.now()
+
+        # Calcular la diferencia en segundos y esperar
+        tiempo_espera = (datetime.datetime.combine(self.fecha_inicio, self.hora_inicio) - ahora).total_seconds()
+        if tiempo_espera > 0:
+            time.sleep(tiempo_espera)
+
+        while True:
+            tarea = self.cola_tareas.get()
+            tarea()
+            self.cola_tareas.task_done()
+
+def ejecutar_cola_tareas():
+    colaTareas = ColaTareas()
+    colaTareas.agregar_tarea(principal)
+    colaTareas.agregar_tarea(principal_csv)
+    colaTareas.ejecutar_tareas()
 
 
 #@shared_task
