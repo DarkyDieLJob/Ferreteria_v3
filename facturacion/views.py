@@ -19,6 +19,7 @@ from .cliente import conectar_a_websocket
 import asyncio
 from django.views.generic import TemplateView
 from django.shortcuts import redirect
+from actualizador.task import ejecutar_cola_tareas
 
 def obtener_metodos_pago(request):
     metodos_pago = MetodoPago.objects.all()
@@ -214,6 +215,7 @@ def actualizar_cantidad_articulo_sin_registro(request):
     # Return the JSON response
     return JsonResponse({'status': 'success'}, status=200)
 
+from utils.ordenar_query import agrupar_transacciones_por_fecha
 from django.db.models import Sum, Count
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
@@ -225,46 +227,14 @@ class FacturacionMensual(TemplateView):
         context = super().get_context_data(**kwargs)
         context["barra_de_navegacion"] = NavBar.objects.all()
 
-        # Obtener el primer y último día del mes actual
-        hoy = date.today()
-        primer_dia_mes = hoy.replace(day=1)
-        ultimo_dia_mes = hoy.replace(day=1) + relativedelta(months=1) - relativedelta(days=1)
+        transacciones = Transaccion.objects.all()
+        print(transacciones.query)
+        datos_agrupados = agrupar_transacciones_por_fecha(transacciones)
 
-        # Obtener las transacciones del mes
-        transacciones = Transaccion.objects.filter(fecha__range=(primer_dia_mes, ultimo_dia_mes))
+        context['datos_agrupados'] = datos_agrupados
+        print(datos_agrupados)
 
-        # Agrupar y calcular totales por año, mes, día y tipo de pago
-        datos_mensuales = transacciones.values('fecha__year', 'fecha__month', 'fecha__day', 'metodo_de_pago') \
-                                       .annotate(total=Sum('total'), cantidad=Count('id')) \
-                                       .order_by('fecha__year', 'fecha__month', 'fecha__day', 'metodo_de_pago')
-
-        # Organizar los datos en un diccionario anidado
-        datos_formateados = {}
-        for dato in datos_mensuales:
-            ano = dato['fecha__year']
-            mes = dato['fecha__month']
-            dia = dato['fecha__day']
-            metodo_pago = dato['metodo_de_pago']
-            total = dato['total']
-            cantidad = dato['cantidad']
-
-            if ano not in datos_formateados:
-                datos_formateados[ano] = {}
-            if mes not in datos_formateados[ano]:
-                datos_formateados[ano][mes] = {}
-            if dia not in datos_formateados[ano][mes]:
-                datos_formateados[ano][mes][dia] = {}
-            if metodo_pago not in datos_formateados[ano][mes][dia]:
-                datos_formateados[ano][mes][dia][metodo_pago] = {
-                    'total': total,
-                    'cantidad': cantidad,
-                    'transacciones': []
-                }
-
-            datos_formateados[ano][mes][dia][metodo_pago]['transacciones'].append(dato)
-
-        context['datos_mensuales'] = datos_formateados
-        print(datos_mensuales)
+        
         return context
 
 class Facturacion(TemplateView):
@@ -367,6 +337,7 @@ class CierreZVieW(TemplateView):
         # Guardamos la instancia en la base de datos
         cierre_z.save()
 
+        ejecutar_cola_tareas()
         return self.render_to_response(context)
 
 
