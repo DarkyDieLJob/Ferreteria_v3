@@ -15,7 +15,7 @@ def agrupar_transacciones_por_fecha(queryset: QuerySet) -> dict:
             datos[año][mes] = {}
         if dia not in datos[año][mes]:
             datos[año][mes][dia] = []
-        datos[año][mes][dia].append(transaccion)
+        datos[año][mes][dia].append(dato)
 
 
     return datos
