@@ -159,8 +159,8 @@ def buscar_modificar_registros(csv_file, filtro):
         
         for row in reader:
             # Filtrar filas con valores nulos o vacíos
-            if not (row['precio_base'] is None or row['precio_base'] == '' or row['precio_base'] == ' ' or row['precio_base'] == '-' or row['precio_base'] == '.' or row['precio_base'] == '#N/A' or row['precio_base'] == '#VALUE!'):
-                
+            validadores = [ '', ' ', '-', '.', '#N/A', '#VALUE!', 0, '0', 0.0, '0.0']
+            if row['presio_base'] not in validadores:
                 crear_o_actualizar_registro(row)
     print('cargado: ', filtro, flush=True)
 
@@ -174,7 +174,8 @@ def buscar_modificar_registros_lotes(csv_file, filtro):
         for row in reader:
             #print(row)
             # Filtrar filas con valores nulos o vacíos
-            if not (row['precio_base'] is None or row['precio_base'] == '' or row['precio_base'] == ' ' or row['precio_base'] == '-' or row['precio_base'] == '.' or row['precio_base'] == '#N/A' or row['precio_base'] == '#VALUE!'):
+            validadores = [ '', ' ', '-', '.', '#N/A', '#VALUE!', 0, '0', 0.0, '0.0']
+            if row['presio_base'] not in validadores:
                 if validar_digitos_str(row['precio_base']):
                     if validar_digitos_str(row['final']):
                         row['final'] = custom_round(float(row['final']))

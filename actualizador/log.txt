@@ -61,3 +61,6 @@ Traceback (most recent call last):
 NameError: name 'transaccion' is not defined
 2024-11-23 13:20:49,093 - INFO - /app/utils/ordenar_query.py changed, reloading.
 2024-11-23 13:21:10,052 - INFO - /app/utils/ordenar_query.py changed, reloading.
+2024-11-23 18:21:26,665 - INFO - /app/actualizador/actualizador_csv.py changed, reloading.
+2024-11-23 18:21:46,568 - INFO - /app/actualizador/actualizador_csv.py changed, reloading.
+2024-11-23 18:23:31,628 - INFO - /app/actualizador/actualizador_csv.py changed, reloading.
