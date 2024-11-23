@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.6.0](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.5.1...v3.6.0) (2024-11-23)
+
+
+### Features
+
+* **Loguer:** :zap: Base loguer agregado ([11be153](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/11be153bb53a685d412e28f0b496922b472e701d))
+* **Planilla Diaria:** :zap: Agrega filtrado rustico por fecha, Agrega procesado de lanillas al lanzar cierrre_z ([39fa400](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/39fa400a7b24fe4bf89a32da6f8ea81790ffdc34))
+
+
+### Bug Fixes
+
+* **Planilla Diaria:** :bug: Faltaron agregar utils par ala version ([eab39e5](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/eab39e54bfc7e76f0bd6e52816ae9ccdc7a69435))
+* **Utils:** :bug: Falto cambiar el nombre de una variale. ([67ad8a9](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/67ad8a9ea06bf978d92931848ce770327332f1bb))
+
 ### [3.5.1](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.5.0...v3.5.1) (2024-11-06)
 
 
