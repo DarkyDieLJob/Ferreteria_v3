@@ -2,6 +2,48 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.6.0](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.5.1...v3.6.0) (2024-11-23)
+
+
+### Features
+
+* **Loguer:** :zap: Base loguer agregado ([11be153](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/11be153bb53a685d412e28f0b496922b472e701d))
+* **Planilla Diaria:** :zap: Agrega filtrado rustico por fecha, Agrega procesado de lanillas al lanzar cierrre_z ([39fa400](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/39fa400a7b24fe4bf89a32da6f8ea81790ffdc34))
+
+
+### Bug Fixes
+
+* **Planilla Diaria:** :bug: Faltaron agregar utils par ala version ([eab39e5](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/eab39e54bfc7e76f0bd6e52816ae9ccdc7a69435))
+* **Utils:** :bug: Falto cambiar el nombre de una variale. ([67ad8a9](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/67ad8a9ea06bf978d92931848ce770327332f1bb))
+
+### [3.5.1](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.5.0...v3.5.1) (2024-11-06)
+
+
+### Bug Fixes
+
+* **Celery:** :bug: Correccion en actualizadores ([a0e45bf](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/a0e45bf05ef1d53fc2b36ce4fa732e0c21ab110e))
+* **Celery:** :bug: correcciones en actualizadores ([5fa63f1](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/5fa63f1c2e10d7551b049f39d5c7755c1d8e4671))
+* **Celery:** :bug: Implementando estructura anterior de actualizadores ([13be22a](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/13be22a871ed9b80b71ea0c4b1389de3de547036))
+* **Celery:** :bug: Moar correcciones a la estructura anterios de los actualizadores ([f628ff3](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/f628ff3e3e391bb67349100aab72c99e20a252e1))
+* **Celery:** :bug: Moar correcciones a los actualizadores ([f7c9464](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/f7c9464408def8361ddeeee5f7dbaae0da3c7ebc))
+* **Celery:** :zap: Agregado algunos prints en procesadores. ([71813ac](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/71813ac25609623d31cb39af36e655f46f794ae6))
+
+## [3.5.0](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.4.3...v3.5.0) (2024-10-24)
+
+
+### Features
+
+* **Hilos:** :zap: Se corrigen y adaptan los hilos anidados. ([7efbf7e](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/7efbf7ee0f11929302bbaab8c18d4e47baa6d2e8))
+* **Planilla Diaria:** :zap: Se agrego filtrado por fecha rudimentario. ([86fba2e](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/86fba2e62bd69ff8375d1f1548a20cdb8b55f009))
+
+
+### Bug Fixes
+
+* :zap: Ignorando logs en el repo ([d91c3a1](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/d91c3a1be8bf62693fa5dd4e3e09f7d6866022e6))
+* **Hilos:** :bug: sintaxis error ([e79fd6e](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/e79fd6ea4124690cc2f8a00ebdcccf99d1ec56f9))
+* **Hilos:** :bug: Sintaxis Error ([93e2a6b](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/93e2a6bfa2f5decf9a22d824836772d7e5de84f9))
+* **Hilos:** :zap: Probando sin fake_ ([ea179c8](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/ea179c838bffdf197058e7b0ee2d99722932961d))
+
 ### [3.4.3](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.4.2...v3.4.3) (2024-10-11)
 
 
