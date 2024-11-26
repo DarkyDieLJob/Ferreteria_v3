@@ -1,8 +1,4 @@
 import os
-os.environ['DJANGO_SETTINGS_MODULE'] = 'core_config.settings'
-import django
-django.setup()
-
 from django.conf import settings as const
 from bdd.classes import Patoba
 from x_cartel.models import Carteles, CartelesCajon
@@ -190,7 +186,7 @@ def buscar_modificar_registros_lotes(csv_file, filtro):
     
 def principal_csv():
     patoba = Patoba(None)
-    
+    print("Chequeando si, Hay_csv_pendiente...")
     proveedores = ListaProveedores.objects.filter(hay_csv_pendiente=True)
     #proveedores = ListaProveedores.objects.all()
     for proveedor in proveedores:
@@ -235,9 +231,10 @@ def principal_csv():
             cartel_cajon.revisar = True
             cartel_cajon.save()
         
-    print("fin", flush=True)
+    print("fin2")
 
 def apply_custom_round(batch_size=10000):
+    print("redondeo por lotes de: ", batch_size)
     items = Item.objects.all()
     total_items = items.count()
     offset = 0
@@ -252,6 +249,7 @@ def apply_custom_round(batch_size=10000):
 
         Item.objects.bulk_update(batch, ['final', 'final_efectivo', 'final_rollo', 'final_rollo_efectivo'])
         offset += batch_size 
+    print("Fin3")
 def mostrara_boletas(bool):
     from boletas.models import Boleta
     
@@ -336,3 +334,4 @@ if __name__ == "__main__":
     
     principal_csv()
     apply_custom_round()
+    print("Proceso finalizado.")

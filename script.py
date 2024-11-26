@@ -178,6 +178,10 @@ def quitar_guiones_cuit():
         with transaction.atomic():
             Cliente.objects.bulk_update(cliente_list, ['cuit_dni'])
 
+from actualizador.actualizador_csv import filtrar_trabajados
+
 if __name__ == '__main__':
     #probando()
     quitar_guiones_cuit()
+    #principal()
+    #filtrar_trabajados()

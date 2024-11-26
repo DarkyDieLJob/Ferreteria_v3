@@ -1,0 +1,26 @@
+<ul id="transacciones">
+    {% for año, datos_año in datos_agrupados.items %}
+        <li>
+            <span class="año">{{ año }}</span>
+            <ul class="meses">
+                {% for mes, datos_mes in datos_año.items %}
+                    <li>
+                        <span class="mes">{{ mes }}</span>
+                        <ul class="dias">
+                            {% for dia, transacciones in datos_mes.items %}
+                                <li>
+                                    Día {{ dia }}
+                                    <ul class="transacciones">
+                                        {% for transaccion in transacciones %}
+                                            <li>{{ transaccion.fecha }} - {{ transaccion.monto }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                {% endfor %}
+            </ul>
+        </li>
+    {% endfor %}
+</ul>

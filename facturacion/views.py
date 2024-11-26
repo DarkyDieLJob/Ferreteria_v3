@@ -19,6 +19,7 @@ from .cliente import conectar_a_websocket
 import asyncio
 from django.views.generic import TemplateView
 from django.shortcuts import redirect
+from actualizador.task import ejecutar_cola_tareas
 
 def obtener_metodos_pago(request):
     metodos_pago = MetodoPago.objects.all()
@@ -237,16 +238,52 @@ def actualizar_cantidad_articulo_sin_registro(request):
     # Return the JSON response
     return JsonResponse({'status': 'success'}, status=200)
 
-from datetime import datetime
-from django.db.models import Sum
+from utils.ordenar_query import agrupar_transacciones_por_fecha
+from django.db.models import Sum, Count
+from datetime import datetime, date
+from dateutil.relativedelta import relativedelta
+
+class FacturacionMensual(TemplateView):
+    template_name = 'facturacion/facturacion_mensual.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["barra_de_navegacion"] = NavBar.objects.all()
+
+        transacciones = Transaccion.objects.all()
+        print(transacciones.query)
+        datos_agrupados = agrupar_transacciones_por_fecha(transacciones)
+
+        context['datos_agrupados'] = datos_agrupados
+        print(datos_agrupados)
+
+        
+        return context
 
 class Facturacion(TemplateView):
     template_name = 'facturacion/facturacion.html'
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["barra_de_navegacion"] = NavBar.objects.all()
-        fecha_actual = datetime.now()
-        transacciones = Transaccion.objects.filter(fecha__date=fecha_actual.date())
+
+        # Obtener los parámetros de fecha de la URL
+        year = self.kwargs.get('year')
+        month = self.kwargs.get('month')
+        day = self.kwargs.get('day')
+
+        # Si no hay parámetros, usar la fecha actual
+        if not all([year, month, day]):
+            fecha_actual = datetime.now().date()
+        else:
+            try:
+                fecha_actual = date(year, month, day)
+            except ValueError:
+                # Manejar errores de fecha inválida
+                return HttpResponse("Fecha inválida")
+
+        print(fecha_actual)
+        transacciones = Transaccion.objects.filter(fecha__date=fecha_actual)
+
         context["datos"] = transacciones
         
         context["totales"] = []
@@ -323,6 +360,7 @@ class CierreZVieW(TemplateView):
         # Guardamos la instancia en la base de datos
         cierre_z.save()
 
+        ejecutar_cola_tareas()
         return self.render_to_response(context)
 
 

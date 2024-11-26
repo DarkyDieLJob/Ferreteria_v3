@@ -15,9 +15,10 @@
             </li>
         </ul>
     </div>
-    <form method="POST" class="card-body tab-content">
-        {% csrf_token %}
+    <div class="card-body tab-content">
         <div class="tab-pane active" id="email">
+            <form method="POST" id="form-actualizador-enviar">
+            {% csrf_token %}
             <div class="py-2">
                 <table class="table table-striped w-auto">
                     <thead class="bg-secondary text-white sticky-top">
@@ -54,10 +55,17 @@
 
                     </tbody>
                 </table>
-                <input class="btn btn-primary" type="submit" value="Enviar">
+                <input type="hidden" name="tipo-boton" value="enviar">
+                <button class="btn btn-primary" id="submit-enviar">Enviar</button>
+
+            </form>
             </div>
         </div>
+
+        
         <div class="tab-pane" id="actualizar">
+            <form method="POST" id="form-actualizador-actualizar">
+            {% csrf_token %}
             <div class="py-2">
                 <table class="table table-striped w-auto">
                     <thead class="bg-secondary text-white sticky-top">
@@ -81,9 +89,13 @@
                     </tbody>
                 </table>
                 <input type="hidden" name="seleccionados" value="{{ seleccionados }}">
-                <button class="btn btn-primary" type="submit">Actualizar</button>
+                <input type="hidden" name="tipo-boton" value="actualizar">
+                <button class="btn btn-primary" type="submit" id="submit-actualizar">Actualizar</button>
             </div>
+        </form>
         </div>
+        
+
         <div class="tab-pane" id="descargar">
             <div class="py-2">
                 <table class="table table-striped w-auto">
@@ -107,9 +119,7 @@
 
                     </tbody>
                 </table>
-                <button class="btn btn-primary" type="submit">Descargar todo</button>
             </div>
         </div>
-    </form>
+    </div>
 </div>
-

@@ -47,4 +47,6 @@ YAYI.csv
 3D.csv
 Hersol.csv
 
-core_config/settings.py
+actualizador/log.txt
+core_config/log.txt
+main_gpread.py

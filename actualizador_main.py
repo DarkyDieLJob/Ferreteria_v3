@@ -3,27 +3,20 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'core_config.settings'
 import django
 django.setup()
 
-
-
-
-
 import io
 from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload
 import pandas as pd
-
 from openpyxl.writer.excel import save_virtual_workbook
 from bdd.models import Listado_Planillas, Item, Sub_Carpeta, Sub_Titulo, ListaProveedores
 from bdd.classes import Patoba
 from bdd.funtions import get_emails
 from django.conf import settings as cosnt
-
 from asgiref.sync import sync_to_async
-
 from django.conf import settings
 import json
-import os
 import openpyxl
 import csv
+
 
 def registrar_log(texto):
     with open('log.txt', 'a') as f:

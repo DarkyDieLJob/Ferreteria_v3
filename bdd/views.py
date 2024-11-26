@@ -1,13 +1,8 @@
-# views.py
-#from asyncio.windows_events import NULL
 from re import L
-#from typing import Any, Dict
 from django.apps import apps
 from django.template.loader import render_to_string, select_template
 from django.views.generic import TemplateView
 from .models import Armador, NavBar, Item, Listado_Planillas, Proveedor
-#from .models import *
-#from django.forms import modelform_factory
 from django.shortcuts import redirect
 from django.db.models import ForeignKey
 from django import forms
@@ -16,12 +11,9 @@ import os
 import io
 from googleapiclient.http import MediaIoBaseDownload
 import pandas as pd
-#from google.oauth2.credentials import Credentials
-#from allauth.socialaccount.models import SocialToken
 import mercadopago
 from datetime import datetime, timedelta
 from .classes import Patoba
-#from googleapiclient.errors import HttpError
 from django.http import HttpResponse
 from .funtions import get_emails
 import ast
@@ -42,7 +34,6 @@ from django.shortcuts import render
 from django.http import JsonResponse    
 from .models import Carrito
 from django.core import serializers
-#from django.forms.models import model_to_dict
 from django.db.models import F
 from django.contrib.auth.models import User
 from x_cartel.models import Carteles, CartelesCajon
@@ -257,74 +248,6 @@ class MiVista(TemplateView):
         except Exception as e:
             context['Error'] = str(e)
         #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-        return context
-
-    def post(self, request, *args, **kwargs):
-        context = self.get_context_data()
-        form = MyForm(request.POST,model_name=context['model_name'],fields_to_show=context['lista_formulario_campos'])
-        context['ruta_actual'] = self.request.path
-        
-        if form.is_valid():
-            model_name = context['model_name']
-            form.save(model_name=model_name)
-            return redirect(self.ruta_actual)
-        else:
-            context['form'] = form
-            return self.render_to_response(context)
-
-    def get(self, request, *args, **kwargs):
-        context = self.get_context_data()
-        form = MyForm(request.GET, model_name=context['model_name'], fields_to_show=context['lista_formulario_campos'])
-        context['datos'] = []
-        if form.is_valid():
-            form_data = form.cleaned_data
-            # Eliminamos los campos vacíos del formulario
-            form_data = {k: v for k, v in form_data.items() if v}
-            print(form_data)
-            try:
-                model = apps.get_model('bdd', context['model_name'])
-            except:
-                pass
-            try:
-                model = apps.get_model('x_cartel', context['model_name'])
-            except:
-                pass
-            armador = context['armador']
-            #armador.formulario_campos_contiene
-            form_data_copy = form_data.copy()
-            for k, v in form_data_copy.items():
-                if k in [obj.nombre for obj in armador.formulario_campos_contiene.all()]:
-                    form_data[f'{k}__contains'] = form_data.pop(k)
-                if k in [obj.nombre for obj in armador.formulario_campos_empieza_con.all()]:
-                    form_data[f'{k}__istartswith'] = form_data.pop(k)
-                    if k == 'codigo':
-                        es_codigo = True
-
-            if form_data == {}:
-                context['datos'] = []
-            else:
-                context['datos'] = list(model.objects.filter(**form_data).values())
-                if len(context['datos'])==1 and context['model_name']=='Item':
-                    item_trabajado = Item.objects.get(**context['datos'][0])
-                    if item_trabajado.trabajado:
-                        print('item_trabajado: ',item_trabajado.trabajado)
-                        pass
-                    else:
-                        item_trabajado.trabajado = True
-                        item_trabajado.save()
-                        print('Guardando item trabajado')
-                    
-                print(context['datos'])
-                if context['model_name'] == "Item":
-                    # Filtrar datos para incluir solo aquellos cuyo campo "actualizado" sea verdadero
-                    context['datos'] = [dato for dato in context['datos']]# if dato.get('actualizado') == True]
-        else:
-            context['form'] = form
-        filtered_data = [{k: v for k, v in d.items() if k in context['titulos']} for d in context['datos']]
-        context['datos'] = filtered_data
-
-
         try:
             if settings.INTERNET:
                 with open('./mp_access_token.txt', 'r') as f:
@@ -425,6 +348,71 @@ class MiVista(TemplateView):
                 
         except Exception as e:
             print(e)
+        return context
+
+    def post(self, request, *args, **kwargs):
+        context = self.get_context_data()
+        form = MyForm(request.POST,model_name=context['model_name'],fields_to_show=context['lista_formulario_campos'])
+        context['ruta_actual'] = self.request.path
+        
+        if form.is_valid():
+            model_name = context['model_name']
+            form.save(model_name=model_name)
+            return redirect(self.ruta_actual)
+        else:
+            context['form'] = form
+            return self.render_to_response(context)
+
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data()
+        form = MyForm(request.GET, model_name=context['model_name'], fields_to_show=context['lista_formulario_campos'])
+        context['datos'] = []
+        if form.is_valid():
+            form_data = form.cleaned_data
+            # Eliminamos los campos vacíos del formulario
+            form_data = {k: v for k, v in form_data.items() if v}
+            print(form_data)
+            try:
+                model = apps.get_model('bdd', context['model_name'])
+            except:
+                pass
+            try:
+                model = apps.get_model('x_cartel', context['model_name'])
+            except:
+                pass
+            armador = context['armador']
+            #armador.formulario_campos_contiene
+            form_data_copy = form_data.copy()
+            for k, v in form_data_copy.items():
+                if k in [obj.nombre for obj in armador.formulario_campos_contiene.all()]:
+                    form_data[f'{k}__contains'] = form_data.pop(k)
+                if k in [obj.nombre for obj in armador.formulario_campos_empieza_con.all()]:
+                    form_data[f'{k}__istartswith'] = form_data.pop(k)
+                    if k == 'codigo':
+                        es_codigo = True
+
+            if form_data == {}:
+                context['datos'] = []
+            else:
+                context['datos'] = list(model.objects.filter(**form_data).values())
+                if len(context['datos'])==1 and context['model_name']=='Item':
+                    item_trabajado = Item.objects.get(**context['datos'][0])
+                    if item_trabajado.trabajado:
+                        print('item_trabajado: ',item_trabajado.trabajado)
+                        pass
+                    else:
+                        item_trabajado.trabajado = True
+                        item_trabajado.save()
+                        print('Guardando item trabajado')
+                    
+                print(context['datos'])
+                if context['model_name'] == "Item":
+                    # Filtrar datos para incluir solo aquellos cuyo campo "actualizado" sea verdadero
+                    context['datos'] = [dato for dato in context['datos']]# if dato.get('actualizado') == True]
+        else:
+            context['form'] = form
+        filtered_data = [{k: v for k, v in d.items() if k in context['titulos']} for d in context['datos']]
+        context['datos'] = filtered_data
 
         return self.render_to_response(context)
 
@@ -535,230 +523,6 @@ class ItemsView(View):
         # Devolver JSON con la lista de items
         return JsonResponse(data, safe=False)
 #-----------------------------------------------------------------------------------------
-
-class Actualizar(MiVista):
-    def get_context_data(self, **kwargs):
-        self.context = super().get_context_data(**kwargs)
-        self.context['lista_html'] = ['actualizar.html',]
-
-
-        patoba = Patoba(request=self.request)
-        self.drive_service = patoba.drive_service
-        print("detectando: ", self.request.path)
-
-        datos = Listado_Planillas.objects.filter(listo=False, descargar=False)
-
-
-        hojas_por_item = []
-
-        for dato in datos:
-            sheet_names = ["",]
-            # Descargar el archivo de Excel desde Google Drive
-            request = self.drive_service.files().get_media(fileId=dato.identificador)
-            file = io.BytesIO()
-            downloader = MediaIoBaseDownload(file, request)
-            done = False
-            while done is False:
-                status, done = downloader.next_chunk()
-
-            # Leer el contenido del archivo de Excel
-            file.seek(0)
-            try:
-                #pd = "x"
-                xls = pd.read_excel(file, sheet_name=None)
-
-                # Obtener los nombres de las hojas
-                sheet_names.extend(xls.keys())
-                hojas_por_item.append(sheet_names)
-            except:
-                print("error con pandas")
-                hojas_por_item.append([])
-
-        self.context['datos'] = datos#[::-1]
-        self.context['hojas_por_item'] = hojas_por_item#[::-1]
-        seleccion_planillas = Listado_Planillas.objects.filter(listo=True)
-        self.context['seleccion_planillas'] = seleccion_planillas
-
-
-        formulario = MyForm(model_name=self.context['model_name'],fields_to_show=self.context['lista_formulario_campos'])
-        self.context['form'] = formulario
-        self.context['seleccion_planillas'] = Listado_Planillas.objects.filter(listo=True, descargar=False)
-        self.context['seleccion_descargar'] = Listado_Planillas.objects.filter(descargar=True)[::-1]
-        import os
-        from django.conf import settings
-        from django.db.models import Max
-
-
-        # Obtén el archivo más reciente de cada proveedor
-        latest_files = Listado_Planillas.objects.values('proveedor').annotate(latest_date=Max('fecha'))
-
-        for latest_file in latest_files:
-            # Obtén el proveedor y la fecha del archivo más reciente
-            proveedor = latest_file['proveedor']
-            latest_date = latest_file['latest_date']
-
-            # Obtén todos los archivos de este proveedor que no sean el más reciente
-            old_files = Listado_Planillas.objects.filter(proveedor=proveedor).exclude(fecha=latest_date)
-
-            for old_file in old_files:
-                # Construye la ruta al archivo físico
-                file_path = os.path.join(settings.MEDIA_ROOT, 'descargas', f'{old_file.proveedor}-{old_file.fecha}.xlsx')
-                file_path_ods = os.path.join(settings.MEDIA_ROOT, 'descargas', f'{old_file.proveedor}-{old_file.fecha}.ods')
-
-                # Elimina el archivo físico si existe
-                if os.path.isfile(file_path):
-                    os.remove(file_path)
-                if os.path.isfile(file_path_ods):
-                    os.remove(file_path_ods)
-
-                # Elimina el registro de la base de datos
-                old_file.delete()
-
-        for latest_file in latest_files:
-            # Obtén el proveedor y la fecha del archivo más reciente
-            proveedor = latest_file['proveedor']
-            latest_date = latest_file['latest_date']
-
-            # Elimina todos los archivos de este proveedor que no sean el más reciente
-            Listado_Planillas.objects.filter(proveedor=proveedor).exclude(fecha=latest_date).delete()
-
-        return self.context
-
-    def get(self, request, *args, **kwargs):
-        self.context = self.get_context_data()
-        print("GET")
-        print(self.request.GET)
-        print(self.context['datos'])
-
-        return self.render_to_response(self.context)
-
-    def post(self, request, *args, **kwargs):
-        self.context = self.get_context_data()
-        print("POST")
-        print(self.request.POST)
-        print(self.context['seleccion_planillas'])
-        if self.request.POST.get('actualizar_planillas')!='True':
-            proveedor = []
-            elementos_seleccionados = self.request.POST.getlist('elemento_seleccionado')
-            proveedor = self.request.POST.getlist('proveedor')
-            '''
-            check = Listado_Planillas.objects.all()
-            for c in check:
-                c.listo=False
-                c.save()'''
-            for elemento in elementos_seleccionados:
-                id, i = elemento.split(':')
-                planilla = Listado_Planillas.objects.get(id=id)
-                if i == "":
-                    planilla.listo = False
-                    planilla.save()
-                    continue
-                i = int(i)-1
-                planilla.listo = True
-                print("i: ",i,"planilla: ",planilla.listo)
-
-                if proveedor[i]:
-                    planilla.proveedor = Proveedor.objects.get(id=proveedor[i])
-                else:
-                    print("proveedor vacio")
-
-                hoja = self.request.POST.get('hoja_{}'.format(id))
-                if hoja != "":
-                    planilla.hoja = hoja
-                planilla.save()
-
-            self.context['seleccion_planillas'] = Listado_Planillas.objects.filter(listo=True, descargar=False)
-            print("seleccion: ",self.context['seleccion_planillas'])
-
-        else:
-            print("no entro aca, o si?")
-            id_carpeta_inbox = cosnt.INBOX
-            id_carpeta_plantillas = cosnt.PLANTILLAS
-            id_carpeta_descargar = cosnt.DESCARGAR
-            patoba = Patoba(request=self.request)
-
-            # -Iterar sobre la tabla y procesar cada archivo
-            ids = []
-            ids_enviar = []
-            mi_diccionario = {}
-            ids = self.request.POST.getlist('seleccionados')
-
-
-            ids_list = ast.literal_eval(ids[0])
-            ids_enviar = [int(id) for id in ids_list]
-            print("ids_enviar: ",ids_enviar)
-
-
-            '''
-            check = Listado_Planillas.objects.all()
-            for c in check:
-                c.listo=False
-                c.save()'''
-            seleccion_planillas = Listado_Planillas.objects.filter(id__in=ids_enviar)
-            for sp in seleccion_planillas:
-                nombre_proveedor = sp.descripcion
-                nombre_plantilla = sp.proveedor
-                nombre_descargable = "{}-{}".format(sp.proveedor,sp.fecha)
-                hoja_seleccionada = sp.hoja
-
-                print(nombre_proveedor, nombre_plantilla, nombre_descargable, hoja_seleccionada)
-
-                id_archivo_proveedor = patoba.obtener_id_por_nombre(
-                    nombre_proveedor, id_carpeta_inbox)
-
-                id_archivo_plantilla = patoba.obtener_id_por_nombre(
-                    nombre_plantilla, id_carpeta_plantillas)
-                id_hoja_reemplazable = patoba.obtener_id_hoja_por_nombre(
-                    "Reemplazable", id_archivo_plantilla)
-                if id_archivo_proveedor:
-                    request = patoba.drive_service.files().get_media(fileId=id_archivo_proveedor)
-                    hoja_proveedor = io.BytesIO()
-                    downloader = MediaIoBaseDownload(hoja_proveedor, request)
-                    done = False
-                    while done is False:
-                        status, done = downloader.next_chunk()
-                    hoja_proveedor.seek(0)
-                    hoja_proveedor = pd.read_excel(
-                        hoja_proveedor, sheet_name=None)
-                else:
-                    print(
-                        f"No se encontró el archivo {nombre_proveedor}.xlsx en la carpeta Inbox")
-                    hoja_proveedor = None
-
-                print(type(hoja_proveedor))
-
-                patoba.copiar_reemplazable(
-                    id_archivo_proveedor, hoja_seleccionada, id_hoja_reemplazable, id_archivo_plantilla)
-
-                patoba.crear_buscar_copia_descarga(id_archivo_plantilla, id_carpeta_descargar)
-                identificador = patoba.obtener_id_por_nombre(nombre_plantilla, id_carpeta_descargar)
-
-                print("nombre: {}, identificador: {}".format(nombre_descargable, identificador))
-                mi_diccionario[str(nombre_descargable)] = str(identificador)
-
-                sp.listo = True
-                sp.save()
-            print("diccionario: ",mi_diccionario)
-            self.context['seleccion_planillas'] = Listado_Planillas.objects.filter(listo=True)
-
-
-            if self.request.POST.get('descargar')=='True':
-                # Descargar los archivos y crear el archivo zip
-                zip_content = patoba.download_and_zip_files(mi_diccionario)
-                # Crear una respuesta HTTP con el contenido del archivo zip
-                response = HttpResponse(zip_content, content_type='application/zip')
-                response['Content-Disposition'] = 'attachment; filename=files.zip'
-
-                # Retornar la respuesta HTTP
-                return response
-
-
-
-        ids_borrar = self.request.POST.getlist('seleccionado_borrar')
-        Listado_Planillas.objects.filter(id__in=ids_borrar).delete()
-        #context['datos'] = Item.objects.filter(id__in=ids)
-        self.context['datos'] = Listado_Planillas.objects.filter(listo=False, descargar=False).reverse()
-        return self.render_to_response(self.context)
 
 class Imprimir(TemplateView):
     template_name = 'generic_template.html'
