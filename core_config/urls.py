@@ -24,6 +24,8 @@ from django.views.generic.base import RedirectView
 
 
 urlpatterns = [
+    path("reactpy/", include("reactpy_django.http.urls")),
+    path('', include('core_elementos.urls')),
     path('', include('carga_archivo.urls')),
     path('', include('facturacion.urls')),
     path('', include('boletas.urls')),
