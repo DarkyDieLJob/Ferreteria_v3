@@ -1,3 +1,4 @@
+from django.shortcuts import render
 from django.views.generic import TemplateView
 from x_articulos.models import Articulo
 from x_articulos.forms import ArticuloForm
@@ -72,3 +73,10 @@ class Crud(TemplateView):
         else:
             return JsonResponse({'errors': form.errors}, status=400)
 
+def listar_botones(request):
+    button_list = [
+        {'text': 'Botón 1', 'class': 'btn btn-primary'},
+        {'text': 'Botón 2', 'class': 'btn btn-danger'},
+        # ... más botones
+    ]
+    return render(request, 'core_elementos/core_listar_botones.html', {'button_list': button_list})

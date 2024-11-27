@@ -1,0 +1,16 @@
+{% load static %}
+<!-- base.html -->
+<!DOCTYPE html>
+<html lang="en">
+{% load botones_tags %}
+<html>
+<div>
+    {% render_buttons button_list %}
+</div>
+
+<div>
+    {% for button_data in button_list %}
+        {% render_button button_data %}
+    {% endfor %}
+</div>
+</html>
