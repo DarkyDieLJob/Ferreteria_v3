@@ -27,7 +27,6 @@ class BaseModelAdmin(admin.ModelAdmin):
             if 'fecha' in self.list_display:
                 self.list_display.remove('fecha')
         super().__init__(model, admin_site)
-        print(self.list_display)
 
     def create_display_method(self, field):
         def display_method(obj):
