@@ -51,3 +51,4 @@ actualizador/log.txt
 core_config/log.txt
 main_gpread.py
 log.txt
+*.txt
