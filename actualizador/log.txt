@@ -61,3 +61,4 @@ Traceback (most recent call last):
 NameError: name 'transaccion' is not defined
 2024-11-23 13:20:49,093 - INFO - /app/utils/ordenar_query.py changed, reloading.
 2024-11-23 13:21:10,052 - INFO - /app/utils/ordenar_query.py changed, reloading.
+2024-11-28 10:27:48,638 - INFO - /app/bdd/admin.py changed, reloading.
