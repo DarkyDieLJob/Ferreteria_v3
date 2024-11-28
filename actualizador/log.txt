@@ -64,3 +64,361 @@ NameError: name 'transaccion' is not defined
 2024-11-23 18:21:26,665 - INFO - /app/actualizador/actualizador_csv.py changed, reloading.
 2024-11-23 18:21:46,568 - INFO - /app/actualizador/actualizador_csv.py changed, reloading.
 2024-11-23 18:23:31,628 - INFO - /app/actualizador/actualizador_csv.py changed, reloading.
+2024-11-27 13:52:23,469 - WARNING - Not Found: /favicon.ico
+2024-11-27 13:53:06,489 - WARNING - Not Found: /elementos/listar_botones
+2024-11-27 13:53:57,438 - INFO - /app/core_config/urls.py changed, reloading.
+2024-11-27 13:54:03,483 - ERROR - Internal Server Error: /elementos/listar_botones
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/app/core_elementos/views.py", line 81, in listar_botones
+    return render(request, 'core_listar_botones.html', {'button_list': button_list})
+NameError: name 'render' is not defined
+2024-11-27 13:54:32,882 - INFO - /app/core_elementos/views.py changed, reloading.
+2024-11-27 13:55:34,150 - INFO - /app/core_elementos/views.py changed, reloading.
+2024-11-27 13:55:39,474 - ERROR - Internal Server Error: /elementos/listar_botones
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/app/core_elementos/views.py", line 82, in listar_botones
+    return render(request, 'core_listar_botones.html', {'button_list': button_list})
+  File "/usr/local/lib/python3.10/site-packages/django/shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/usr/local/lib/python3.10/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "/usr/local/lib/python3.10/site-packages/django/template/loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: core_listar_botones.html
+2024-11-27 13:56:13,511 - INFO - /app/core_elementos/views.py changed, reloading.
+2024-11-27 13:56:19,507 - ERROR - Internal Server Error: /elementos/listar_botones
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/app/core_elementos/views.py", line 82, in listar_botones
+    return render(request, 'core_elementos/core_listar_botones.html', {'button_list': button_list})
+  File "/usr/local/lib/python3.10/site-packages/django/shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/usr/local/lib/python3.10/site-packages/django/template/loader.py", line 62, in render_to_string
+    return template.render(context, request)
+  File "/usr/local/lib/python3.10/site-packages/django/template/backends/django.py", line 62, in render
+    return self.template.render(context)
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 175, in render
+    return self._render(context)
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 958, in render_annotated
+    return self.render(context)
+  File "/usr/local/lib/python3.10/site-packages/django/template/library.py", line 239, in render
+    output = self.func(*resolved_args, **resolved_kwargs)
+  File "/app/core_elementos/templatetags/botones_tag.py", line 10, in render_buttons
+    output += f'<button class="{button_data.clase}">{button_data.text}</button>'
+AttributeError: 'dict' object has no attribute 'clase'
+2024-11-27 14:11:15,461 - INFO - /app/core_elementos/templatetags/botones_tag.py changed, reloading.
+2024-11-27 14:11:22,914 - ERROR - Internal Server Error: /elementos/listar_botones
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/app/core_elementos/views.py", line 82, in listar_botones
+    return render(request, 'core_elementos/core_listar_botones.html', {'button_list': button_list})
+  File "/usr/local/lib/python3.10/site-packages/django/shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/usr/local/lib/python3.10/site-packages/django/template/loader.py", line 62, in render_to_string
+    return template.render(context, request)
+  File "/usr/local/lib/python3.10/site-packages/django/template/backends/django.py", line 62, in render
+    return self.template.render(context)
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 175, in render
+    return self._render(context)
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 958, in render_annotated
+    return self.render(context)
+  File "/usr/local/lib/python3.10/site-packages/django/template/library.py", line 239, in render
+    output = self.func(*resolved_args, **resolved_kwargs)
+  File "/app/core_elementos/templatetags/botones_tag.py", line 8, in render_buttons
+    print(context[botton_list])
+NameError: name 'botton_list' is not defined
+2024-11-27 14:12:03,582 - INFO - /app/core_elementos/templatetags/botones_tag.py changed, reloading.
+2024-11-27 14:14:10,246 - INFO - /app/core_elementos/templatetags/botones_tag.py changed, reloading.
+2024-11-27 14:14:18,261 - INFO - /app/core_elementos/templatetags/botones_tag.py changed, reloading.
+2024-11-27 14:14:26,833 - INFO - /app/core_elementos/views.py changed, reloading.
+2024-11-27 14:14:39,211 - WARNING - Not Found: /favicon.ico
+2024-11-27 14:33:56,862 - WARNING - Not Found: /favicon.ico
+2024-11-27 14:36:44,936 - WARNING - Not Found: /favicon.ico
+2024-11-27 14:41:15,458 - INFO - /app/core_elementos/templatetags/botones_tag.py changed, reloading.
+2024-11-27 14:41:29,699 - ERROR - Internal Server Error: /elementos/listar_botones
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/app/core_elementos/views.py", line 82, in listar_botones
+    return render(request, 'core_elementos/core_listar_botones.html', {'button_list': button_list})
+  File "/usr/local/lib/python3.10/site-packages/django/shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/usr/local/lib/python3.10/site-packages/django/template/loader.py", line 62, in render_to_string
+    return template.render(context, request)
+  File "/usr/local/lib/python3.10/site-packages/django/template/backends/django.py", line 62, in render
+    return self.template.render(context)
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 175, in render
+    return self._render(context)
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 958, in render_annotated
+    return self.render(context)
+  File "/usr/local/lib/python3.10/site-packages/django/template/library.py", line 239, in render
+    output = self.func(*resolved_args, **resolved_kwargs)
+  File "/app/core_elementos/templatetags/botones_tag.py", line 11, in render_buttons
+    return mark_safe(output)
+NameError: name 'mark_safe' is not defined
+2024-11-27 14:42:44,115 - INFO - /app/core_elementos/templatetags/botones_tag.py changed, reloading.
+2024-11-27 14:42:49,959 - WARNING - Not Found: /favicon.ico
+2024-11-27 14:43:10,895 - INFO - /app/core_elementos/templatetags/botones_tag.py changed, reloading.
+2024-11-27 14:43:16,077 - WARNING - Not Found: /favicon.ico
+2024-11-27 15:05:46,980 - INFO - /app/core_elementos/templatetags/botones_tag.py changed, reloading.
+2024-11-27 15:08:33,381 - INFO - /app/core_elementos/templatetags/botones_tag.py changed, reloading.
+2024-11-27 15:09:22,585 - ERROR - Internal Server Error: /elementos/listar_botones
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/app/core_elementos/views.py", line 82, in listar_botones
+    return render(request, 'core_elementos/core_listar_botones.html', {'button_list': button_list})
+  File "/usr/local/lib/python3.10/site-packages/django/shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/usr/local/lib/python3.10/site-packages/django/template/loader.py", line 62, in render_to_string
+    return template.render(context, request)
+  File "/usr/local/lib/python3.10/site-packages/django/template/backends/django.py", line 62, in render
+    return self.template.render(context)
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 175, in render
+    return self._render(context)
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 958, in render_annotated
+    return self.render(context)
+  File "/usr/local/lib/python3.10/site-packages/django/template/defaulttags.py", line 238, in render
+    nodelist.append(node.render_annotated(context))
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 958, in render_annotated
+    return self.render(context)
+  File "/usr/local/lib/python3.10/site-packages/django/template/library.py", line 239, in render
+    output = self.func(*resolved_args, **resolved_kwargs)
+  File "/app/core_elementos/templatetags/botones_tag.py", line 16, in render_button
+    return mark_safe(f'<button class="{button_data["class"]}">{button_data["text"]}</button>')
+NameError: name 'button_data' is not defined
+2024-11-27 15:09:23,052 - WARNING - Not Found: /favicon.ico
+2024-11-27 15:10:44,770 - ERROR - Internal Server Error: /elementos/listar_botones
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/app/core_elementos/views.py", line 82, in listar_botones
+    return render(request, 'core_elementos/core_listar_botones.html', {'button_list': button_list})
+  File "/usr/local/lib/python3.10/site-packages/django/shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/usr/local/lib/python3.10/site-packages/django/template/loader.py", line 62, in render_to_string
+    return template.render(context, request)
+  File "/usr/local/lib/python3.10/site-packages/django/template/backends/django.py", line 62, in render
+    return self.template.render(context)
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 175, in render
+    return self._render(context)
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 958, in render_annotated
+    return self.render(context)
+  File "/usr/local/lib/python3.10/site-packages/django/template/defaulttags.py", line 238, in render
+    nodelist.append(node.render_annotated(context))
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 958, in render_annotated
+    return self.render(context)
+  File "/usr/local/lib/python3.10/site-packages/django/template/library.py", line 239, in render
+    output = self.func(*resolved_args, **resolved_kwargs)
+  File "/app/core_elementos/templatetags/botones_tag.py", line 16, in render_button
+    return mark_safe(f'<button class="{button_data["class"]}">{button_data["text"]}</button>')
+NameError: name 'button_data' is not defined
+2024-11-27 15:10:45,243 - WARNING - Not Found: /favicon.ico
+2024-11-27 15:11:36,321 - ERROR - Internal Server Error: /elementos/listar_botones
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/app/core_elementos/views.py", line 82, in listar_botones
+    return render(request, 'core_elementos/core_listar_botones.html', {'button_list': button_list})
+  File "/usr/local/lib/python3.10/site-packages/django/shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/usr/local/lib/python3.10/site-packages/django/template/loader.py", line 62, in render_to_string
+    return template.render(context, request)
+  File "/usr/local/lib/python3.10/site-packages/django/template/backends/django.py", line 62, in render
+    return self.template.render(context)
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 175, in render
+    return self._render(context)
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 958, in render_annotated
+    return self.render(context)
+  File "/usr/local/lib/python3.10/site-packages/django/template/defaulttags.py", line 238, in render
+    nodelist.append(node.render_annotated(context))
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 958, in render_annotated
+    return self.render(context)
+  File "/usr/local/lib/python3.10/site-packages/django/template/library.py", line 239, in render
+    output = self.func(*resolved_args, **resolved_kwargs)
+  File "/app/core_elementos/templatetags/botones_tag.py", line 16, in render_button
+    return mark_safe(f'<button class="{button_data["class"]}">{button_data["text"]}</button>')
+NameError: name 'button_data' is not defined
+2024-11-27 15:11:36,523 - WARNING - Not Found: /favicon.ico
+2024-11-27 15:12:38,298 - ERROR - Internal Server Error: /elementos/listar_botones
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/app/core_elementos/views.py", line 82, in listar_botones
+    return render(request, 'core_elementos/core_listar_botones.html', {'button_list': button_list})
+  File "/usr/local/lib/python3.10/site-packages/django/shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/usr/local/lib/python3.10/site-packages/django/template/loader.py", line 62, in render_to_string
+    return template.render(context, request)
+  File "/usr/local/lib/python3.10/site-packages/django/template/backends/django.py", line 62, in render
+    return self.template.render(context)
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 175, in render
+    return self._render(context)
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 1000, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 958, in render_annotated
+    return self.render(context)
+  File "/usr/local/lib/python3.10/site-packages/django/template/defaulttags.py", line 238, in render
+    nodelist.append(node.render_annotated(context))
+  File "/usr/local/lib/python3.10/site-packages/django/template/base.py", line 958, in render_annotated
+    return self.render(context)
+  File "/usr/local/lib/python3.10/site-packages/django/template/library.py", line 239, in render
+    output = self.func(*resolved_args, **resolved_kwargs)
+  File "/app/core_elementos/templatetags/botones_tag.py", line 16, in render_button
+    return mark_safe(f'<button class="{button_data["class"]}">{button_data["text"]}</button>')
+NameError: name 'button_data' is not defined
+2024-11-27 15:12:38,511 - WARNING - Not Found: /favicon.ico
+2024-11-27 15:13:15,359 - INFO - /app/core_elementos/templatetags/botones_tag.py changed, reloading.
+2024-11-27 15:13:26,502 - WARNING - Not Found: /favicon.ico
+2024-11-27 16:09:43,181 - INFO - /app/core_config/settings.py changed, reloading.
+2024-11-27 16:12:26,603 - WARNING - [93mReactPy did not find any components! You are either not using any ReactPy components, using the template tag incorrectly, or your HTML templates are not registered with Django.[0m
+2024-11-27 16:12:29,076 - WARNING - [93mReactPy did not find any components! You are either not using any ReactPy components, using the template tag incorrectly, or your HTML templates are not registered with Django.[0m
+2024-11-27 16:12:29,093 - INFO - Watching for file changes with StatReloader
+2024-11-27 16:17:19,855 - WARNING - [93mReactPy did not find any components! You are either not using any ReactPy components, using the template tag incorrectly, or your HTML templates are not registered with Django.[0m
+2024-11-27 16:17:22,391 - WARNING - [93mReactPy did not find any components! You are either not using any ReactPy components, using the template tag incorrectly, or your HTML templates are not registered with Django.[0m
+2024-11-27 16:17:22,407 - INFO - Watching for file changes with StatReloader
+2024-11-27 16:21:24,689 - WARNING - [93mReactPy did not find any components! You are either not using any ReactPy components, using the template tag incorrectly, or your HTML templates are not registered with Django.[0m
+2024-11-27 16:21:27,495 - WARNING - [93mReactPy did not find any components! You are either not using any ReactPy components, using the template tag incorrectly, or your HTML templates are not registered with Django.[0m
+2024-11-27 16:21:27,511 - INFO - Watching for file changes with StatReloader
+2024-11-27 16:23:54,160 - WARNING - [93mReactPy did not find any components! You are either not using any ReactPy components, using the template tag incorrectly, or your HTML templates are not registered with Django.[0m
+2024-11-27 16:26:46,946 - WARNING - [93mReactPy did not find any components! You are either not using any ReactPy components, using the template tag incorrectly, or your HTML templates are not registered with Django.[0m
+2024-11-27 16:26:49,782 - WARNING - [93mReactPy did not find any components! You are either not using any ReactPy components, using the template tag incorrectly, or your HTML templates are not registered with Django.[0m
+2024-11-27 16:26:49,799 - INFO - Watching for file changes with StatReloader
+2024-11-27 16:44:14,603 - INFO - /app/bdd/admin.py changed, reloading.
+2024-11-27 16:44:18,142 - WARNING - [93mReactPy did not find any components! You are either not using any ReactPy components, using the template tag incorrectly, or your HTML templates are not registered with Django.[0m
+2024-11-27 16:44:18,159 - INFO - Watching for file changes with StatReloader
+2024-11-27 16:48:03,094 - INFO - /app/bdd/admin.py changed, reloading.
+2024-11-27 16:48:06,533 - WARNING - [93mReactPy did not find any components! You are either not using any ReactPy components, using the template tag incorrectly, or your HTML templates are not registered with Django.[0m
+2024-11-27 16:48:06,550 - INFO - Watching for file changes with StatReloader
+2024-11-27 16:48:16,328 - WARNING - [93mReactPy did not find any components! You are either not using any ReactPy components, using the template tag incorrectly, or your HTML templates are not registered with Django.[0m
+2024-11-27 16:48:19,078 - WARNING - [93mReactPy did not find any components! You are either not using any ReactPy components, using the template tag incorrectly, or your HTML templates are not registered with Django.[0m
+2024-11-27 16:48:19,095 - INFO - Watching for file changes with StatReloader
+2024-11-27 16:49:59,090 - INFO - /app/core_config/settings.py changed, reloading.
+2024-11-27 16:50:28,629 - INFO - /app/core_config/settings.py changed, reloading.
+2024-11-27 16:51:10,936 - INFO - /app/core_config/settings.py changed, reloading.
+2024-11-27 16:51:26,809 - INFO - /app/core_config/settings.py changed, reloading.
+2024-11-27 16:57:40,383 - INFO - /app/core_config/settings.py changed, reloading.
+2024-11-27 16:58:12,684 - INFO - /app/bdd/admin.py changed, reloading.
+2024-11-27 16:59:40,547 - INFO - /app/bdd/admin.py changed, reloading.
+2024-11-27 17:00:11,663 - INFO - /app/core_config/settings.py changed, reloading.
+2024-11-27 17:00:15,242 - WARNING - [93mReactPy did not find any components! You are either not using any ReactPy components, using the template tag incorrectly, or your HTML templates are not registered with Django.[0m
+2024-11-27 17:00:15,260 - INFO - Watching for file changes with StatReloader
+2024-11-27 17:00:15,426 - INFO - HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+2024-11-27 17:00:15,427 - INFO - Configuring endpoint tcp:port=8000:interface=0.0.0.0
+2024-11-27 17:00:15,428 - INFO - Listening on TCP address 0.0.0.0:8000
+2024-11-27 17:02:42,123 - INFO - [mHTTP GET /elementos/listar_botones 200 [0.02, 172.17.0.1:53362][0m
+2024-11-27 17:02:42,301 - WARNING - Not Found: /favicon.ico
+2024-11-27 17:02:42,303 - WARNING - [33mHTTP GET /favicon.ico 404 [0.04, 172.17.0.1:53362][0m
+2024-11-27 17:02:46,905 - INFO - [mHTTP GET /admin/login/?next=/admin/jsi18n/ 200 [0.15, 172.17.0.1:39012][0m
+2024-11-27 17:02:49,762 - INFO - [mHTTP GET /buscador/ 200 [0.09, 172.17.0.1:39026][0m
+2024-11-27 17:02:50,235 - INFO - [mHTTP GET /consultar_carrito/ 200 [0.03, 172.17.0.1:39034][0m
+2024-11-27 17:02:50,274 - INFO - [mHTTP GET /obtener_cliente/ 200 [0.07, 172.17.0.1:39026][0m
+2024-11-27 17:02:54,314 - INFO - [mHTTP GET /accounts/login/?next=/buscador/ 200 [0.02, 172.17.0.1:39026][0m
+2024-11-27 17:02:58,974 - INFO - [32mHTTP POST /accounts/login/ 302 [2.55, 172.17.0.1:39034][0m
+2024-11-27 17:02:59,046 - INFO - [mHTTP GET /buscador/ 200 [0.06, 172.17.0.1:39034][0m
+2024-11-27 17:02:59,429 - INFO - [mHTTP GET /obtener_cliente/ 200 [0.08, 172.17.0.1:39034][0m
+2024-11-27 17:02:59,434 - INFO - [mHTTP GET /consultar_carrito/ 200 [0.09, 172.17.0.1:46412][0m
+2024-11-27 17:03:04,921 - INFO - [mHTTP GET /admin/ 200 [0.15, 172.17.0.1:39034][0m
+2024-11-27 17:03:05,204 - INFO - [mHTTP GET /static/admin/css/dark_mode.css 200 [0.03, 172.17.0.1:46412][0m
+2024-11-27 17:03:05,205 - INFO - [mHTTP GET /static/admin/js/theme.js 200 [0.02, 172.17.0.1:46418][0m
+2024-11-27 17:03:05,209 - INFO - [mHTTP GET /static/admin/css/nav_sidebar.css 200 [0.03, 172.17.0.1:46424][0m
+2024-11-27 17:03:05,213 - INFO - [mHTTP GET /static/admin/css/base.css 200 [0.04, 172.17.0.1:39034][0m
+2024-11-27 17:03:05,220 - INFO - [mHTTP GET /static/admin/css/dashboard.css 200 [0.03, 172.17.0.1:46440][0m
+2024-11-27 17:03:05,223 - INFO - [mHTTP GET /static/admin/js/nav_sidebar.js 200 [0.04, 172.17.0.1:46432][0m
+2024-11-27 17:03:05,237 - INFO - [mHTTP GET /static/admin/css/responsive.css 200 [0.02, 172.17.0.1:46412][0m
+2024-11-27 17:03:05,257 - INFO - [mHTTP GET /static/admin/css/fonts.css 200 [0.00, 172.17.0.1:39034][0m
+2024-11-27 17:03:05,299 - INFO - [mHTTP GET /static/admin/img/icon-addlink.svg 200 [0.01, 172.17.0.1:39034][0m
+2024-11-27 17:03:05,302 - INFO - [mHTTP GET /static/admin/img/icon-deletelink.svg 200 [0.01, 172.17.0.1:46432][0m
+2024-11-27 17:03:05,304 - INFO - [mHTTP GET /static/admin/img/icon-changelink.svg 200 [0.01, 172.17.0.1:46412][0m
+2024-11-27 17:03:05,345 - INFO - [mHTTP GET /static/admin/fonts/Roboto-Regular-webfont.woff 200 [0.01, 172.17.0.1:39034][0m
+2024-11-27 17:03:05,350 - INFO - [mHTTP GET /static/admin/fonts/Roboto-Light-webfont.woff 200 [0.01, 172.17.0.1:46412][0m
+2024-11-27 17:03:05,356 - INFO - [mHTTP GET /static/admin/fonts/Roboto-Bold-webfont.woff 200 [0.01, 172.17.0.1:46432][0m
+2024-11-27 17:04:09,982 - WARNING - [93mReactPy did not find any components! You are either not using any ReactPy components, using the template tag incorrectly, or your HTML templates are not registered with Django.[0m
+2024-11-27 17:04:20,741 - WARNING - [93mReactPy did not find any components! You are either not using any ReactPy components, using the template tag incorrectly, or your HTML templates are not registered with Django.[0m
+2024-11-27 17:10:38,910 - WARNING - [93mReactPy did not find any components! You are either not using any ReactPy components, using the template tag incorrectly, or your HTML templates are not registered with Django.[0m
+2024-11-27 17:10:41,647 - WARNING - [93mReactPy did not find any components! You are either not using any ReactPy components, using the template tag incorrectly, or your HTML templates are not registered with Django.[0m
+2024-11-27 17:10:41,664 - INFO - Watching for file changes with StatReloader
+2024-11-27 17:33:14,216 - INFO - /app/bdd/admin.py changed, reloading.
+2024-11-27 17:36:23,559 - INFO - /app/bdd/admin.py changed, reloading.
+2024-11-27 17:36:53,308 - WARNING - Not Found: /favicon.ico
+2024-11-27 17:45:58,259 - INFO - /app/core_config/urls.py changed, reloading.
+2024-11-27 17:46:21,447 - INFO - /app/bdd/admin.py changed, reloading.
+2024-11-27 17:47:05,138 - INFO - /app/core_config/settings.py changed, reloading.
+2024-11-27 17:47:08,866 - WARNING - [93mReactPy did not find any components! You are either not using any ReactPy components, using the template tag incorrectly, or your HTML templates are not registered with Django.[0m
+2024-11-27 17:47:08,883 - INFO - Watching for file changes with StatReloader
+2024-11-27 17:47:09,061 - INFO - HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+2024-11-27 17:47:09,061 - INFO - Configuring endpoint tcp:port=8000:interface=0.0.0.0
+2024-11-27 17:47:09,063 - INFO - Listening on TCP address 0.0.0.0:8000
+2024-11-27 17:48:00,076 - INFO - /app/core_config/asgi.py changed, reloading.
+2024-11-27 17:48:03,573 - WARNING - [93mReactPy did not find any components! You are either not using any ReactPy components, using the template tag incorrectly, or your HTML templates are not registered with Django.[0m
+2024-11-27 17:48:03,590 - INFO - Watching for file changes with StatReloader
+2024-11-27 17:48:55,839 - INFO - /app/core_config/asgi.py changed, reloading.
+2024-11-27 17:48:59,355 - WARNING - [93mReactPy did not find any components! You are either not using any ReactPy components, using the template tag incorrectly, or your HTML templates are not registered with Django.[0m
+2024-11-27 17:48:59,372 - INFO - Watching for file changes with StatReloader
+2024-11-27 17:48:59,544 - INFO - HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+2024-11-27 17:48:59,545 - INFO - Configuring endpoint tcp:port=8000:interface=0.0.0.0
+2024-11-27 17:48:59,547 - INFO - Listening on TCP address 0.0.0.0:8000
