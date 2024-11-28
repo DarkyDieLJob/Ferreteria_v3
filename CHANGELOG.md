@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.6.1](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.6.0...v3.6.1) (2024-11-28)
+
+
+### Bug Fixes
+
+* **BDD:** :bug: Se corrigio un error del panel de administrador ([d56fbd1](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/d56fbd15a4f8312b74bcca932e6425994b4382e5))
+* **Loguer:** :bug: Agrego logs al ignore ([84944db](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/84944dbdd8cf355a7306800202099c610d93cfcd))
+
 ## [3.6.0](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.5.1...v3.6.0) (2024-11-23)
 
 
