@@ -1,11 +1,11 @@
 from django.contrib import admin
 from django.db import models
 from .models import *
-from django.db.models.fields.reverse_related import ManyToOneRel
+from django.db.models.fields.reverse_related import ManyToOneRel, ManyToManyRel
 
 class BaseModelAdmin(admin.ModelAdmin):
     def __init__(self, model, admin_site):
-        self.fields = [field.name for field in model._meta.get_fields() if not isinstance(field, ManyToOneRel) and field.name != 'id' and not (model.__name__ == 'Listado_Planillas' and field.name == 'fecha')]
+        self.fields = [field.name for field in model._meta.get_fields() if not isinstance(field, ManyToOneRel) and not isinstance(field, ManyToManyRel) and field.name != 'id' and not (model.__name__ == 'Listado_Planillas' and field.name == 'fecha')]
         if model.__name__ in ['Formulario_Campos', 'Modelo_Campos'] and 'armador' in self.fields:
             self.fields.remove('armador')
         self.list_display = self.fields.copy()
