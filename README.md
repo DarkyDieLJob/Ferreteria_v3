@@ -1,6 +1,7 @@
 # Ferreteria_v3.
 
 ## Flujo de trabajo GIT.
+    - Release: npx standard-version
 
 ### Descripcion de ramas.
 
