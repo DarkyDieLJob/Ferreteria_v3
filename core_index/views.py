@@ -13,7 +13,7 @@ class Vista_Index(ContextoAndamio):
         context['elemento_parrafo'] = 'core_elementos/core_parrafo.html'
         context['parrafo'] = 'Un parrafo'
         context['components'] = 'core_elementos/components.html'
-        context['World'] = "Nombre"
+        context['World'] = "Formulario"
         
         
         return context
