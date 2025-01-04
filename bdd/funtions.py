@@ -1,7 +1,7 @@
 from googleapiclient.discovery import build
 import io
 from googleapiclient.http import MediaIoBaseDownload
-#import pandas as pd
+import pandas as pd
 from googleapiclient.http import MediaIoBaseUpload
 from datetime import datetime, timedelta
 from django.conf import settings as const

@@ -559,7 +559,7 @@ class Patoba():
             if default_storage.exists(file_path):
                 default_storage.delete(file_path)
         except:
-            file_path = f'/Users/DarkyDieL/Documents/GitHub/pagina-pf-paoli/media/descargas/{file_name}'
+            file_path = f'/Users/Programar/Documents/GitHub/Ferreteria_v3/media/descargas/{file_name}'
 
             if default_storage.exists(file_path):
                 default_storage.delete(file_path)
@@ -577,7 +577,7 @@ class Patoba():
             xlsx_writer = pd.ExcelWriter(file_path_xlsx)
         except:
             # Crea un objeto ExcelWriter para guardar en formato xls
-            file_path_xlsx = f'/Users/DarkyDieL/Documents/GitHub/pagina-pf-paoli/media/descargas/{spreadsheets["properties"]["title"]}-{sp.fecha}.xlsx'
+            file_path_xlsx = f'/Users/Programar/Documents/GitHub/Ferreteria_v3/media/descargas/{spreadsheets["properties"]["title"]}-{sp.fecha}.xlsx'
             if default_storage.exists(file_path_xlsx): #<-- File "/home/darkydiel/mysite/bdd/gestor_google.py", line 533
                 default_storage.delete(file_path_xlsx)
             xlsx_writer = pd.ExcelWriter(file_path_xlsx)
@@ -590,7 +590,7 @@ class Patoba():
             ods_writer = pd.ExcelWriter(file_path_ods, engine='odf')
         except:
             # Crea un objeto ExcelWriter para guardar en formato ods
-            file_path_ods = f'/Users/DarkyDieL/Documents/GitHub/pagina-pf-paoli/media/descargas/{spreadsheets["properties"]["title"]}-{sp.fecha}.ods'
+            file_path_ods = f'/Users/Programar/Documents/GitHub/Ferreteria_v3/media/descargas/{spreadsheets["properties"]["title"]}-{sp.fecha}.ods'
             if default_storage.exists(file_path_ods):
                 default_storage.delete(file_path_ods)
             ods_writer = pd.ExcelWriter(file_path_ods, engine='odf')

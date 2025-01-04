@@ -34,21 +34,44 @@ def obtener_cliente(request):
         data['clientes'].append(c)
     return JsonResponse(data, safe=False)
 
+def prueba_post(request):
+    if request.method == 'POST':
+        print(request)
+        print(request.META)
+        data = json.loads(request.body)
+        print(data)
+        return HttpResponse(status=200)
+
+
 def procesar_transaccion(request):
     if request.method == 'POST':
-        print("procesar_transaccion:")
-            
+        print("procesar_transaccion... request:")
+        print(request)
+        print("Datos recibidos en request.POST:")
+        print(request.POST)
+        print("Datos recibidos en request.body")
+        
+        try:
+            data = json.loads(request.body)
+            print(data)
+            # ... your logic using 'data' ...
+        except json.JSONDecodeError:
+            # Handle invalid JSON data here
+            print("Error: Invalid JSON format")
+            return HttpResponseBadRequest("Invalid JSON data")
+        
         request_dict = request_on_procesar_transaccion_to_dict(request)
         print("request_dict: ")
         print(request_dict)
         
         registro_dic = registrar_articulos_vendidos(request_dict)
-        
-        json = registro_dic["json"]
+        print("registro_dic: ")
+        print(registro_dic)
+        json_data = registro_dic["json"]
         print("boleta json: ")
-        print(json)
+        print(json_data)
 
-        for boleta in json:
+        for boleta in json_data:
             try:
                 rta = asyncio.run(conectar_a_websocket(boleta))
                 print("Respuesta: ")

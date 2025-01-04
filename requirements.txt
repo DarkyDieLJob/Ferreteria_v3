@@ -31,3 +31,4 @@ django-dynamic-fixture
 factory-boy
 jwt
 websockets
+schema

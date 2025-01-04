@@ -4,7 +4,8 @@ from .models import Cliente, MetodoPago, Transaccion
 from django.contrib.auth.models import User
 from django.http import HttpResponse
 from .models import ArticuloVendido
-
+from schema import Schema, And, Use
+import json
 
 def ciclo(fiscal=ComandoFiscal):
     i = 1
@@ -31,23 +32,43 @@ def cliente_to_dict(cliente):
     }
     return data
 
-def request_on_procesar_transaccion_to_dict(request):
-    data = {
-        "nombre_usuario" : request.POST.get('usuario'),
-        "carrito_id" : request.POST.get('carrito_id'),
-        "id_cliente" : request.POST.get('cliente_id'),
-        "total" : request.POST.get('total'),
-        "total_efectivo" : request.POST.get('total_efectivo'),
-        "articulos_vendidos" : request.POST.get('articulos_vendidos'),
-        "id_metodo_de_pago" : request.POST.get('metodo_de_pago'),
+def mapear_datos(data):
+    return {
+        "nombre_usuario": data["usuario"],
+        "carrito_id": data["carrito_id"],
+        "id_cliente": data["cliente_id"],
+        "total": data["total"],
+        "total_efectivo": data["total_efectivo"],
+        "id_metodo_de_pago": data["metodo_de_pago"],
     }
-    return data
+
+
+def request_on_procesar_transaccion_to_dict(request):
+    schema = Schema({
+        "usuario": str,
+        "carrito_id": int,
+        "cliente_id": int,
+        "total": float,
+        "total_efectivo": float,
+        "metodo_de_pago": int,
+    })
+
+    try:
+        data = json.loads(request.body)
+        schema.validate(data)  # Validación de los datos
+        
+        return mapear_datos(data)
+    except (json.JSONDecodeError, SchemaError) as e:
+        # Manejar el error, por ejemplo, devolver un mensaje de error personalizado
+        return {'error': str(e)}
 
 def registrar_articulos_vendidos(request_dict):
     try:
         usuario = User.objects.get(username=request_dict['nombre_usuario'])
     except User.DoesNotExist:
         return HttpResponse(status=500)
+    
+    print("username: ",usuario.username)
         
     metodo_de_pago = MetodoPago.objects.get(id=request_dict['id_metodo_de_pago'])
     
@@ -60,7 +81,7 @@ def registrar_articulos_vendidos(request_dict):
     else:
         monto_abonado = request_dict['total']
     print("Monto abonado: ", monto_abonado)
-    
+    print("carrito_id: ", request_dict['carrito_id'])
     carrito = Carrito.objects.get(id=request_dict['carrito_id'])
     
     # Obtén los Articulo y ArticuloSinRegistro del carrito
@@ -73,7 +94,8 @@ def registrar_articulos_vendidos(request_dict):
         metodo_de_pago=metodo_de_pago,  # Aquí asignamos la instancia de MetodoPago, no el ID.
         total=monto_abonado,
     )
-    
+    print("Listado de articulos buscados segun carrito: ")
+    print(list(articulos)+list(articulos_sin_registro))
     for articulo in list(articulos) + list(articulos_sin_registro):
         # Crea una instancia de ArticuloVendido con los detalles proporcionados
         if isinstance(articulo, Articulo):
@@ -93,8 +115,6 @@ def registrar_articulos_vendidos(request_dict):
     json = {}
     
     if request_dict['id_metodo_de_pago'] != 1 and request_dict['id_cliente'] != None:
-        #fiscal = ComandoFiscal(request_dict['carrito_id'], request_dict['id_cliente'], metodo_de_pago_display, monto_abonado)
-        #ciclo_desborde(fiscal)
         if request_dict['id_cliente'] == '':
             cliente_id = 1
         else:

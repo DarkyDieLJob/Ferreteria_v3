@@ -1,10 +1,6 @@
 import pytest
-from articulos.models import Articulo, ArticuloProveedor, Cartel, Categoria, CodigoBarras, Marca, Proveedor
-from faker import Faker
-from tests.articulos.custom_faker_proiders import CuitProvider
-
-fake = Faker()
-fake.add_provider(CuitProvider)
+from articulos.models import Articulo, ArticuloProveedor, Cartel
+from articulos.models import Categoria, CodigoBarras, Marca, Proveedor
 
 
 
