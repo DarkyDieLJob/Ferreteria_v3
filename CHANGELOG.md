@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.7.0](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.6.1...v3.7.0) (2025-01-04)
+
+
+### Features
+
+* **Core_Elementos:** :art: Se implementa pyreact como una prueva de concepto en la app core_index ([4bda524](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/4bda524c5692ef5a5cf22739bccb7ac5d5db81fd))
+
+
+### Bug Fixes
+
+* **Core_Elementos:** :hammer: Implementacion de pyreact ([a2ef70c](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/a2ef70c8ea302a67c7faff613ae5ee1c73461e0b))
+* **core:** :hammer: Se implementa asgi ([245f61b](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/245f61bf424bba21b3c09a7c8898c6301766386b))
+
 ### [3.6.1](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.6.0...v3.6.1) (2024-11-28)
 
 
