@@ -473,7 +473,7 @@ class Articulo(models.Model):
         return text
 
 class ArticuloSinRegistro(models.Model):
-    descripcion = models.CharField(max_length=300, unique=True)
+    descripcion = models.CharField(max_length=300, unique=False)
     carrito = models.ForeignKey(Carrito, on_delete=models.CASCADE, related_name='articulos_sin_registro')
     cantidad = models.FloatField(default=1.0)
     precio = models.DecimalField(max_digits=10, decimal_places=2)

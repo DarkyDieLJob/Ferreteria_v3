@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.6.5](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.6.4...v3.6.5) (2025-01-07)
+
+
+### Bug Fixes
+
+* **BDD:** :bug: Se corrigio un error por el cual no se podian cargar el mismo articulo generico en dos carritos diferentes. ([a9b7b47](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/a9b7b47b8792e42338e184091a37da207db6fd60))
+
+### [3.6.4](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.6.3...v3.6.4) (2025-01-05)
+
+
+### Bug Fixes
+
+* **Static Templates:** :art: Se volvieron atras implementaciones obsoletas y se cambio el color de fondo a los carritos ([cc671fe](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/cc671fe99a29f3ad46f5d1a18469c2b0eea2576a))
+
+### [3.6.3](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.6.1...v3.6.3) (2025-01-04)
+
+### [3.6.2](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.6.1...v3.6.2) (2025-01-04)
+
 ### [3.6.1](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.6.0...v3.6.1) (2024-11-28)
 
 
