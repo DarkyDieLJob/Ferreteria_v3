@@ -348,6 +348,12 @@ class MiVista(TemplateView):
                 
         except Exception as e:
             print(e)
+            
+        context['tabla_link_pedidos'] = [{
+            'url':'https://docs.google.com/spreadsheets/d/1HWnI40MJxOVhU7PNW2mDYQUG14CH3we7gV9xXjJnbEc/edit?usp=drive_link',
+            'nombre':'Poxipol'},
+            ]
+        
         return context
 
     def post(self, request, *args, **kwargs):
