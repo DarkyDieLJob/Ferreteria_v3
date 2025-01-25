@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.7.0](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.6.5...v3.7.0) (2025-01-25)
+
+
+### Features
+
+* **Utils:** :zap: Se agregaron algunas formas de extraer informacion a partir de las ventas. ([ba269c1](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/ba269c10b4f849c692cec1d55016592c2d8b33ff))
+
+
+### Bug Fixes
+
+* **Static Templates:** :zap: Se implementaron links para los pedidos ([ef7c199](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/ef7c199f80f2de3a1545188853c22445841c151a))
+
 ### [3.6.5](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.6.4...v3.6.5) (2025-01-07)
 
 
