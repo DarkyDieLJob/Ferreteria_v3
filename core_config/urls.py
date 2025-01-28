@@ -27,7 +27,7 @@ urlpatterns = [
     path('', include('carga_archivo.urls')),
     path('', include('facturacion.urls')),
     path('', include('boletas.urls')),
-    path('', include('pedido.urls')),
+    path('pedidos/', include('pedido.urls')),
     path('', include('x_cartel.urls')),
     path('', include('x_articulos.urls')),
     path('', include('bdd.urls')),
