@@ -1,27 +1,58 @@
+import json
+from typing import Any
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views import View
 from django.views.generic import TemplateView
-from pedido.models import Pedido
-from .forms import PedidoForm
+from pedido.models import ArticuloPedido, Pedido
+from .forms import ArticuloPedidoForm
 
-class ListarPedidosView(TemplateView):
-    template_name = 'pedido/listar_pedidos.html'
+class ListarArticulosPedidosView(TemplateView):
+    template_name = 'pedido/listar_pedidos_descontinuado.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Código para listar los pedidos
-        context['lista_pedidos'] = Pedido.objects.all()
+        context['lista_pedidos'] = ArticuloPedido.objects.all()
         return context
 
-class EditarPedidoView(View):
+class EditarPedidoView(TemplateView):
+    template_name = 'pedido/editar_pedido.html'
+    def get_context_data(self, **kwargs):
+        
+        context = super().get_context_data(**kwargs)
+        # Código para listar los pedidos
+        return context
+    
     def get(self, request, pedido_id):
+        context = self.get_context_data()
         # Código para obtener el formulario de edición de pedidos
-        pass
+        context['Lista_articulos_pedidos'] = ArticuloPedido.objects.filter(pedido=pedido_id)
+        print("Listado_articulos_pedido:", context['Lista_articulos_pedidos'])
+        return self.render_to_response(context)
 
     def post(self, request, pedido_id):
         # Código para procesar el formulario de edición de pedidos
         pass
+
+def actualizar_llego(request, articulo_id):
+    # Código para actualizar el campo llego de un pedido
+    print("Actualizando llego de articulo", articulo_id)
+    articulo_pedido = ArticuloPedido.objects.get(id=articulo_id)
+    data = json.loads(request.body)
+    articulo_pedido.llego = data.get('llego')
+    # Process the data as needed
+    articulo_pedido.save()
+    return JsonResponse({'status': 'ok'})
+
+def actualizar_cantidad(request, articulo_id):
+    # Código para actualizar la cantidad de un pedido
+    print("Actualizando cantidad de articulo", articulo_id)
+    articulo_pedido = ArticuloPedido.objects.get(id=articulo_id)
+    data = json.loads(request.body)
+    articulo_pedido.cantidad = data.get('cantidad')
+    articulo_pedido.save()
+    return JsonResponse({'status': 'ok'})
 
 class EnviarPedidoView(View):
     def post(self, request, pedido_id):
@@ -31,11 +62,11 @@ class EnviarPedidoView(View):
 
 class NuevoStockView(View):
     def get(self, request):
-        form = PedidoForm()
+        form = ArticuloPedidoForm()
         return render(request, 'pedido/nuevo_stock.html', {'form': form})
 
     def post(self, request):
-        form = PedidoForm(request.POST)
+        form = ArticuloPedidoForm(request.POST)
         if form.is_valid():
             form.save()
             print("Formulario válido, pedido guardado.")
@@ -51,7 +82,14 @@ class CargarStockView(View):
         # Código para actualizar el stock de un producto
         pass
     
-
+class ListarPedidosView(TemplateView):
+    template_name = 'pedido/listar_pedidos.html'
+    
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        # Código para listar los pedidos
+        context['lista_pedidos'] = Pedido.objects.all()
+        return context
 
 from dal_select2.views import Select2QuerySetView
 from bdd.models import Item

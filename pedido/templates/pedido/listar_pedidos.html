@@ -9,19 +9,20 @@
     <table>
         <thead>
             <tr>
+                <th>id</th>
+                <th>Fecha</th>
                 <th>Proveedor</th>
-                <th>Ítem</th>
-                <th>Cantidad</th>
-                <th>Pedido Realizado</th>
+                <th>Estado</th>
             </tr>
         </thead>
         <tbody>
             {% for pedido in lista_pedidos %}
                 <tr>
+                    <td>{{ pedido.id }}</td>
+                    <td>{{ pedido.fecha }}</td>
                     <td>{{ pedido.proveedor }}</td>
-                    <td>{{ pedido.item }}</td>
-                    <td>{{ pedido.cantidad }}</td>
-                    <td>{{ pedido.pedido }}</td>
+                    <td>{{ pedido.get_estado_display }}</td>
+                </tr>
                 </tr>
             {% endfor %}
         </tbody>
@@ -31,8 +32,5 @@
 {% block script %}
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
-    <script>
-        var autocompleteUrl = "{% url 'autocomplete' %}";
-    </script>
-    <script src="{% static 'js/nuevo_stock.js' %}"></script>
+    
 {% endblock %}

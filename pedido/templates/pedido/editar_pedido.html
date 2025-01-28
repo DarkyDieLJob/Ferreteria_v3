@@ -1,0 +1,89 @@
+{% extends "pedido/base_pedido.html" %}
+
+{% block encabezado %}
+    <title>Agregar Articulo Pedido</title>
+    {% load static %}
+{% endblock %}
+
+{% block cuerpo %}
+{% csrf_token %}
+{{ Lista_articulos_pedidos }}
+<table>
+    <thead>
+        <tr>
+            <th>Proveedor</th>
+            <th>Ítem</th>
+            <th>Cantidad</th>
+            <th>Pedido Realizado</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for articulo in Lista_articulos_pedidos %}
+            <tr>
+                <td>{{ articulo.id }}</td>
+                <td>{{ articulo.fecha }}</td>
+                <td>{{ articulo.proveedor }}</td>
+                <td>{{ articulo.item }}</td>
+                <td>
+                    <input type="number" class="quantity-input" data-id="llego-{{ articulo.id }}" value="{{ articulo.cantidad }}" step="0.01" onchange="actualizarCantidad({{ articulo.id }}, this.value)">
+                </td>
+                <td>{{ articulo.pedido }}</td>
+                <td>
+                    <input type="checkbox" {% if articulo.llego %}checked{% endif %} id="llego-{{ articulo.id }}" onclick="actualizarLlego({{ articulo.id }})">
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        function actualizarLlego(id){
+            var llego = document.getElementById('llego-' + id).checked;
+            var url = '/pedidos/actualizar_llego/'+id;
+            var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            var data = {
+                'id': id,
+                'llego': llego,
+                'csrfmiddlewaretoken': csrftoken
+            };
+            console.log(url, csrftoken, data);
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+            });
+        }
+
+        function actualizarCantidad(id, cantidad){
+            var url = '/pedidos/actualizar_cantidad/'+id;
+            var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            var data = {
+                'id': id,
+                'cantidad': cantidad,
+                'csrfmiddlewaretoken': csrftoken
+            };
+            console.log(url, csrftoken, data);
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+            });
+        }
+    </script>
+{% endblock %}
