@@ -9,6 +9,8 @@ class Vendido(models.Model):
 
     cantidad = models.FloatField(default=0.0)
     
+    umbral = models.FloatField(default=0.0)
+    
     pedido = models.BooleanField(default=False)
 
 class ArticuloPedido(models.Model):

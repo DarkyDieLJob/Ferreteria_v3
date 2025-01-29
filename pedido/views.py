@@ -7,6 +7,17 @@ from django.views.generic import TemplateView
 from pedido.models import ArticuloPedido, Pedido
 from .forms import ArticuloPedidoForm
 
+
+class ListarArticulosFaltantesView(TemplateView):
+    template_name = 'pedido/listar_altantes.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Código para listar los artículos faltantes
+        proveedor_id = self.kwargs.get('proveedor_id')
+        context['lista_articulos_faltantes'] = ArticuloPedido.objects.filter(proveedor=proveedor_id)
+        return context
+
 class ListarArticulosPedidosView(TemplateView):
     template_name = 'pedido/listar_pedidos_descontinuado.html'
 
