@@ -18,6 +18,7 @@ urlpatterns = [
          name='editar-pedido-por-proveedor'
          ),
     
+    # En el siguiente path, se encuentra un buscador de artículos en tiempo real.
     path('pedir_nuevo_articulo/', NuevoStockView.as_view(), name='NuevoStockView'), 
     
     path('item_autocomplete/', ItemAutocomplete.as_view(), name='item-autocomplete'),
