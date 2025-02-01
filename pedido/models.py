@@ -1,6 +1,7 @@
 from django.db import models
 
-from bdd.models import Item, Proveedor
+from bdd.models import Item, Proveedor, Lista_Pedidos
+
     
 class Vendido(models.Model):
     proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)

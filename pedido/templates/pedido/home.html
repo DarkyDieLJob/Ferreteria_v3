@@ -1,0 +1,43 @@
+{% extends "pedido/base_pedido.html" %}
+
+{% block encabezado %}
+    <title>Pedidos</title>
+    {% load static %}
+{% endblock %}
+
+{% block cuerpo %}
+    <table>
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>Proveedor</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for proveedor in proveedores %}
+                <tr>
+                    <td>{{ proveedor.id }}</td>
+                    <td>{{ proveedor.text_display }}</td>
+                    <td>
+                        {% comment %}
+                            
+                        En los siguiente dos links se  hace referencia a
+                        las acciones: ver lista de articulos faltantes
+                        segun el proveedor y editar el pedido.
+                        {% endcomment %}
+                        <a href="{% url 'listar-faltantes' proveedor.id %}">Ver articulos faltantes</a>
+                        <a href="{% url 'editar-pedido-por-proveedor' proveedor.id %}">Editar</a>
+
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block script %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+    
+{% endblock %}

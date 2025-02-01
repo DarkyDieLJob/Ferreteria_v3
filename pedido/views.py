@@ -4,19 +4,29 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.views import View
 from django.views.generic import TemplateView
-from pedido.models import ArticuloPedido, Pedido
+from .models import ArticuloPedido, Pedido
+from bdd.models import Proveedor, Lista_Pedidos
 from .forms import ArticuloPedidoForm
 
 
+class HomeView(TemplateView):
+    template_name = 'pedido/home.html'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['proveedores'] = Proveedor.objects.all()
+        return context
+    
 class ListarArticulosFaltantesView(TemplateView):
-    template_name = 'pedido/listar_altantes.html'
+    template_name = 'pedido/listar_faltantes.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Código para listar los artículos faltantes
         proveedor_id = self.kwargs.get('proveedor_id')
-        context['lista_articulos_faltantes'] = ArticuloPedido.objects.filter(proveedor=proveedor_id)
+        context['lista_articulos_faltantes'] = Lista_Pedidos.objects.filter(proveedor=proveedor_id).order_by('item')
+        print("Lista de artículos faltantes:", context['lista_articulos_faltantes'])
         return context
+
 
 class ListarArticulosPedidosView(TemplateView):
     template_name = 'pedido/listar_pedidos_descontinuado.html'
@@ -35,10 +45,13 @@ class EditarPedidoView(TemplateView):
         # Código para listar los pedidos
         return context
     
-    def get(self, request, pedido_id):
+    def get(self, request, pedido_id=0, proveedor_id=0):
         context = self.get_context_data()
         # Código para obtener el formulario de edición de pedidos
-        context['Lista_articulos_pedidos'] = ArticuloPedido.objects.filter(pedido=pedido_id)
+        if pedido_id != 0:
+            context['Lista_articulos_pedidos'] = ArticuloPedido.objects.filter(pedido=pedido_id)
+        elif proveedor_id != 0:
+            context['Lista_articulos_pedidos'] = ArticuloPedido.objects.filter(proveedor=proveedor_id)
         print("Listado_articulos_pedido:", context['Lista_articulos_pedidos'])
         return self.render_to_response(context)
 

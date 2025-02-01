@@ -1,0 +1,37 @@
+{% extends "pedido/base_pedido.html" %}
+
+{% block encabezado %}
+    <title>Agregar Articulo Pedido</title>
+    {% load static %}
+{% endblock %}
+
+{% block cuerpo %}
+{% csrf_token %}
+<table>
+    <thead>
+        <tr>
+            <th>id</th>
+            <th>Proveedor</th>
+            <th>Ítem</th>
+            <th>Cantidad</th>
+            <th>Pedir?</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for articulo in lista_articulos_faltantes %}
+            <tr>
+                <td>{{ articulo.id }}</td>
+                <td>{{ articulo.proveedor }}</td>
+                <td>{{ articulo.item }}</td>
+                <td>{{ articulo.cantidad }}</td>
+                <td>{{ articulo.pedido }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
+
+{% block script %}
+
+{% endblock %}
