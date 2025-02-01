@@ -16,6 +16,21 @@ class HomeView(TemplateView):
         context['proveedores'] = Proveedor.objects.all()
         return context
     
+class NuevoPedidoView(TemplateView):
+    template_name = 'pedido/nuevo_pedido.html'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Código para listar los artículos faltantes
+        proveedor_id = self.kwargs.get('proveedor_id')
+        context['proveedor'] = Proveedor.objects.get(id=proveedor_id)
+        context['lista_articulos_faltantes'] = Lista_Pedidos.objects.filter(proveedor=proveedor_id).order_by('item')
+        print("Lista de artículos faltantes:", context['lista_articulos_faltantes'])
+        return context
+
+    def post(self, request, proveedor_id):
+        # Código para procesar el formulario de nuevo pedido
+        pass
+    
 class ListarArticulosFaltantesView(TemplateView):
     template_name = 'pedido/listar_faltantes.html'
 

@@ -3,6 +3,7 @@ from .views import ItemAutocomplete, ListarPedidosView
 from .views import NuevoStockView, EditarPedidoView
 from .views import actualizar_llego, actualizar_cantidad
 from .views import HomeView, ListarArticulosFaltantesView
+from .views import NuevoPedidoView
 
 name = 'pedido'
 
@@ -16,6 +17,10 @@ urlpatterns = [
     path('editar_pedido_por_proveedor/<int:proveedor_id>',
          EditarPedidoView.as_view(),
          name='editar-pedido-por-proveedor'
+         ),
+    path('nuevo_pedido/<int:proveedor_id>',
+         NuevoPedidoView.as_view(),
+         name='nuevo-pedido'
          ),
     
     # En el siguiente path, se encuentra un buscador de artículos en tiempo real.
