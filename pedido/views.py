@@ -8,12 +8,20 @@ from .models import ArticuloPedido, Pedido
 from bdd.models import Proveedor, Lista_Pedidos
 from .forms import ArticuloPedidoForm
 
-
 class HomeView(TemplateView):
     template_name = 'pedido/home.html'
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['proveedores'] = Proveedor.objects.all()
+        proveedores = Proveedor.objects.all()
+        pedidos_activos = {}
+
+        for proveedor in proveedores:
+            pedidos_activos[proveedor] = proveedor.pedido_set.exclude(estado='Et')
+
+        context['proveedores'] = proveedores
+        context['pedidos_activos'] = pedidos_activos  # Añade el diccionario al contexto
+        print("Pedidos activos:", pedidos_activos)
         return context
     
 class NuevoPedidoView(TemplateView):

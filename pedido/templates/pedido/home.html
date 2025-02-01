@@ -9,28 +9,30 @@
     <table>
         <thead>
             <tr>
-                <th>id</th>
                 <th>Proveedor</th>
-                <th>Acciones</th>
+                <th>Pedido</th>
+                <th>Faltantes</th>
             </tr>
         </thead>
         <tbody>
-            {% for proveedor in proveedores %}
+            {% for proveedor, pedidos in pedidos_activos.items %}
                 <tr>
-                    <td>{{ proveedor.id }}</td>
                     <td>{{ proveedor.text_display }}</td>
                     <td>
-                        {% comment %}
-                            
-                        En los siguiente dos links se  hace referencia a
-                        las acciones: ver lista de articulos faltantes
-                        segun el proveedor y editar el pedido.
-                        {% endcomment %}
-                        <a href="{% url 'listar-faltantes' proveedor.id %}">Ver articulos faltantes</a>
-                        <a href="{% url 'editar-pedido-por-proveedor' proveedor.id %}">Editar</a>
-
+                        {% for pedido in pedidos %}
+                            <a href="{% url 'editar-pedido' pedido.id %}">{{ pedido }}</a><br>
+                        {% empty %}
+                            {% if proveedor.pedido_set.count == 0 %}
+                                Sin pedidos
+                            {% else %}
+                                No hay pedidos activos
+                            {% endif %}
+                        {% endfor %}
+                        <a href="{% url 'nuevo-pedido' proveedor.id %}">Agregar pedido</a>
                     </td>
-                </tr>
+                    <td>
+                        <a href="{% url 'listar-faltantes' proveedor.id %}">Ver articulos faltantes</a>
+                    </tr>
             {% endfor %}
         </tbody>
     </table>
