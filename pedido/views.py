@@ -32,6 +32,16 @@ class NuevoPedidoView(TemplateView):
         proveedor_id = self.kwargs.get('proveedor_id')
         context['proveedor'] = Proveedor.objects.get(id=proveedor_id)
         context['lista_articulos_faltantes'] = Lista_Pedidos.objects.filter(proveedor=proveedor_id).order_by('item')
+        
+        context['pedido'] = None
+        context['pedido'] = Pedido.objects.filter(proveedor=proveedor_id).exclude(estado='Et').first()
+        #Si el listado de pedidos esta vacio entonces crear un nuevo pedido
+        if not context['pedido']:
+            nuevo_pedido = Pedido.objects.create(proveedor=context['proveedor'])
+            nuevo_pedido.save()
+            context['pedido'] = nuevo_pedido
+            context['lista_articulos_faltantes'] = Lista_Pedidos.objects.filter(proveedor=proveedor_id).order_by('item')
+        print("pedido:", context['pedido'])
         print("Lista de artículos faltantes:", context['lista_articulos_faltantes'])
         return context
 
@@ -72,15 +82,31 @@ class EditarPedidoView(TemplateView):
         context = self.get_context_data()
         # Código para obtener el formulario de edición de pedidos
         if pedido_id != 0:
+            context['proveedor'] = Pedido.objects.get(id=pedido_id).proveedor
             context['Lista_articulos_pedidos'] = ArticuloPedido.objects.filter(pedido=pedido_id)
         elif proveedor_id != 0:
+            context['proveedor'] = Proveedor.objects.get(id=proveedor_id)
             context['Lista_articulos_pedidos'] = ArticuloPedido.objects.filter(proveedor=proveedor_id)
+        context['Lista_articulos_faltantes'] = Lista_Pedidos.objects.filter(proveedor=context['proveedor']).order_by('item')
         print("Listado_articulos_pedido:", context['Lista_articulos_pedidos'])
         return self.render_to_response(context)
 
     def post(self, request, pedido_id):
         # Código para procesar el formulario de edición de pedidos
         pass
+
+def agregar_al_pedido(request):
+    # Código para agregar un artículo a un pedido
+    data = json.loads(request.body)
+    print("Agregando al pedido", data)
+    articulo_pedido = ArticuloPedido.objects.create(
+        proveedor_id=data.get('proveedor_id'),
+        item_id=data.get('item_id'),
+        cantidad=data.get('cantidad'),
+        llego=False
+    )
+    articulo_pedido.save()
+    return JsonResponse({'status': 'ok'})
 
 def actualizar_llego(request, articulo_id):
     # Código para actualizar el campo llego de un pedido

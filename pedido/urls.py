@@ -3,7 +3,8 @@ from .views import ItemAutocomplete, ListarPedidosView
 from .views import NuevoStockView, EditarPedidoView
 from .views import actualizar_llego, actualizar_cantidad
 from .views import HomeView, ListarArticulosFaltantesView
-from .views import NuevoPedidoView
+from .views import NuevoPedidoView, agregar_al_pedido
+from .views import EnviarPedidoView
 
 name = 'pedido'
 
@@ -32,5 +33,7 @@ urlpatterns = [
     
     path('actualizar_llego/<int:articulo_id>', actualizar_llego, name='actualizar-llego'),
     path('actualizar_cantidad/<int:articulo_id>', actualizar_cantidad, name='actualizar-cantidad'),
+    path('agregar_al_pedido/', agregar_al_pedido, name='agregar-al-pedido'),
+    path('enviar_pedido/', EnviarPedidoView.as_view(), name='enviar-pedido'),
     
 ]

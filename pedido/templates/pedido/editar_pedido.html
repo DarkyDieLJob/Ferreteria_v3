@@ -8,6 +8,8 @@
 {% block cuerpo %}
 {% csrf_token %}
 {{ Lista_articulos_pedidos }}
+<h2>Pedido: {{ proveedor }}</h2>
+<button onclick="enviarPedido()">Enviar Pedido</button>
 <table>
     <thead>
         <tr>
@@ -30,6 +32,31 @@
                 <td>{{ articulo.pedido }}</td>
                 <td>
                     <input type="checkbox" {% if articulo.llego %}checked{% endif %} id="llego-{{ articulo.id }}" onclick="actualizarLlego({{ articulo.id }})">
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<table>
+    <thead>
+        <tr>
+            <th>id</th>
+            <th>Proveedor</th>
+            <th>Ítem</th>
+            <th>Cantidad</th>
+            <th>Pedir?</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for articulo in Lista_articulos_faltantes %}
+            <tr>
+                <td>{{ articulo.id }}</td>
+                <td>{{ articulo.proveedor }}</td>
+                <td>{{ articulo.item }}</td>
+                <td>{{ articulo.cantidad }}</td>
+                <td>{{ articulo.pedido }}
+                    <input type="checkbox" {% if articulo.pedido %}checked{% endif %} id="agregar-al-pedido-{{ articulo.id }}" onclick="agregarAlPedido({{ articulo.id}},{{articulo.proveedor.id}})">
                 </td>
             </tr>
         {% endfor %}
@@ -84,6 +111,34 @@
             .then(response => response.json())
             .then(data => {
                 console.log(data);
+            });
+        }
+
+        function agregarAlPedido(articulo_id, proveedor_id) {
+            $.ajax({
+                url: "{% url 'agregar-al-pedido' %}",
+                type: "POST",
+                data: {
+                    csrfmiddlewaretoken: "{{ csrf_token }}",
+                    id: articulo_id,
+                    proveedor: proveedor_id
+                },
+                success: function(data) {
+                    console.log(data);
+                }
+            });
+        }
+
+        function enviarPedido() {
+            $.ajax({
+                url: "{% url 'enviar-pedido' %}",
+                type: "POST",
+                data: {
+                    csrfmiddlewaretoken: "{{ csrf_token }}"
+                },
+                success: function(data) {
+                    console.log(data);
+                }
             });
         }
     </script>
