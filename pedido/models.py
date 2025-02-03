@@ -1,3 +1,4 @@
+from datetime import timezone
 from django.db import models
 
 from bdd.models import Item, Proveedor, Lista_Pedidos
@@ -32,7 +33,7 @@ class Pedido(models.Model):
         ('Et', 'Entregado'),
     )
     
-    fecha = models.DateField(auto_created=True)
+    fecha = models.DateField(auto_now_add=True, blank=True, null=True)
     
     proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)
     
