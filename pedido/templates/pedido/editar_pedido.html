@@ -9,7 +9,7 @@
 {% csrf_token %}
 {{ Lista_articulos_pedidos }}
 <h2>Pedido: {{ proveedor }}</h2>
-<button onclick="enviarPedido()">Enviar Pedido</button>
+<button onclick="enviarPedido({{ pedido.id }})">Enviar Pedido</button>
 <table>
     <thead>
         <tr>
@@ -55,8 +55,20 @@
                 <td>{{ articulo.proveedor }}</td>
                 <td>{{ articulo.item }}</td>
                 <td>{{ articulo.cantidad }}</td>
+                <td>
+                    <input 
+                        type="number" 
+                        class="quantity-input" 
+                        data-id="pedir-{{ articulo.id }}" 
+                        value="0" 
+                        step="0.01">
+                </td>
                 <td>{{ articulo.pedido }}
-                    <input type="checkbox" {% if articulo.pedido %}checked{% endif %} id="agregar-al-pedido-{{ articulo.id }}" onclick="agregarAlPedido({{ articulo.id}},{{articulo.proveedor.id}})">
+                    <input 
+                        type="checkbox" {% if articulo.pedido %}checked{% endif %} 
+                        id="agregar-al-pedido-{{ articulo.id }}" 
+                        onclick="agregarAlPedido({{ articulo.id}},{{articulo.proveedor.id}},{{ articulo.item.id }})"
+                    >
                 </td>
             </tr>
         {% endfor %}
@@ -114,31 +126,59 @@
             });
         }
 
-        function agregarAlPedido(articulo_id, proveedor_id) {
-            $.ajax({
-                url: "{% url 'agregar-al-pedido' %}",
-                type: "POST",
-                data: {
-                    csrfmiddlewaretoken: "{{ csrf_token }}",
-                    id: articulo_id,
-                    proveedor: proveedor_id
+        function agregarAlPedido(articulo_id, proveedor_id, item_id) {
+            var url = '/pedidos/agregar_al_pedido/';
+            var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            var data = {
+                'articulo_id': articulo_id,
+                'item_id': item_id,
+                'proveedor_id': proveedor_id,
+                'cantidad': document.querySelector('[data-id="pedir-' + articulo_id + '"]').value,
+                'pedido_id': {{ pedido.id }},
+                'csrfmiddlewaretoken': csrftoken
+            };
+            console.log(data);
+            //si data cantidad es <= 0, salta un alert y el check se setea en unquecked
+            if (data.cantidad <= 0){
+                alert('La cantidad debe ser mayor a 0');
+                document.getElementById('agregar-al-pedido-' + articulo_id).checked = false;
+                return;
+            }
+
+            console.log(url, csrftoken, data);
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
                 },
-                success: function(data) {
-                    console.log(data);
-                }
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
             });
         }
 
-        function enviarPedido() {
-            $.ajax({
-                url: "{% url 'enviar-pedido' %}",
-                type: "POST",
-                data: {
-                    csrfmiddlewaretoken: "{{ csrf_token }}"
+        function enviarPedido(pedido_id) {
+            var url = '/pedidos/enviar_pedido/';
+            var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            var data = {
+                'csrfmiddlewaretoken': csrftoken,
+                'pedido_id': pedido_id
+            };
+            console.log(url, csrftoken, data);
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
                 },
-                success: function(data) {
-                    console.log(data);
-                }
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
             });
         }
     </script>

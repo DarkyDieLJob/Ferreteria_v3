@@ -82,10 +82,12 @@ class EditarPedidoView(TemplateView):
         context = self.get_context_data()
         # Código para obtener el formulario de edición de pedidos
         if pedido_id != 0:
-            context['proveedor'] = Pedido.objects.get(id=pedido_id).proveedor
+            context['pedido'] = Pedido.objects.get(id=pedido_id)
+            context['proveedor'] = context['pedido'].proveedor
             context['Lista_articulos_pedidos'] = ArticuloPedido.objects.filter(pedido=pedido_id)
         elif proveedor_id != 0:
             context['proveedor'] = Proveedor.objects.get(id=proveedor_id)
+            context['pedido'] = Pedido.objects.filter(proveedor=proveedor_id).exclude(estado='Et').first()
             context['Lista_articulos_pedidos'] = ArticuloPedido.objects.filter(proveedor=proveedor_id)
         context['Lista_articulos_faltantes'] = Lista_Pedidos.objects.filter(proveedor=context['proveedor']).order_by('item')
         print("Listado_articulos_pedido:", context['Lista_articulos_pedidos'])
@@ -106,6 +108,16 @@ def agregar_al_pedido(request):
         llego=False
     )
     articulo_pedido.save()
+    
+    articulo_faltante = Lista_Pedidos.objects.get(proveedor_id=data.get('proveedor_id'), item_id=data.get('item_id'))
+    articulo_faltante.pedido = not articulo_faltante.pedido
+    articulo_faltante.cantidad = articulo_faltante.cantidad - float(data.get('cantidad'))
+    articulo_faltante.save()
+    
+    pedido_id = data.get('pedido_id')
+    pedido = Pedido.objects.get(id=pedido_id)
+    pedido.articulo_pedido.add(articulo_pedido)
+    pedido.save()
     return JsonResponse({'status': 'ok'})
 
 def actualizar_llego(request, articulo_id):
@@ -125,6 +137,15 @@ def actualizar_cantidad(request, articulo_id):
     data = json.loads(request.body)
     articulo_pedido.cantidad = data.get('cantidad')
     articulo_pedido.save()
+    return JsonResponse({'status': 'ok'})
+
+def enviar_pedido(request):
+    # Código para enviar un pedido
+    data = json.loads(request.body)
+    print("Enviando pedido", data)
+    pedido = Pedido.objects.get(id=data.get('pedido_id'))
+    pedido.estado = 'En'
+    pedido.save()
     return JsonResponse({'status': 'ok'})
 
 class EnviarPedidoView(View):
