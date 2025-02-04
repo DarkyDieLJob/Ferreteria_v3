@@ -13,6 +13,8 @@
 <table>
     <thead>
         <tr>
+            <th>id</th>
+            <th>fecha</th>
             <th>Proveedor</th>
             <th>Ítem</th>
             <th>Cantidad</th>
@@ -29,7 +31,6 @@
                 <td>
                     <input type="number" class="quantity-input" data-id="llego-{{ articulo.id }}" value="{{ articulo.cantidad }}" step="0.01" onchange="actualizarCantidad({{ articulo.id }}, this.value)">
                 </td>
-                <td>{{ articulo.pedido }}</td>
                 <td>
                     <input type="checkbox" {% if articulo.llego %}checked{% endif %} id="llego-{{ articulo.id }}" onclick="actualizarLlego({{ articulo.id }})">
                 </td>
