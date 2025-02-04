@@ -8,7 +8,8 @@
 {% block cuerpo %}
 {% csrf_token %}
 <h2>Pedido: {{ proveedor }}</h2>
-<button onclick="controlarPedido({{ pedido.id }})">ControlarPedido</button>
+<label>LLegó el pedido??:</label>
+<button onclick="controlarPedido()">ControlarPedido</button>
 <table>
     <thead>
         <tr>
@@ -20,7 +21,7 @@
         </tr>
     </thead>
     <tbody>
-        {% for articulo in Lista_articulos_pedidos %}
+        {% for articulo in articulos %}
             <tr>
                 <td>{{ articulo.id }}</td>
                 <td>{{ articulo.fecha }}</td>
@@ -37,17 +38,9 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
     <script>
-        function controlarPedido(id){
-            $.ajax({
-                url: '/pedido/controlar_pedido/'+id,
-                type: 'POST',
-                data: {
-                    'csrfmiddlewaretoken': '{{ csrf_token }}'
-                },
-                success: function(response){
-                    alert(response);
-                }
-            });
+        function controlarPedido(){
+            //redirije a la vista de controlar pedido
+            window.location.href = "{% url 'controlar-pedido' pedido.id %}";
         }
     </script>
 
