@@ -91,6 +91,34 @@ class EditarPedidoView(TemplateView):
             context['Lista_articulos_pedidos'] = ArticuloPedido.objects.filter(proveedor=proveedor_id)
         context['Lista_articulos_faltantes'] = Lista_Pedidos.objects.filter(proveedor=context['proveedor']).order_by('item')
         print("Listado_articulos_pedido:", context['Lista_articulos_pedidos'])
+        
+        context['form'] = ArticuloPedidoForm()
+        return self.render_to_response(context)
+
+    def post(self, request):
+        form = ArticuloPedidoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            print("Formulario válido, pedido guardado.")
+        else:
+            print("Formulario no válido.")
+            print(form.errors)
+            
+        return JsonResponse({'status': 'ok'})
+
+class DetallePedidoView(TemplateView):
+    template_name = 'pedido/detalle_pedido.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Código para listar los pedidos
+        pedido_id = self.kwargs.get('pedido_id')
+        context['pedido'] = Pedido.objects.get(id=pedido_id)
+        context['articulos'] = context['pedido'].articulo_pedido.all()
+        return context
+
+    def get(self, request, pedido_id):
+        context = self.get_context_data()
         return self.render_to_response(context)
 
     def post(self, request, pedido_id):

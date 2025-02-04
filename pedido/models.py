@@ -31,6 +31,7 @@ class Pedido(models.Model):
         ('Pd', 'Pendiente'),
         ('En', 'Enviado'),
         ('Et', 'Entregado'),
+        ('Co', 'Controlado'),
     )
     
     fecha = models.DateField(auto_now_add=True, blank=True, null=True)
