@@ -4,7 +4,7 @@ from .views import NuevoStockView, EditarPedidoView
 from .views import actualizar_llego, actualizar_cantidad
 from .views import HomeView, ListarArticulosFaltantesView
 from .views import NuevoPedidoView, agregar_al_pedido
-from .views import enviar_pedido
+from .views import enviar_pedido, ControlarPedidoView
 
 name = 'pedido'
 
@@ -35,5 +35,6 @@ urlpatterns = [
     path('actualizar_cantidad/<int:articulo_id>', actualizar_cantidad, name='actualizar-cantidad'),
     path('agregar_al_pedido/', agregar_al_pedido, name='agregar-al-pedido'),
     path('enviar_pedido/', enviar_pedido, name='enviar-pedido'),
+    path('controlar_pedido/<int:pedido_id>', ControlarPedidoView.as_view(), name='controlar-pedido'),
     
 ]

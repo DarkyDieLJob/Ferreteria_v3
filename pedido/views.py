@@ -97,6 +97,24 @@ class EditarPedidoView(TemplateView):
         # Código para procesar el formulario de edición de pedidos
         pass
 
+class ControlarPedidoView(View):
+    template_name = 'pedido/controlar_pedido.html'
+    
+    def get(self, request, pedido_id):
+        # Código para controlar un pedido
+        pedido = Pedido.objects.get(id=pedido_id)
+        articulos = pedido.articulo_pedido.all()
+        return render(request, self.template_name, {'pedido': pedido, 'articulos': articulos})
+    
+    def post(self, request, pedido_id):
+        # Código para controlar un pedido
+        data = json.loads(request.body)
+        print("Controlando pedido", data)
+        pedido = Pedido.objects.get(id=pedido_id)
+        pedido.estado = 'Et'
+        pedido.save()
+        return JsonResponse({'status': 'ok'})
+
 def agregar_al_pedido(request):
     # Código para agregar un artículo a un pedido
     data = json.loads(request.body)
