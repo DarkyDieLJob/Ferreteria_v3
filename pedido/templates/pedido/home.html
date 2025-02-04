@@ -20,7 +20,15 @@
                     <td>{{ proveedor.text_display }}</td>
                     <td>
                         {% for pedido in pedidos %}
-                            <a href="{% url 'editar-pedido' pedido.id %}">{{ pedido }}</a><br>
+
+                            {% if pedido.get_estado_display == 'Pendiente'%}
+                                <a href="{% url 'editar-pedido' pedido.id %}">{{ pedido }}</a><br>
+                            {% elif pedido.get_estado_display == 'Enviado' %}
+                                <a href="{% url 'detalle-pedido' pedido.id %}">{{ pedido }}</a><br>
+                            {% else %}
+                                <a href="{% url 'controlar-pedidos' pedido.id %}">{{ pedido }}</a><br>
+                            {% endif %}
+
                         {% empty %}
                             {% if proveedor.pedido_set.count == 0 %}
                                 Sin pedidos
