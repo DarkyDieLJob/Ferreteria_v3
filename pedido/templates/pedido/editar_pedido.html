@@ -10,8 +10,6 @@
 <form method="post" action="{% url 'pedido:editar-pedido' pedido.id %}">
     {% csrf_token %}
     {{ form|crispy }}
-    <input type="hidden" id="proveedor-id" value="{{ proveedor.id }}">
-    <input type="hidden" id="pedido-id" value="{{ pedido.id }}">
     <button type="submit" class="btn btn-primary">Agregar al pedido</button>
 </form>
 
