@@ -6,14 +6,16 @@
 {% endblock %}
 
 {% block cuerpo %}
-{% csrf_token %}
 {% load crispy_forms_tags %}
-<form method="post">
+<form method="post" action="{% url 'editar-pedido' pedido.id %}">
+    {% csrf_token %}
     {{ form|crispy }}
-    <input type="hidden" id="proveedor-id" value="{{ proveedor_id }}">
-    <button type="submit" class="btn btn-primary">Guardar pedido</button>
+    <input type="hidden" id="proveedor-id" value="{{ proveedor.id }}">
+    <input type="hidden" id="pedido-id" value="{{ pedido.id }}">
+    <button type="submit" class="btn btn-primary">Agregar al pedido</button>
 </form>
 
+{% csrf_token %}
 <h2>Pedido: {{ proveedor }}</h2>
 <button onclick="enviarPedido({{ pedido.id }})">Enviar Pedido</button>
 <table>

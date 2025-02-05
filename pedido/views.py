@@ -95,16 +95,52 @@ class EditarPedidoView(TemplateView):
         context['form'] = ArticuloPedidoForm()
         return self.render_to_response(context)
 
-    def post(self, request):
+    def post(self, request, pedido_id=0, proveedor_id=0):
         form = ArticuloPedidoForm(request.POST)
+        pedido = Pedido.objects.get(id=pedido_id)
+        
         if form.is_valid():
-            form.save()
+            print(form.cleaned_data)
+            articulo_pedido=ArticuloPedido(
+                proveedor=pedido.proveedor,
+                item=form.cleaned_data['item'],
+                cantidad=form.cleaned_data['cantidad'],
+                llego=False
+            )
+            
+            articulo_en_lista_pedido = Lista_Pedidos.objects.get_or_create(
+                proveedor=pedido.proveedor, 
+                item=form.cleaned_data['item']
+                )
+            articulo_en_lista_pedido[0].pedido = True
+            articulo_en_lista_pedido[0].save()
+            
+            articulo_pedido.save()
+            pedido.articulo_pedido.add(articulo_pedido)
+            pedido.save()
+            #form.save()
             print("Formulario válido, pedido guardado.")
         else:
             print("Formulario no válido.")
             print(form.errors)
-            
-        return JsonResponse({'status': 'ok'})
+        
+        
+        context = self.get_context_data()
+        
+        if pedido_id != 0:
+            context['pedido'] = Pedido.objects.get(id=pedido_id)
+            context['proveedor'] = context['pedido'].proveedor
+            context['Lista_articulos_pedidos'] = ArticuloPedido.objects.filter(pedido=pedido_id)
+        elif proveedor_id != 0:
+            context['proveedor'] = Proveedor.objects.get(id=proveedor_id)
+            context['pedido'] = Pedido.objects.filter(proveedor=proveedor_id).exclude(estado='Et').first()
+            context['Lista_articulos_pedidos'] = ArticuloPedido.objects.filter(proveedor=proveedor_id)
+        
+        context['Lista_articulos_faltantes'] = Lista_Pedidos.objects.filter(proveedor=context['proveedor']).order_by('item')
+        print("Listado_articulos_pedido:", context['Lista_articulos_pedidos'])
+        
+        context['form'] = ArticuloPedidoForm()
+        return self.render_to_response(context)
 
 class DetallePedidoView(TemplateView):
     template_name = 'pedido/detalle_pedido.html'
