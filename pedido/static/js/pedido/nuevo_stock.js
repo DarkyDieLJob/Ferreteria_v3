@@ -1,5 +1,7 @@
-$(document).ready(function() {
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Proveedor ID: ' + proveedorId);
     console.log('Inicializando Select2');
+
     $('#id_item').select2({
         ajax: {
             url: autocompleteUrl,
@@ -8,7 +10,8 @@ $(document).ready(function() {
             data: function (params) {
                 return {
                     q: params.term,  // término de búsqueda
-                    page: params.page
+                    page: params.page,
+                    proveedor_id: proveedorId
                 };
             },
             processResults: function (data, params) {
