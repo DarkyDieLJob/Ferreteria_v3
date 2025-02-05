@@ -7,7 +7,13 @@
 
 {% block cuerpo %}
 {% csrf_token %}
-{{ Lista_articulos_pedidos }}
+{% load crispy_forms_tags %}
+<form method="post">
+    {{ form|crispy }}
+    <input type="hidden" id="proveedor-id" value="{{ proveedor_id }}">
+    <button type="submit" class="btn btn-primary">Guardar pedido</button>
+</form>
+
 <h2>Pedido: {{ proveedor }}</h2>
 <button onclick="enviarPedido({{ pedido.id }})">Enviar Pedido</button>
 <table>
@@ -79,7 +85,16 @@
 {% endblock %}
 
 {% block script %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
     <script>
+        var autocompleteUrl = "{% url 'item-autocomplete' %}";
+        var proveedorId = {{ proveedor.id }};
+    </script>
+    <script src="{% static 'js/pedido/nuevo_stock.js' %}"></script>
+
+    <script>
+
         function actualizarLlego(id){
             var llego = document.getElementById('llego-' + id).checked;
             var url = '/pedidos/actualizar_llego/'+id;
