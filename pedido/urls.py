@@ -3,7 +3,7 @@ from .views import ItemAutocomplete, ListarPedidosView
 from .views import NuevoStockView, EditarPedidoView
 from .views import actualizar_llego, actualizar_cantidad
 from .views import HomeView, ListarArticulosFaltantesView
-from .views import NuevoPedidoView, agregar_al_pedido
+from .views import nuevo_pedido, agregar_al_pedido
 from .views import enviar_pedido, ControlarPedidoView
 from .views import DetallePedidoView
 
@@ -21,7 +21,7 @@ urlpatterns = [
          name='editar-pedido-por-proveedor'
          ),
     path('nuevo_pedido/<int:proveedor_id>',
-         NuevoPedidoView.as_view(),
+         nuevo_pedido,
          name='nuevo-pedido'
          ),
     

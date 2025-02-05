@@ -1,7 +1,7 @@
 import json
 from typing import Any
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.views import View
 from django.views.generic import TemplateView
 from .models import ArticuloPedido, Pedido
@@ -24,8 +24,30 @@ class HomeView(TemplateView):
         print("Pedidos activos:", pedidos_activos)
         return context
     
+
+def nuevo_pedido(request, proveedor_id):
+    # Código para crear un nuevo pedido
+    proveedor = Proveedor.objects.get(id=proveedor_id)
+    pedido_pendiente = Pedido.objects.get(proveedor=proveedor_id, estado='Pd')
+    
+    if not pedido_pendiente:
+        nuevo_pedido = Pedido.objects.create(proveedor=proveedor)
+        nuevo_pedido.save()
+        pedido_id = nuevo_pedido.id
+    else:
+        pedido_id = pedido_pendiente.id
+    
+    return redirect('pedido:editar-pedido', pedido_id=pedido_id)        
+    
 class NuevoPedidoView(TemplateView):
-    template_name = 'pedido/nuevo_pedido.html'
+    '''Vista para crear un nuevo pedido
+    
+    Se encarga de listar los artículos faltantes y de crear un 
+    nuevo pedido
+    
+    '''
+    
+    template_name = 'pedido/editar_pedido.html'
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Código para listar los artículos faltantes
