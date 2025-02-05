@@ -22,11 +22,11 @@
                         {% for pedido in pedidos %}
 
                             {% if pedido.get_estado_display == 'Pendiente'%}
-                                <a href="{% url 'editar-pedido' pedido.id %}">{{ pedido }}</a><br>
+                                <a href="{% url 'pedido:editar-pedido' pedido.id %}">{{ pedido }}</a><br>
                             {% elif pedido.get_estado_display == 'Enviado' %}
-                                <a href="{% url 'detalle-pedido' pedido.id %}">{{ pedido }}</a><br>
+                                <a href="{% url 'pedido:detalle-pedido' pedido.id %}">{{ pedido }}</a><br>
                             {% else %}
-                                <a href="{% url 'controlar-pedidos' pedido.id %}">{{ pedido }}</a><br>
+                                <a href="{% url 'pedido:controlar-pedidos' pedido.id %}">{{ pedido }}</a><br>
                             {% endif %}
 
                         {% empty %}
@@ -36,10 +36,10 @@
                                 No hay pedidos activos
                             {% endif %}
                         {% endfor %}
-                        <a href="{% url 'nuevo-pedido' proveedor.id %}">Agregar pedido</a>
+                        <a href="{% url 'pedido:nuevo-pedido' proveedor.id %}">Agregar pedido</a>
                     </td>
                     <td>
-                        <a href="{% url 'listar-faltantes' proveedor.id %}">Ver articulos faltantes</a>
+                        <a href="{% url 'pedido:listar-faltantes' proveedor.id %}">Ver articulos faltantes</a>
                     </tr>
             {% endfor %}
         </tbody>

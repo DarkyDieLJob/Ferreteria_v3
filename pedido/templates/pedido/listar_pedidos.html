@@ -22,7 +22,7 @@
                     <td>{{ pedido.fecha }}</td>
                     <td>{{ pedido.proveedor }}</td>
                     <td>
-                        <a href="{% url 'editar-pedido' pedido.id %}">{{ pedido.get_estado_display }}</a>
+                        <a href="{% url 'pedido:editar-pedido' pedido.id %}">{{ pedido.get_estado_display }}</a>
                     </td>
                 </tr>
             {% endfor %}

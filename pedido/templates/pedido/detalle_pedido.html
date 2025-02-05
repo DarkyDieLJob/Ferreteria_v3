@@ -40,7 +40,7 @@
     <script>
         function controlarPedido(){
             //redirije a la vista de controlar pedido
-            window.location.href = "{% url 'controlar-pedido' pedido.id %}";
+            window.location.href = "{% url 'pedido:controlar-pedido' pedido.id %}";
         }
     </script>
 

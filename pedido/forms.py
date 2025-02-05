@@ -14,7 +14,7 @@ from .models import Item
 class ArticuloPedidoForm(forms.ModelForm):
     item = forms.ModelChoiceField(
         queryset=Item.objects.all(),
-        widget=ModelSelect2(url='item-autocomplete')
+        widget=ModelSelect2(url='pedido:item-autocomplete')
     )
 
     class Meta:

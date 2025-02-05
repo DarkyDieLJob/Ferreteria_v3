@@ -7,7 +7,7 @@
 
 {% block cuerpo %}
 {% load crispy_forms_tags %}
-<form method="post" action="{% url 'editar-pedido' pedido.id %}">
+<form method="post" action="{% url 'pedido:editar-pedido' pedido.id %}">
     {% csrf_token %}
     {{ form|crispy }}
     <input type="hidden" id="proveedor-id" value="{{ proveedor.id }}">
@@ -90,7 +90,7 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
     <script>
-        var autocompleteUrl = "{% url 'item-autocomplete' %}";
+        var autocompleteUrl = "{% url 'pedido:item-autocomplete' %}";
         var proveedorId = {{ proveedor.id }};
     </script>
     <script src="{% static 'js/pedido/nuevo_stock.js' %}"></script>

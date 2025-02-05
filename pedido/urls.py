@@ -7,6 +7,7 @@ from .views import nuevo_pedido, agregar_al_pedido
 from .views import enviar_pedido, ControlarPedidoView
 from .views import DetallePedidoView
 
+app_name = 'pedido'
 name = 'pedido'
 
 urlpatterns = [
