@@ -247,9 +247,13 @@ def enviar_pedido(request):
     # Código para enviar un pedido
     data = json.loads(request.body)
     print("Enviando pedido", data)
-    pedido = Pedido.objects.get(id=data.get('pedido_id'))
-    pedido.estado = 'En'
-    pedido.save()
+    #Si el pedido no tiene articulos no se puede enviar
+    if not Pedido.objects.get(id=data.get('pedido_id')).articulo_pedido.all():
+        return JsonResponse({'status': 'error', 'message': 'El pedido no tiene artículos'})
+    else:
+        pedido = Pedido.objects.get(id=data.get('pedido_id'))
+        pedido.estado = 'En'
+        pedido.save()
     return JsonResponse({'status': 'ok'})
 
 class EnviarPedidoView(View):
