@@ -37,7 +37,7 @@
                         {% for pedido in pedidos %}
 
                             {% if pedido.get_estado_display == 'Enviado'%}
-                                <a href="{% url 'pedido:editar-pedido' pedido.id %}">{{ pedido }}</a><br>
+                                <a href="{% url 'pedido:detalle-pedido' pedido.id %}">{{ pedido }}</a><br>
                             {% else %}
                                     -
                             {% endif %}
