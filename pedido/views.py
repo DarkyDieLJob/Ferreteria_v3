@@ -340,11 +340,12 @@ class ItemAutocomplete(Select2QuerySetView):
         
         codigo = self.request.GET.get('q', None)
         proveedor_id = self.request.GET.get('proveedor_id')
+        proveedor = Proveedor.objects.get(id=proveedor_id)
         print(f"codigo: {codigo}, proveedor_id: {proveedor_id}")
         
         if codigo:
             print(f"Filtering items with codigo starting with {codigo}")
-            qs = qs.filter(codigo__istartswith=codigo, trabajado=False, proveedor_id=proveedor_id)
+            qs = qs.filter(codigo__istartswith=codigo, codigo__endswith=proveedor.identificador.abreviatura)
 
         print(f"Returning {len(qs)} items")
         print(qs)
