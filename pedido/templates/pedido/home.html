@@ -9,38 +9,58 @@
     <table>
         <thead>
             <tr>
-                <th>Proveedor</th>
                 <th>Pedido</th>
-                <th>Faltantes</th>
+                <th>Pendiente</th>
+                <th>Enviado</th>
+                <th>Entregado</th>
+                <th>Articulos Faltantes</th>
             </tr>
         </thead>
         <tbody>
             {% for proveedor, pedidos in pedidos_activos.items %}
                 <tr>
-                    <td>{{ proveedor.text_display }}</td>
+                    <td><a href="{% url 'pedido:nuevo-pedido' proveedor.id %}">{{ proveedor.text_display }}</a></td>
                     <td>
                         {% for pedido in pedidos %}
 
                             {% if pedido.get_estado_display == 'Pendiente'%}
                                 <a href="{% url 'pedido:editar-pedido' pedido.id %}">{{ pedido }}</a><br>
-                            {% elif pedido.get_estado_display == 'Enviado' %}
-                                <a href="{% url 'pedido:detalle-pedido' pedido.id %}">{{ pedido }}</a><br>
                             {% else %}
-                                <a href="{% url 'pedido:controlar-pedidos' pedido.id %}">{{ pedido }}</a><br>
+                                -
                             {% endif %}
-
                         {% empty %}
-                            {% if proveedor.pedido_set.count == 0 %}
-                                Sin pedidos
-                            {% else %}
-                                No hay pedidos activos
-                            {% endif %}
+                            -
                         {% endfor %}
-                        <a href="{% url 'pedido:nuevo-pedido' proveedor.id %}">Agregar pedido</a>
+                    </td>
+
+                    <td>
+                        {% for pedido in pedidos %}
+
+                            {% if pedido.get_estado_display == 'Enviado'%}
+                                <a href="{% url 'pedido:editar-pedido' pedido.id %}">{{ pedido }}</a><br>
+                            {% else %}
+                                    -
+                            {% endif %}
+                        {% empty %}
+                                -
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for pedido in pedidos %}
+
+                            {% if pedido.get_estado_display == 'Entregado'%}
+                                <a href="{% url 'pedido:editar-pedido' pedido.id %}">{{ pedido }}</a><br>
+                            {% else %}
+                                    -
+                            {% endif %}
+                        {% empty %}
+                            -
+                        {% endfor %}
                     </td>
                     <td>
                         <a href="{% url 'pedido:listar-faltantes' proveedor.id %}">Ver articulos faltantes</a>
-                    </tr>
+                    </td>
+                </tr>
             {% endfor %}
         </tbody>
     </table>
