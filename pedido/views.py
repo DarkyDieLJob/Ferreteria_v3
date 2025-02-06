@@ -214,13 +214,34 @@ def agregar_al_pedido(request):
     articulo_pedido.save()
     
     articulo_faltante = Lista_Pedidos.objects.get(proveedor_id=data.get('proveedor_id'), item_id=data.get('item_id'))
-    articulo_faltante.pedido = not articulo_faltante.pedido
+    articulo_faltante.pedido = True
     articulo_faltante.cantidad = articulo_faltante.cantidad - float(data.get('cantidad'))
     articulo_faltante.save()
     
     pedido_id = data.get('pedido_id')
     pedido = Pedido.objects.get(id=pedido_id)
     pedido.articulo_pedido.add(articulo_pedido)
+    pedido.save()
+    return JsonResponse({'status': 'ok'})
+
+def cancelar_articulo_pedido(request):
+    # Código para cancelar un artículo de un pedido proceso inverso al de agregar_al_pedido
+    data = json.loads(request.body)
+    print("Cancelando artículo de pedido", data)
+    articulo_pedido = ArticuloPedido.objects.get(id=data.get('articulo_id'))
+    
+    articulo_faltante,_ = Lista_Pedidos.objects.get_or_create(
+        proveedor=articulo_pedido.proveedor, 
+        item=articulo_pedido.item
+        )
+    print("Articulo faltante:", articulo_faltante)
+    articulo_faltante.pedido = False
+    articulo_faltante.cantidad = articulo_faltante.cantidad + articulo_pedido.cantidad
+    articulo_faltante.save()
+    
+    pedido_id = int(data.get('pedido_id'))
+    pedido = Pedido.objects.get(id=pedido_id)
+    pedido.articulo_pedido.remove(articulo_pedido)
     pedido.save()
     return JsonResponse({'status': 'ok'})
 
