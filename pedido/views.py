@@ -28,16 +28,11 @@ class HomeView(TemplateView):
 def nuevo_pedido(request, proveedor_id):
     # Código para crear un nuevo pedido
     proveedor = Proveedor.objects.get(id=proveedor_id)
-    pedido_pendiente = Pedido.objects.get(proveedor=proveedor_id, estado='Pd')
+    pedido_pendiente, _ = Pedido.objects.get_or_create(proveedor=proveedor, estado='Pd')
     
-    if not pedido_pendiente:
-        nuevo_pedido = Pedido.objects.create(proveedor=proveedor)
-        nuevo_pedido.save()
-        pedido_id = nuevo_pedido.id
-    else:
-        pedido_id = pedido_pendiente.id
+    pedido_pendiente.save()
     
-    return redirect('pedido:editar-pedido', pedido_id=pedido_id)        
+    return redirect('pedido:editar-pedido', pedido_id=pedido_pendiente.id)        
     
 class NuevoPedidoView(TemplateView):
     '''Vista para crear un nuevo pedido
