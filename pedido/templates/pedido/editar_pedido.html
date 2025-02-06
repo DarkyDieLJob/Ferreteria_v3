@@ -207,6 +207,10 @@
             .then(response => response.json())
             .then(data => {
                 //si {'status': 'error', 'message': 'El pedido no tiene artículos'} salta un alert
+                if (data.status === 'ok'){
+                    //redirije a la vista de detalle pedido
+                    window.location.href = "{% url 'pedido:detalle-pedido' pedido.id %}";
+                }
                 if (data.status === 'error'){
                     alert(data.message);
                 }
