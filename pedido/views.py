@@ -178,14 +178,18 @@ class DetallePedidoView(TemplateView):
         # Código para procesar el formulario de edición de pedidos
         pass
 
-class ControlarPedidoView(View):
+class ControlarPedidoView(TemplateView):
     template_name = 'pedido/controlar_pedido.html'
     
     def get(self, request, pedido_id):
         # Código para controlar un pedido
-        pedido = Pedido.objects.get(id=pedido_id)
-        articulos = pedido.articulo_pedido.all()
-        return render(request, self.template_name, {'pedido': pedido, 'articulos': articulos})
+        context = self.get_context_data()
+    
+        context['pedido'] = Pedido.objects.get(id=pedido_id)
+        context['proveedor'] = context['pedido'].proveedor
+        context['Lista_articulos_pedidos'] = ArticuloPedido.objects.filter(pedido=pedido_id)
+
+        return self.render_to_response(context)
     
     def post(self, request, pedido_id):
         # Código para controlar un pedido
@@ -195,6 +199,18 @@ class ControlarPedidoView(View):
         pedido.estado = 'Et'
         pedido.save()
         return JsonResponse({'status': 'ok'})
+    
+def agregar_al_stock(request):
+    # Código para agregar un artículo al stock
+    data = json.loads(request.body)
+    print("Agregando al stock", data)
+    articulo_pedido = ArticuloPedido.objects.get(id=data.get('articulo_id'))
+    articulo_pedido.llego = False
+    articulo_pedido.item.stock = articulo_pedido.item.stock + articulo_pedido.cantidad
+    articulo_pedido.cantidad = 0
+    articulo_pedido.item.save()
+    articulo_pedido.save()
+    return JsonResponse({'status': 'ok'})
 
 def agregar_al_pedido(request):
     # Código para agregar un artículo a un pedido
