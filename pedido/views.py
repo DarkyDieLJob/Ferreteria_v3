@@ -356,6 +356,7 @@ class ItemAutocomplete(Select2QuerySetView):
     def get_queryset(self):
         print("get_queryset called")
         if not self.request.user.is_authenticated:
+            print("User is not authenticated")
             return Item.objects.none()
 
         qs = Item.objects.all()
@@ -368,7 +369,7 @@ class ItemAutocomplete(Select2QuerySetView):
         if codigo:
             print(f"Filtering items with codigo starting with {codigo}")
             qs = qs.filter(codigo__istartswith=codigo, codigo__endswith=proveedor.identificador.abreviatura)
-
+            print('abreviatura:', proveedor.identificador.abreviatura)
         print(f"Returning {len(qs)} items")
         print(qs)
         return qs
