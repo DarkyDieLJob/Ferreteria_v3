@@ -191,13 +191,19 @@ class ControlarPedidoView(TemplateView):
 
         return self.render_to_response(context)
     
-    def post(self, request, pedido_id):
-        # Código para controlar un pedido
+    def post(self, request):
+        context = self.get_context_data()
+        
         data = json.loads(request.body)
+        pedido_id = data.get('pedido_id')
         print("Controlando pedido", data)
-        pedido = Pedido.objects.get(id=pedido_id)
-        pedido.estado = 'Et'
+        pedido_controlado = Pedido.objects.get(id=pedido_id)
+        pedido_controlado.estado = 'Co'
+        context['lista_articulo_que_no_llegaron'] = ArticuloPedido.objects.filter(pedido=pedido_id, llego=False)
+        pedido, _ = Pedido.objects.get_or_create(proveedor=pedido_controlado.proveedor, estado='Pd')
+        pedido.articulo_pedido.add(*context['lista_articulo_que_no_llegaron'])
         pedido.save()
+        pedido_controlado.save()
         return JsonResponse({'status': 'ok'})
     
 def agregar_al_stock(request):

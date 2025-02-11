@@ -50,7 +50,7 @@
 {% block script %}
     <script>
         function pedidoControlado(pedido_id){
-            var url = '/pedidos/controlar_pedido/';
+            var url = '/pedidos/marcar_controlado/';
             var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
             var data = {
                 'pedido_id': pedido_id,
@@ -67,8 +67,13 @@
             })
             .then(response => response.json())
             .then(data => {
-                console.log(data);
-                window.location.href = "{% url 'pedido:home' %}";
+                if (data.error){
+                    alert(data.error);
+                    return;
+                }
+                if (data.status === 'ok'){
+                    window.location.href = "{% url 'pedido:home' %}";
+                }
             });
         }
 

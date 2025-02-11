@@ -41,5 +41,6 @@ urlpatterns = [
     path('controlar_pedido/<int:pedido_id>', ControlarPedidoView.as_view(), name='controlar-pedido'),
     path('detalle_pedido/<int:pedido_id>', DetallePedidoView.as_view(), name='detalle-pedido'),
     path('agregar_al_stock/', agregar_al_stock, name='agregar-al-stock'),
+    path('marcar_controlado/', ControlarPedidoView.as_view(), name='marcar-controlado'),
     
 ]
