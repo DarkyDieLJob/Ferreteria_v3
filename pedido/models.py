@@ -49,4 +49,14 @@ class Pedido(models.Model):
     def __str__(self):
         return str(self.fecha) + " " + str(self.proveedor) + " " + str(self.estado)
     
-
+class Devolucion(models.Model):
+    fecha = models.DateField(auto_now_add=True, blank=True, null=True)
+    
+    proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)
+    
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    
+    cantidad = models.FloatField(default=0.0)
+    
+    def __str__(self):
+        return str(self.fecha) + " " + str(self.proveedor) + " " + str(self.item) + " " + str(self.cantidad)

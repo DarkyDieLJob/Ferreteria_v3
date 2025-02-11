@@ -25,6 +25,7 @@
             <th>Ítem</th>
             <th>Cantidad</th>
             <th>Llegó?</th>
+            <th>Devolver?</th>
         </tr>
     </thead>
     <tbody>
@@ -48,6 +49,13 @@
                         onclick="agregarAlStock({{ articulo.id}},{{articulo.proveedor.id}},{{ articulo.item.id }})"
                     >
                 </td>
+                <td>
+                    <input 
+                        type="checkbox" 
+                        id="devolver-devolver{{ articulo.id }}" 
+                        onclick="agregarDevolucion({{ articulo.id}},{{articulo.proveedor.id}},{{ articulo.item.id }})"
+                    >
+                </td>
             </tr>
         {% endfor %}
     </tbody>
@@ -66,6 +74,32 @@
     <script src="{% static 'js/pedido/nuevo_stock.js' %}"></script>
 
     <script>
+        function agregarDevolucion(articulo_id, proveedor_id, item_id){
+            var devolver = document.getElementById('devolver-devolver' + articulo_id).checked;
+            var url = '/pedidos/agregar_devolucion/';
+            var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            var data = {
+                'articulo_id': articulo_id,
+                'proveedor_id': proveedor_id,
+                'item_id': item_id,
+                'devolver': devolver,
+                'csrfmiddlewaretoken': csrftoken
+            };
+            console.log(url, csrftoken, data);
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                location.reload();
+            });
+        }
+
         function pedidoControlado(pedido_id){
             var url = '/pedidos/marcar_controlado/';
             var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;

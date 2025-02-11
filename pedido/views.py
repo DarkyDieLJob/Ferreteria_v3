@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.views import View
 from django.views.generic import TemplateView
-from .models import ArticuloPedido, Pedido
+from .models import ArticuloPedido, Pedido, Devolucion
 from bdd.models import Proveedor, Lista_Pedidos
 from .forms import ArticuloPedidoForm
 
@@ -340,7 +340,32 @@ class NuevoStockView(View):
             print(form.errors)
         return render(request, 'pedido/nuevo_stock.html', {'form': form})
 
+def agregar_devolucion(request):
+    # Código para agregar un artículo a una devolución
+    data = json.loads(request.body)
+    print("Agregando devolución", data)
+    #se desvincula el articulo del pedido y se vincula a la lista de devolucion
+    articulo_pedido = ArticuloPedido.objects.get(id=data.get('articulo_id'))
 
+    pedido = Pedido.objects.get(id=data.get('pedido_id'))
+    pedido.articulo_pedido.remove(articulo_pedido)
+    
+    articulo = Lista_Pedidos.objects.get(proveedor=articulo_pedido.proveedor, item=articulo_pedido.item)
+    articulo.pedido = False
+    
+    devolucion = Devolucion.objects.create(
+        proveedor=articulo_pedido.proveedor,
+        item=articulo_pedido.item,
+        cantidad=articulo_pedido.cantidad
+    )
+    
+    articulo_pedido.cantidad = 0   
+     
+    pedido.save()
+    devolucion.save()
+    articulo_pedido.save()
+    articulo.save()
+    return JsonResponse({'status': 'ok'})
 
 class CargarStockView(View):
     def post(self, request, producto_id):

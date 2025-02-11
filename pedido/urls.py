@@ -6,7 +6,7 @@ from .views import HomeView, ListarArticulosFaltantesView
 from .views import nuevo_pedido, agregar_al_pedido
 from .views import enviar_pedido, ControlarPedidoView
 from .views import DetallePedidoView, cancelar_articulo_pedido
-from .views import agregar_al_stock
+from .views import agregar_al_stock, agregar_devolucion
 app_name = 'pedido'
 name = 'pedido'
 
@@ -42,5 +42,5 @@ urlpatterns = [
     path('detalle_pedido/<int:pedido_id>', DetallePedidoView.as_view(), name='detalle-pedido'),
     path('agregar_al_stock/', agregar_al_stock, name='agregar-al-stock'),
     path('marcar_controlado/', ControlarPedidoView.as_view(), name='marcar-controlado'),
-    
+    path('agregar_devolucion/', agregar_devolucion, name='agregar-devolucion'),
 ]
