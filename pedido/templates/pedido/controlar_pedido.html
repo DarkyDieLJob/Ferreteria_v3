@@ -6,6 +6,14 @@
 {% endblock %}
 
 {% block cuerpo %}
+{% load crispy_forms_tags %}
+<form method="post" action="{% url 'pedido:editar-pedido' pedido.id %}">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <input type="hidden" name="url_destino" value="controlar_pedido">
+    <button type="submit" class="btn btn-primary">Agregar al pedido</button>
+</form>
+
 {% csrf_token %}
 <h2>Pedido: {{ proveedor }}</h2>
 <button onclick="pedidoControlado({{ pedido.id }})">Pedido Controlado</button>
@@ -48,6 +56,15 @@
 {% endblock %}
 
 {% block script %}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+    <script>
+        var autocompleteUrl = "{% url 'pedido:item-autocomplete' %}";
+        var proveedorId = {{ proveedor.id }};
+    </script>
+    <script src="{% static 'js/pedido/nuevo_stock.js' %}"></script>
+
     <script>
         function pedidoControlado(pedido_id){
             var url = '/pedidos/marcar_controlado/';

@@ -157,7 +157,11 @@ class EditarPedidoView(TemplateView):
         print("Listado_articulos_pedido:", context['Lista_articulos_pedidos'])
         
         context['form'] = ArticuloPedidoForm()
-        return self.render_to_response(context)
+        url_destino = request.POST.get('url_destino')
+        if url_destino == 'controlar_pedido':
+            return redirect('pedido:controlar-pedido', pedido_id=pedido_id)
+        else:
+            return self.render_to_response(context)
 
 class DetallePedidoView(TemplateView):
     template_name = 'pedido/detalle_pedido.html'
@@ -181,21 +185,24 @@ class DetallePedidoView(TemplateView):
 class ControlarPedidoView(TemplateView):
     template_name = 'pedido/controlar_pedido.html'
     
-    def get(self, request, pedido_id):
-        # Código para controlar un pedido
-        context = self.get_context_data()
-    
+    def get_context_data(self, pedido_id, **kwargs):
+        context = super().get_context_data(**kwargs)
         context['pedido'] = Pedido.objects.get(id=pedido_id)
         context['proveedor'] = context['pedido'].proveedor
         context['Lista_articulos_pedidos'] = ArticuloPedido.objects.filter(pedido=pedido_id)
+        context['form'] = ArticuloPedidoForm()
+        return context
+    
+    def get(self, request, pedido_id):
+        # Código para controlar un pedido
+        context = self.get_context_data(pedido_id=pedido_id)
 
         return self.render_to_response(context)
     
     def post(self, request):
-        context = self.get_context_data()
-        
         data = json.loads(request.body)
         pedido_id = data.get('pedido_id')
+        context = self.get_context_data(pedido_id=pedido_id)
         print("Controlando pedido", data)
         pedido_controlado = Pedido.objects.get(id=pedido_id)
         pedido_controlado.estado = 'Co'
