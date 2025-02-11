@@ -205,7 +205,7 @@ def agregar_al_stock(request):
     data = json.loads(request.body)
     print("Agregando al stock", data)
     articulo_pedido = ArticuloPedido.objects.get(id=data.get('articulo_id'))
-    articulo_pedido.llego = False
+    articulo_pedido.llego = data.get('llego')
     articulo_pedido.item.stock = articulo_pedido.item.stock + articulo_pedido.cantidad
     articulo_pedido.cantidad = 0
     articulo_pedido.item.save()

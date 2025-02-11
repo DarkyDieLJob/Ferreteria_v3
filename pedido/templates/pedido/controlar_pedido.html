@@ -35,8 +35,8 @@
                 </td>
                 <td>
                     <input 
-                        type="checkbox" {% if articulo.pedido %}checked{% endif %} 
-                        id="llego-pedido{{ articulo.id }}" 
+                        type="checkbox" {% if articulo.llego %}checked{% endif %} 
+                        id="llego-llego{{ articulo.id }}" 
                         onclick="agregarAlStock({{ articulo.id}},{{articulo.proveedor.id}},{{ articulo.item.id }})"
                     >
                 </td>
@@ -73,7 +73,7 @@
         }
 
         function agregarAlStock(articulo_id, proveedor_id, item_id){
-            var llego = document.getElementById('llego-pedido' + articulo_id).checked;
+            var llego = document.getElementById('llego-llego' + articulo_id).checked;
             var cantidad = document.querySelector('.quantity-input[data-id="llego-' + articulo_id + '"]').value;
             var url = '/pedidos/agregar_al_stock/';
             var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
