@@ -1,0 +1,70 @@
+{% extends "pedido/base_pedido.html" %}
+
+{% block encabezado %}
+    <title>Devoluciones</title>
+    {% load static %}
+{% endblock %}
+
+{% block cuerpo %}
+{% csrf_token %}
+<table>
+    <thead>
+        <tr>
+            <th>id</th>
+            <th>Proveedor</th>
+            <th>Ítem</th>
+            <th>Cantidad</th>
+            <th>Ya se devolvio?</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for articulo in devoluciones %}
+            <tr>
+                <td>{{ articulo.id }}</td>
+                <td>{{ articulo.proveedor }}</td>
+                <td>{{ articulo.item }}</td>
+                <td>
+                    <input 
+                        type="number" 
+                        class="quantity-input" 
+                        data-id="devolver-{{ articulo.id }}" 
+                        value="{{ articulo.cantidad }}" 
+                        step="0.01">
+                </td>
+                <td>
+                    <input 
+                        type="checkbox" 
+                        id="devolver-devolver{{ articulo.id }}" 
+                        onclick="eliminarDevolucion({{ articulo.id}},{{articulo.proveedor.id}},{{ articulo.item.id }})"
+                    >
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+
+</table>
+
+{% endblock %}
+
+{% block script %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+    <script>
+        function eliminarDevolucion(articulo_id, proveedor_id, item_id){
+            var devolver = document.getElementById('devolver-devolver' + articulo_id).checked;
+            var url = '/pedidos/eliminar_devolucion/';
+            var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            var data = {
+                'devolucion_id': articulo_id,
+                'csrfmiddlewaretoken': csrftoken
+            };
+            $.post(url, data, function(response){
+                if (response.status == 'ok'){
+                    location.reload();
+                } else {
+                    alert('Error al eliminar la devolucion');
+                }
+            });
+        }
+    </script>
+{% endblock %}

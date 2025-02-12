@@ -414,5 +414,17 @@ class ItemAutocomplete(Select2QuerySetView):
         }
         return JsonResponse(data)
 
-
+class ListarDevolucionesView(TemplateView):
+    template_name = 'pedido/devoluciones.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Código para listar las devoluciones
+        context['devoluciones'] = ArticuloDevolucion.objects.all()
+        return context
+    
+    def post(self, request):
+        devolucion = ArticuloDevolucion.objects.get(id=request.POST.get('devolucion_id'))
+        devolucion.delete()
+        return JsonResponse({'status': 'ok'})
 
