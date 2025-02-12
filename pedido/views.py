@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.views import View
 from django.views.generic import TemplateView
-from .models import ArticuloPedido, Pedido, Devolucion
+from .models import ArticuloPedido, Pedido, ArticuloDevolucion
 from bdd.models import Proveedor, Lista_Pedidos
 from .forms import ArticuloPedidoForm
 
@@ -353,7 +353,7 @@ def agregar_devolucion(request):
     articulo = Lista_Pedidos.objects.get(proveedor=articulo_pedido.proveedor, item=articulo_pedido.item)
     articulo.pedido = False
     
-    devolucion = Devolucion.objects.create(
+    devolucion = ArticuloDevolucion.objects.create(
         proveedor=articulo_pedido.proveedor,
         item=articulo_pedido.item,
         cantidad=articulo_pedido.cantidad

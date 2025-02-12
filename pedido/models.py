@@ -3,7 +3,7 @@ from django.db import models
 
 from bdd.models import Item, Proveedor, Lista_Pedidos
 
-    
+  
 class Vendido(models.Model):
     proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)
 
@@ -48,8 +48,8 @@ class Pedido(models.Model):
     
     def __str__(self):
         return str(self.fecha) + " " + str(self.proveedor) + " " + str(self.estado)
-    
-class Devolucion(models.Model):
+
+class ArticuloDevolucion(models.Model):
     fecha = models.DateField(auto_now_add=True, blank=True, null=True)
     
     proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)
