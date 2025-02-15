@@ -1,13 +1,12 @@
 from django.urls import path
-from .views import ItemAutocomplete, ListarPedidosView
-from .views import EditarPedidoView
-from .views import actualizar_llego, actualizar_cantidad
-from .views import HomeView, ListarArticulosFaltantesView
-from .views import nuevo_pedido, agregar_al_pedido
-from .views import enviar_pedido, ControlarPedidoView
-from .views import DetallePedidoView, cancelar_articulo_pedido
-from .views import agregar_al_stock, agregar_devolucion
-from .views import ListarDevolucionesView
+from .views.base import ItemAutocomplete, agregar_al_stock
+from .views.controlar import ControlarPedidoView, agregar_devolucion, actualizar_llego
+from .views.detalles import DetallePedidoView
+from .views.devoluciones import ListarDevolucionesView, actualizar_cantidad
+from .views.editar import EditarPedidoView, actualizar_cantidad, agregar_al_pedido
+from .views.editar import cancelar_articulo_pedido, enviar_pedido
+from .views.faltantes import ListarArticulosFaltantesView
+from .views.home import HomeView, nuevo_pedido
 
 app_name = 'pedido'
 name = 'pedido'
@@ -108,11 +107,6 @@ urlpatterns = [
      path('actualizar_cantidad/<int:articulo_id>',
          actualizar_cantidad,
          name='actualizar-cantidad'
-         ),
-     
-     path('listar_pedidos/',
-         ListarPedidosView.as_view(),
-         name='listar-pedidos'
          ),
      
      path('eliminar_devolucion/',
