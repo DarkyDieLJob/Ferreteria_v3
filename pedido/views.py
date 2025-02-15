@@ -8,8 +8,27 @@ from .models import ArticuloPedido, Pedido, ArticuloDevolucion
 from bdd.models import Proveedor, Lista_Pedidos
 from .forms import ArticuloPedidoForm
 
-class HomeView(TemplateView):
-    template_name = 'pedido/home.html'
+class GeneralPedidoView(TemplateView):
+    ''' Vista a modo de interfaz para las operaciones generales de pedidos
+    '''
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        context['barra_de_navegacion']= [
+            {'text_display': 'Listar Pedidos', 'url': {'ruta': 'pedidos/home/'}},
+            {
+                'text_display': 'Sección 2',
+                'subsecciones': [
+                    {'text_display': 'Subsección 2.1', 'url': {'ruta': 'subseccion21'}},
+                    {'text_display': 'Subsección 2.2', 'url': {'ruta': 'subseccion22'}},
+                ]
+            },
+            {'text_display': 'Listar Devoluciones', 'url': {'ruta': 'pedidos/listar_devoluciones/'}},
+        ]
+        return context
+        
+class HomeView(GeneralPedidoView):
+    template_name = 'pedido/vistas/home/base.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -34,7 +53,8 @@ def nuevo_pedido(request, proveedor_id):
     
     return redirect('pedido:editar-pedido', pedido_id=pedido_pendiente.id)        
     
-class NuevoPedidoView(TemplateView):
+#Descontinuado
+class NuevoPedidoView(GeneralPedidoView):
     '''Vista para crear un nuevo pedido
     
     Se encarga de listar los artículos faltantes y de crear un 
@@ -66,7 +86,7 @@ class NuevoPedidoView(TemplateView):
         # Código para procesar el formulario de nuevo pedido
         pass
     
-class ListarArticulosFaltantesView(TemplateView):
+class ListarArticulosFaltantesView(GeneralPedidoView):
     template_name = 'pedido/listar_faltantes.html'
 
     def get_context_data(self, **kwargs):
@@ -78,7 +98,7 @@ class ListarArticulosFaltantesView(TemplateView):
         return context
 
 
-class ListarArticulosPedidosView(TemplateView):
+class ListarArticulosPedidosView(GeneralPedidoView):
     template_name = 'pedido/listar_pedidos_descontinuado.html'
 
     def get_context_data(self, **kwargs):
@@ -87,8 +107,8 @@ class ListarArticulosPedidosView(TemplateView):
         context['lista_pedidos'] = ArticuloPedido.objects.all()
         return context
 
-class EditarPedidoView(TemplateView):
-    template_name = 'pedido/editar_pedido.html'
+class EditarPedidoView(GeneralPedidoView):
+    template_name = 'pedido/vistas/editar_pedido/base.html'
     def get_context_data(self, **kwargs):
         
         context = super().get_context_data(**kwargs)
@@ -163,8 +183,8 @@ class EditarPedidoView(TemplateView):
         else:
             return self.render_to_response(context)
 
-class DetallePedidoView(TemplateView):
-    template_name = 'pedido/detalle_pedido.html'
+class DetallePedidoView(GeneralPedidoView):
+    template_name = 'pedido/vistas/detalle_pedido/base.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -182,8 +202,8 @@ class DetallePedidoView(TemplateView):
         # Código para procesar el formulario de edición de pedidos
         pass
 
-class ControlarPedidoView(TemplateView):
-    template_name = 'pedido/controlar_pedido.html'
+class ControlarPedidoView(GeneralPedidoView):
+    template_name = 'pedido/vistas/controlar_pedido/base.html'
     
     def get_context_data(self, pedido_id, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -325,21 +345,6 @@ class EnviarPedidoView(View):
         
         pass
 
-class NuevoStockView(View):
-    def get(self, request):
-        form = ArticuloPedidoForm()
-        return render(request, 'pedido/nuevo_stock.html', {'form': form})
-
-    def post(self, request):
-        form = ArticuloPedidoForm(request.POST)
-        if form.is_valid():
-            form.save()
-            print("Formulario válido, pedido guardado.")
-        else:
-            print("Formulario no válido.")
-            print(form.errors)
-        return render(request, 'pedido/nuevo_stock.html', {'form': form})
-
 def agregar_devolucion(request):
     # Código para agregar un artículo a una devolución
     data = json.loads(request.body)
@@ -372,8 +377,8 @@ class CargarStockView(View):
         # Código para actualizar el stock de un producto
         pass
     
-class ListarPedidosView(TemplateView):
-    template_name = 'pedido/listar_pedidos.html'
+class ListarPedidosView(GeneralPedidoView):
+    template_name = 'pedido/vistas/listar_pedido/base.html'
     
     def get_context_data(self, **kwargs) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
@@ -414,8 +419,8 @@ class ItemAutocomplete(Select2QuerySetView):
         }
         return JsonResponse(data)
 
-class ListarDevolucionesView(TemplateView):
-    template_name = 'pedido/devoluciones.html'
+class ListarDevolucionesView(GeneralPedidoView):
+    template_name = 'pedido/vistas/devoluciones/base.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

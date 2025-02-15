@@ -1,0 +1,8 @@
+
+{% load crispy_forms_tags %}
+<form method="post" action="{% url 'pedido:editar-pedido' pedido.id %}">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <input type="hidden" name="url_destino" value="controlar_pedido">
+    <button type="submit" class="btn btn-primary">Agregar al pedido</button>
+</form>

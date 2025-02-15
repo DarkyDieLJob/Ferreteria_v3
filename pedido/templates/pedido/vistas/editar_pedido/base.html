@@ -1,0 +1,27 @@
+{% extends "pedido/base_pedido.html" %}
+
+{% block encabezado %}
+    <title>Pedido: {{ proveedor }}</title>
+    {% load static %}
+{% endblock %}
+
+
+{% block cuerpo %}
+    <button class='btn btn-primary' onclick="enviarPedido({{ pedido.id }})">Enviar Pedido</button>
+
+    {% include 'pedido/vistas/editar_pedido/form_content.html' %}
+    {% include 'pedido/vistas/editar_pedido/table_content_articulos_pedidos.html' %}
+    {% include 'pedido/vistas/editar_pedido/table_content_articulos_faltantes.html' %}
+{% endblock %}
+
+
+
+{% block script %}
+    <script>
+        var autocompleteUrl = "{% url 'pedido:item-autocomplete' %}";
+        var proveedorId = {{ proveedor.id }};
+        var pedidoId = {{ pedido.id }};
+    </script>
+    <script src="{% static 'js/pedido/vistas/editar_pedido.js' %}"></script>
+
+{% endblock %}

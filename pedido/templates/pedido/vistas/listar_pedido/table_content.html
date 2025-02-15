@@ -1,0 +1,22 @@
+{% extends 'pedido/elementos/elemento_tabla.html'%}
+{% block table_head %}
+    <tr>
+        <th>id</th>
+        <th>Fecha</th>
+        <th>Proveedor</th>
+        <th>Estado</th>
+    </tr>
+{% endblock %}
+
+{% block table_body %}
+    {% for pedido in lista_pedidos %}
+        <tr>
+            <td>{{ pedido.id }}</td>
+            <td>{{ pedido.fecha }}</td>
+            <td>{{ pedido.proveedor }}</td>
+            <td>
+                <a href="{% url 'pedido:editar-pedido' pedido.id %}">{{ pedido.get_estado_display }}</a>
+            </td>
+        </tr>
+    {% endfor %}
+{% endblock %}

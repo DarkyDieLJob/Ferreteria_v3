@@ -1,0 +1,43 @@
+{% extends 'pedido/elementos/elemento_tabla.html'%}
+{% block table_head %}
+    <tr>
+        <th>id</th>
+        <th>Proveedor</th>
+        <th>Ítem</th>
+        <th>Cantidad</th>
+        <th>Llegó?</th>
+        <th>Devolver?</th>
+    </tr>
+{% endblock %}
+
+{% block table_body %}
+    {% for articulo in Lista_articulos_pedidos %}
+        <tr>
+            <td>{{ articulo.id }}</td>
+            <td>{{ articulo.proveedor }}</td>
+            <td>{{ articulo.item }}</td>
+            <td>
+                <input 
+                    type="number" 
+                    class="quantity-input" 
+                    data-id="llego-{{ articulo.id }}" 
+                    value="{{ articulo.cantidad }}" 
+                    step="0.01">
+            </td>
+            <td>
+                <input 
+                    type="checkbox" {% if articulo.llego %}checked{% endif %} 
+                    id="llego-llego{{ articulo.id }}" 
+                    onclick="agregarAlStock({{ articulo.id}},{{articulo.proveedor.id}},{{ articulo.item.id }})"
+                >
+            </td>
+            <td>
+                <input 
+                    type="checkbox" 
+                    id="devolver-devolver{{ articulo.id }}" 
+                    onclick="agregarDevolucion({{ articulo.id}},{{articulo.proveedor.id}},{{ articulo.item.id }})"
+                >
+            </td>
+        </tr>
+    {% endfor %}
+{% endblock %}

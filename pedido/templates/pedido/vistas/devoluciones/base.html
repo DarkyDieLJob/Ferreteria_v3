@@ -1,0 +1,15 @@
+{% extends "pedido/base_pedido.html" %}
+
+{% block encabezado %}
+    <title>Devoluciones</title>
+    {% load static %}
+{% endblock %}
+
+{% block cuerpo %}
+    {% include 'pedido/vistas/devoluciones/table_content.html' %}
+{% endblock %}
+
+{% block script %}
+    <script src="{% static 'js/pedido/vistas/devoluciones.js' %}"></script>
+    
+{% endblock %}

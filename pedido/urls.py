@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import ItemAutocomplete, ListarPedidosView
-from .views import NuevoStockView, EditarPedidoView
+from .views import EditarPedidoView
 from .views import actualizar_llego, actualizar_cantidad
 from .views import HomeView, ListarArticulosFaltantesView
 from .views import nuevo_pedido, agregar_al_pedido
@@ -109,11 +109,6 @@ urlpatterns = [
          actualizar_cantidad,
          name='actualizar-cantidad'
          ),
-     
-     path('pedir_nuevo_articulo/', 
-         NuevoStockView.as_view(), 
-         name='NuevoStockView'
-         ), 
      
      path('listar_pedidos/',
          ListarPedidosView.as_view(),

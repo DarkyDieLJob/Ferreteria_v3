@@ -1,0 +1,52 @@
+{% extends 'pedido/elementos/elemento_tabla.html'%}
+{% block table_head %}
+    <tr>
+        <th>Nuevo Pedido</th>
+        <th>Pendiente</th>
+        <th>Enviado</th>
+        <th>Entregado</th>
+        <th>Articulos Faltantes</th>
+    </tr>
+{% endblock %}
+
+{% block table_body %}
+    {% for proveedor, pedidos in pedidos_activos.items %}
+        <tr>
+            <td><a href="{% url 'pedido:nuevo-pedido' proveedor.id %}">Nuevo pedido a: {{ proveedor.text_display }}</a></td>
+            <td>
+                {% for pedido in pedidos %}
+
+                    {% if pedido.get_estado_display == 'Pendiente'%}
+                        <a href="{% url 'pedido:editar-pedido' pedido.id %}">{{ pedido }}</a><br>
+                    {% endif %}
+                {% empty %}
+                    -
+                {% endfor %}
+            </td>
+
+            <td>
+                {% for pedido in pedidos %}
+
+                    {% if pedido.get_estado_display == 'Enviado'%}
+                        <a href="{% url 'pedido:detalle-pedido' pedido.id %}">{{ pedido }}</a><br>
+                    {% endif %}
+                {% empty %}
+                        -
+                {% endfor %}
+            </td>
+            <td>
+                {% for pedido in pedidos %}
+
+                    {% if pedido.get_estado_display == 'Entregado'%}
+                        <a href="{% url 'pedido:editar-pedido' pedido.id %}">{{ pedido }}</a><br>
+                    {% endif %}
+                {% empty %}
+                    -
+                {% endfor %}
+            </td>
+            <td>
+                <a href="{% url 'pedido:listar-faltantes' proveedor.id %}">Ver articulos faltantes</a>
+            </td>
+        </tr>
+    {% endfor %}
+{% endblock %}

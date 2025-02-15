@@ -1,0 +1,36 @@
+{% extends 'pedido/elementos/elemento_tabla.html'%}
+{% block table_head %}
+    <tr>
+        <th>id</th>
+        <th>fecha</th>
+        <th>Proveedor</th>
+        <th>Ítem</th>
+        <th>Cantidad</th>
+        <th>Cancelar</th>
+    </tr>
+{% endblock %}
+
+{% block table_body %}
+    {% for articulo in Lista_articulos_pedidos %}
+        <tr>
+            <td>{{ articulo.id }}</td>
+            <td>{{ articulo.fecha }}</td>
+            <td>{{ articulo.proveedor }}</td>
+            <td>{{ articulo.item }}</td>
+            <td>
+                <input type="number" 
+                    class="quantity-input" 
+                    data-id="llego-{{ articulo.id }}" 
+                    value="{{ articulo.cantidad }}" 
+                    step="0.01" 
+                    onchange="actualizarCantidad({{ articulo.id }}, this.value)"
+                >
+            </td>
+            <td>
+                <button onclick="cancelarArticuloPedido({{ articulo.id}},{{articulo.proveedor.id}},{{ articulo.item.id }})">
+                    Cancelar
+                </button>
+            </td>
+        </tr>
+    {% endfor %}
+{% endblock %}

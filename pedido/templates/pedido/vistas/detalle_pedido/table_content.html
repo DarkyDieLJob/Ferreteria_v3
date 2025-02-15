@@ -1,0 +1,22 @@
+{% extends 'pedido/elementos/elemento_tabla.html'%}
+{% block table_head %}
+    <tr>
+        <th>id</th>
+        <th>fecha</th>
+        <th>Proveedor</th>
+        <th>Ítem</th>
+        <th>Cantidad</th>
+    </tr>
+{% endblock %}
+
+{% block table_body %}
+    {% for articulo in articulos %}
+        <tr>
+            <td>{{ articulo.id }}</td>
+            <td>{{ articulo.fecha }}</td>
+            <td>{{ articulo.proveedor }}</td>
+            <td>{{ articulo.item }}</td>
+            <td>{{ articulo.cantidad}}</td>
+        </tr>
+    {% endfor %}
+{% endblock %}
