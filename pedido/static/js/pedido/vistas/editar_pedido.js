@@ -103,8 +103,8 @@ function enviarPedido(pedido_id) {
     .then(data => {
         //si {'status': 'error', 'message': 'El pedido no tiene artículos'} salta un alert
         if (data.status === 'ok'){
-            //redirije a la vista de detalle pedido
-            window.location.href = "{% url 'pedido:detalle-pedido' pedido.id %}";
+            //redirije a la vista de detalle pedido como ruta absoluta y no relativa
+            window.location.href = urlEnviarPedido;
         }
         if (data.status === 'error'){
             alert(data.message);

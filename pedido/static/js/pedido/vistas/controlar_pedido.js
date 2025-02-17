@@ -48,7 +48,7 @@ function pedidoControlado(pedido_id){
             return;
         }
         if (data.status === 'ok'){
-            window.location.href = "{% url 'pedido:home' %}";
+            window.location.href = urlHome;
         }
     });
 }

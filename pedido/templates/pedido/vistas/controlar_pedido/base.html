@@ -16,6 +16,7 @@
     var autocompleteUrl = "{% url 'pedido:item-autocomplete' %}";
     var proveedorId = {{ proveedor.id }};
     var pedidoId = {{ pedido.id }};
+    var urlHome = "{% url 'pedido:home' %}";
 </script>
 <script src="{% static 'js/pedido/nuevo_stock.js' %}"></script>
 <script src="{% static 'js/pedido/vistas/controlar_pedido.js' %}"></script>

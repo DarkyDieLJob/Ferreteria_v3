@@ -41,7 +41,8 @@ import os
 from django.conf import settings
 from django.http import FileResponse
 from django.db.models import Exists, OuterRef
-
+from django.db.models import QuerySet
+from django.db.models import Exists, OuterRef, Value, BooleanField
 
 class DateInput(forms.DateInput):
     """
@@ -400,26 +401,27 @@ class MiVista(TemplateView):
             if form_data == {}:
                 context['datos'] = []
             else:
-                context['datos'] = list(model.objects.filter(**form_data).values())
-                if len(context['datos'])==1 and context['model_name']=='Item':
-                    item_trabajado = Item.objects.get(**context['datos'][0])
-                    if item_trabajado.trabajado:
-                        print('item_trabajado: ',item_trabajado.trabajado)
-                        pass
-                    else:
-                        item_trabajado.trabajado = True
-                        item_trabajado.save()
-                        print('Guardando item trabajado')
-                    
-                print(context['datos'])
+                print('Formulario Validado y con datos')
+                context['datos'] = model.objects.filter(**form_data).values()
+                
                 if context['model_name'] == "Item":
+                    print('Modelo Item')
                     # Filtrar datos para incluir solo aquellos cuyo campo "actualizado" sea verdadero
+                    if isinstance(context['datos'], QuerySet):
+                        print('QuerySet')
+                        context['datos'] = context['datos'].annotate(
+                            tiene_pedido=Exists(
+                                Lista_Pedidos.objects.filter(
+                                    item=OuterRef('pk'), pedido=True
+                                )
+                            )
+                        )
                     context['datos'] = [dato for dato in context['datos']]# if dato.get('actualizado') == True]
+                    context['titulos'].append('tiene_pedido')
         else:
             context['form'] = form
         filtered_data = [{k: v for k, v in d.items() if k in context['titulos']} for d in context['datos']]
         context['datos'] = filtered_data
-
         return self.render_to_response(context)
 
 class Inicio(MiVista):

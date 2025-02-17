@@ -32,6 +32,7 @@ class ControlarPedidoView(GeneralPedidoView):
         context['lista_articulo_que_no_llegaron'] = ArticuloPedido.objects.filter(pedido=pedido_id, llego=False)
         pedido, _ = Pedido.objects.get_or_create(proveedor=pedido_controlado.proveedor, estado='Pd')
         pedido.articulo_pedido.add(*context['lista_articulo_que_no_llegaron'])
+        
         pedido.save()
         pedido_controlado.save()
         return JsonResponse({'status': 'ok'})
@@ -70,6 +71,13 @@ def actualizar_llego(request, articulo_id):
     data = json.loads(request.body)
     articulo_pedido.llego = data.get('llego')
     # Process the data as needed
+    
+    
+    articulo_faltante, _ = Lista_Pedidos.objects.get_or_create(proveedor_id=articulo_pedido.proveedor.id, item_id=articulo_pedido.item.id)
+    articulo_faltante.pedido = False
+    articulo_faltante.cantidad = articulo_faltante.cantidad - float(1)
+    articulo_faltante.save()
+    
     articulo_pedido.save()
     return JsonResponse({'status': 'ok'})
 

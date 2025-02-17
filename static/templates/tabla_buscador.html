@@ -25,6 +25,13 @@
                     {% else %}
                         <button class="btn btn-success" id="cartel-{{ dato.id }}" onclick="location.href='/x_cartel/imprimir/{{ dato.id }}';" style="display: none;">Cartel</button>
                     {% endif %}
+                    
+                    {% if dato.tiene_pedido %}
+                        Articulo Pedido
+                    {% else %}
+                        <button class='btn btn-secondary', onclick="agregarAlPedido({{ dato.id}})">Agregar al pedido</button>
+                    {% endif %}
+            
                 </td>
             </tr>
         {% endfor %}
@@ -301,6 +308,21 @@
         
         
     });
+
+
+    function agregarAlPedido(id_articulo) {
+        fetch('/agregar_articulo_a_pedido/'+ id_articulo + '/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken
+            }
+        })
+        .catch(error => console.error('Error:', error))
+        .finally(() => {
+            location.reload();
+        });
+    }
     
     
 </script>

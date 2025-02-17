@@ -9,6 +9,8 @@ from .views import carrito, eliminar_articulo_pedido, ListarCarteles, descargar_
 from .models import NavBar, Armador
 from django.utils.module_loading import import_string
 
+from pedido.views.externo import agregar_al_pedido
+
 
 try:
     # Generamos una lista de objetos path a partir de la información almacenada en el modelo Armador
@@ -62,6 +64,7 @@ urlpatterns += [
     path('imprimir/carteles/1/',Imprimir.as_view(), name='imprimir 1 cartel'),
     path('listar_carteles/',ListarCarteles.as_view(), name='listar_carteles'),
     path('descargar_archivo/', descargar_archivo, name='descargar_archivo'),
+    path('agregar_articulo_a_pedido/<int:articulo_id>/', agregar_al_pedido, name='agregar_articulo_a_pedido'),
 ]
 for url in urlpatterns:
     print(url)

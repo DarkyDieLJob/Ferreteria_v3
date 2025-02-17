@@ -1,6 +1,6 @@
 from django.views.generic import TemplateView
 from dal_select2.views import Select2QuerySetView
-from bdd.models import Item, Proveedor
+from bdd.models import Item, Proveedor, Lista_Pedidos
 from django.http import JsonResponse
 import json
 from pedido.models import ArticuloPedido
@@ -63,6 +63,12 @@ def agregar_al_stock(request):
     articulo_pedido.llego = data.get('llego')
     articulo_pedido.item.stock = articulo_pedido.item.stock + articulo_pedido.cantidad
     articulo_pedido.cantidad = 0
+    
+    articulo_faltante, _ = Lista_Pedidos.objects.get_or_create(proveedor_id=articulo_pedido.proveedor.id, item_id=articulo_pedido.item.id)
+    articulo_faltante.pedido = False
+    articulo_faltante.cantidad = articulo_faltante.cantidad - float(1)
+    articulo_faltante.save()
+    
     articulo_pedido.item.save()
     articulo_pedido.save()
     return JsonResponse({'status': 'ok'})
