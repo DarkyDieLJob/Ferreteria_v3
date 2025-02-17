@@ -6,6 +6,7 @@
 {% endblock %}
 
 {% block cuerpo %}
+    {% csrf_token %}
     {% include 'pedido/vistas/devoluciones/table_content.html' %}
 {% endblock %}
 
