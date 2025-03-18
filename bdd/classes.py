@@ -46,6 +46,65 @@ class Patoba():
         ]
     
         self.id_carpeta_pedidos = '1kkoTDNOCbWwzjmTzWOZPR3xVMUAYtYOj'
+    
+    def subir_sqlite3_a_drive(self, ruta_archivo, nombre_archivo, carpeta_id):
+        """
+        Sube o actualiza un archivo SQLite3 en Google Drive.
+
+        Args:
+            ruta_archivo (str): Ruta completa al archivo local.
+            nombre_archivo (str): Nombre del archivo en Drive.
+            carpeta_id (str): ID de la carpeta en Drive.
+        """
+        # Buscar el archivo existente
+        query = f"name='{nombre_archivo}' and '{carpeta_id}' in parents and trashed=false"
+        results = self.drive_service.files().list(q=query, fields="files(id)").execute()
+        files = results.get('files', [])
+
+        media = MediaFileUpload(ruta_archivo, mimetype='application/x-sqlite3', resumable=True)
+
+        if files:
+            # Actualizar el archivo existente
+            file_id = files[0]['id']
+            request = self.drive_service.files().update(fileId=file_id, media_body=media)
+            file = request.execute()
+            print(f'Archivo SQLite3 actualizado en Drive, ID: {file.get("id")}')
+        else:
+            # Crear un nuevo archivo
+            file_metadata = {
+                'name': nombre_archivo,
+                'parents': [carpeta_id]
+            }
+            request = self.drive_service.files().create(body=file_metadata, media_body=media)
+            file = request.execute()
+            print(f'Archivo SQLite3 subido a Drive, ID: {file.get("id")}')
+    
+    def descargar_sqlite3_de_drive(self, nombre_archivo, carpeta_id, ruta_destino):
+        """
+        Descarga un archivo SQLite3 desde Google Drive.
+
+        Args:
+            nombre_archivo (str): Nombre del archivo en Drive.
+            carpeta_id (str): ID de la carpeta en Drive.
+            ruta_destino (str): Ruta completa donde guardar el archivo descargado.
+        """
+        # Buscar el archivo en Drive
+        query = f"name='{nombre_archivo}' and '{carpeta_id}' in parents and trashed=false"
+        results = self.drive_service.files().list(q=query, fields="files(id)").execute()
+        files = results.get('files', [])
+
+        if files:
+            file_id = files[0]['id']
+            request = self.drive_service.files().get_media(fileId=file_id)
+            fh = io.FileIO(ruta_destino, 'wb')
+            downloader = MediaIoBaseDownload(fh, request)
+            done = False
+            while done is False:
+                status, done = downloader.next_chunk()
+                print(f"Descargando {int(status.progress() * 100)}%.")
+            print(f'Archivo SQLite3 descargado a: {ruta_destino}')
+        else:
+            print(f'No se encontró el archivo SQLite3 "{nombre_archivo}" en Drive.')
         
     def crear_hoja_google_drive(self, nombre_libro, datos, libro_id=None):
         if libro_id is None:

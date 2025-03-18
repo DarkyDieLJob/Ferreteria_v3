@@ -3,6 +3,7 @@ import threading
 from actualizador.log_config import logging
 from .actualizador_main import principal
 from .actualizador_csv import principal_csv, apply_custom_round
+from .sincronizador import buckup
 import queue
 import time
 import datetime
@@ -78,6 +79,7 @@ def ejecutar_cola_tareas():
     colaTareas = ColaTareas()
     colaTareas.agregar_tarea(principal)
     colaTareas.agregar_tarea(principal_csv)
+    colaTareas.agregar_tarea(buckup)
     colaTareas.ejecutar_tareas()
 
 
