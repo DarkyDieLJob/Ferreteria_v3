@@ -1039,3 +1039,37 @@ def descargar_archivo(request):
     response = FileResponse(open(ruta_al_archivo, 'rb'), content_type='application/rar')
     response['Content-Disposition'] = f'attachment; filename="{nombre_del_archivo}"'
     return response
+
+def reportar_item(request, articulo_id):
+    estados = ['Cantidad mal dividida', 'Falta precio en Efectivo', 'Otos']
+    detalles = ""
+    estado_actual = "Cantidad mal dividida"  # Reemplaza con el estado actual del artículo
+
+    data = {
+        'estado': estados,
+        'modal_detalles': detalles,
+        'estado_actual': estado_actual,
+    }
+    print(data)
+    return JsonResponse(data)
+
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def enviar_reporte(request, articulo_id):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            estado = data.get('estado')
+            detalles = data.get('detalles')
+
+            # Aquí puedes procesar los datos recibidos (estado y detalles)
+            print(f"Artículo ID: {articulo_id},")
+            print(f"Estado: {estado},") 
+            print(f"Detalles: {detalles}")
+
+            return HttpResponse("Reporte enviado correctamente")
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Datos JSON inválidos"}, status=400)
+    else:
+        return JsonResponse({"error": "Método no permitido"}, status=405)

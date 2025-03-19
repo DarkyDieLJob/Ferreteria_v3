@@ -20,6 +20,7 @@
                     <button class="btn btn-success ver" id="ver-{{ dato.id }}" display="inline-block">Ver</button>
                     <button class="btn btn-success agregar" id="agregar-{{ dato.id }}" style="display: none;">Al carrito</button>
                     <button class="btn btn-primary editar" id="editar-{{ dato.id }}"display="inline-block">Editar</button>
+                    <button class="btn btn-danger reportar" id="reportar-{{ dato.id }}"display="inline-block">Reportar</button>
                     {% if dato.tiene_cartel %}
                         <button class="btn btn-success" id="cartel-{{ dato.id }}" onclick="location.href='/x_cartel/imprimir/{{ dato.id }}';">Cartel</button>
                     {% else %}
@@ -35,48 +36,75 @@
                 </td>
             </tr>
         {% endfor %}
-    </tbody>
-</table>
+        </tbody>
+    </table>
+</div>
 
 <div id="miModal" class="modal">
-    <div class="modal-content">
-        <span class="close_mimodal">×</span>
-        <form id="miFormulario">
-            {% csrf_token %}
-            <input type="hidden" id="id_articulo" name="id_articulo">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-light border border-primary rounded shadow-lg p-4">
+            <span class="close_mimodal">×</span>
+            <form id="miFormulario" class="d-flex flex-column align-items-center">
+                {% csrf_token %}
+                <input type="hidden" id="id_articulo" name="id_articulo">
 
-            <label for="cantidad">Cantidad:</label><br>
-            <input type="number" id="cantidad" name="cantidad"><br>
+                <label for="cantidad">Cantidad:</label><br>
+                <input type="number" id="cantidad" name="cantidad"><br>
 
-            <label for="barras">Barras:</label><br>
-            <input type="number" id="barras" name="barras"><br>
+                <label for="barras">Barras:</label><br>
+                <input type="number" id="barras" name="barras"><br>
 
-            <label for="cajon">Cajón:</label><br>
-            <select id="cajon" name="cajon">
-                <option value="">Ninguno</option>
-            </select><br>
+                <label for="cajon">Cajón:</label><br>
+                <select id="cajon" name="cajon">
+                    <option value="">Ninguno</option>
+                </select><br>
 
+                <label for="tiene_cartel">Tiene cartel:</label>
+                <input type="checkbox" id="tiene_cartel" name="tiene_cartel"><br>
 
-            <label for="tiene_cartel">Tiene cartel:</label><br>
-            <input type="checkbox" id="tiene_cartel" name="tiene_cartel"><br>
-
-            <input type="submit" value="Enviar">
-          </form>
+                <input type="submit" value="Enviar">
+            </form>
+        </div>
     </div>
 </div>
 
-<div id="ModalCarrito" class="modal">
-    <div class="modal-content">
-        <span class="close_carrito">×</span>
-        <form id="miFormularioCarrito">
-            {% csrf_token %}
-            <input type="hidden" id="id_articulo" name="id_articulo">
-            <label for="cantidad">Cantidad:</label><br>
-            <input type="number" id="cantidad_agregar" name="cantidad_agregar" step="0.01" value="1"><br>
-            <input type="submit" value="Enviar">
-          </form>
+<div id="modalReportar" class="modal">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-light border border-primary rounded shadow-lg p-4">
+            <span class="close_modal_reportar">×</span>
+            <form id="miFormularioReportar" class="d-flex flex-column align-items-center">
+                {% csrf_token %}
+                <input type="hidden" id="id_articulo" name="id_articulo">
+
+                <label for="estado">Estado:</label><br>
+                <select id="estado" name="estado">
+                </select><br>
+
+                <label for="detalles">Detalles:</label><br>
+                <textarea id="detalles" name="detalles" rows="4" cols="50"></textarea><br>
+
+                <input type="submit" value="Enviar">
+            </form>
+        </div>
     </div>
 </div>
+
+<div id="ModalCarrito" class="modal"> 
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-white border border-secondary rounded shadow p-3">
+
+            <span class="close_carrito">×</span>
+            <form id="miFormularioCarrito" class="d-flex flex-column align-items-center">
+                {% csrf_token %}
+                <input type="hidden" id="id_articulo" name="id_articulo">
+                <label for="cantidad">Cantidad:</label><br>
+                <input type="number" id="cantidad_agregar" name="cantidad_agregar" step="0.01" value="1"><br>
+                <input type="submit" value="Enviar">
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
     
 </script>
@@ -206,6 +234,68 @@
             });
         });
 
+        document.querySelectorAll('.reportar').forEach(boton => {
+            boton.addEventListener('click', event => {
+                event.preventDefault();
+                const id = boton.id.split('-')[1];
+        
+                fetch('/reportar_item/' + id)
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('id_articulo').value = id;
+        
+                        // Llenar el selector con los valores de estado
+                        var selectEstado = document.getElementById('estado');
+                        selectEstado.innerHTML = ''; // Limpiar opciones anteriores
+        
+                        for (var i = 0; i < data.estado.length; i++) {
+                            var option = document.createElement('option');
+                            option.value = data.estado[i];
+                            option.text = data.estado[i];
+        
+                            // Seleccionar la opción correcta
+                            if (data.estado[i] === data.estado_actual) {
+                                option.selected = true;
+                            }
+        
+                            selectEstado.add(option);
+                        }
+        
+                        document.getElementById('detalles').value = data.modal_detalles;
+                        document.getElementById('modalReportar').style.display = 'block';
+                    });
+            });
+        });
+        
+        var formularioReportar = document.getElementById('miFormularioReportar');
+        formularioReportar.addEventListener('submit', function(event) {
+            event.preventDefault();
+            var id_articulo = document.getElementById('id_articulo').value;
+            var estado = document.getElementById('estado').value;
+            var detalles = document.getElementById('detalles').value;
+
+            fetch('/enviar_reporte/' + id_articulo + '/', {
+                method: 'POST',
+                body: JSON.stringify({estado: estado, detalles: detalles}),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                }
+            })
+            .catch(error => console.error('Error:', error))
+            .finally(() => {
+                document.getElementById('modalReportar').style.display = 'none';
+            });
+        });
+
+        // Obtén el elemento con la clase 'close'
+        var close = document.querySelector('.close_modal_reportar');
+
+        // Añade un controlador de eventos de clic
+        close.addEventListener('click', function() {
+            // Oculta el modal
+            document.getElementById('modalReportar').style.display = 'none';
+        });
 
 
         document.querySelectorAll('.editar').forEach(boton => {

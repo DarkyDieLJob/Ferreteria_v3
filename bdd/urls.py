@@ -4,6 +4,7 @@ from django.urls import path
 from .views import Imprimir, usuarios_caja, consultar_carrito, crear_modificar_lista_pedidos, ItemsView 
 from .views import seleccionar_proveedor, cambiar_cantidad_pedido, editar_item, agregar_articulo_a_carrito
 from .views import carrito, eliminar_articulo_pedido, ListarCarteles, descargar_archivo
+from .views import reportar_item, enviar_reporte
 
 
 from .models import NavBar, Armador
@@ -65,6 +66,8 @@ urlpatterns += [
     path('listar_carteles/',ListarCarteles.as_view(), name='listar_carteles'),
     path('descargar_archivo/', descargar_archivo, name='descargar_archivo'),
     path('agregar_articulo_a_pedido/<int:articulo_id>/', agregar_al_pedido, name='agregar_articulo_a_pedido'),
+    path('reportar_item/<int:articulo_id>/', reportar_item , name='reportar_item'),
+    path('enviar_reporte/<int:articulo_id>/', enviar_reporte , name='enviar_reporte'),
 ]
 for url in urlpatterns:
     print(url)
