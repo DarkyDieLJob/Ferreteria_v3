@@ -1,4 +1,6 @@
+from django.http import HttpResponse
 from django.shortcuts import render
+from django.views.generic import TemplateView
 from bdd.views import MiVista, MyForm
 from bdd.classes import Patoba
 from bdd.models import Listado_Planillas, Proveedor
@@ -10,6 +12,7 @@ import os
 from django.conf import settings
 from django.db.models import Max
 import pandas as pd
+from .sincronizador import reckup
 
 # Create your views here.
 
@@ -250,3 +253,9 @@ class Actualizar(MiVista):
         #context['datos'] = Item.objects.filter(id__in=ids)
         self.context['datos'] = Listado_Planillas.objects.filter(listo=False, descargar=False).reverse()
         return self.render_to_response(self.context)
+    
+class Reckup(TemplateView):
+    template_name = 'actualizador/reckup.html'
+    def get(self, request, *args, **kwargs):
+        reckup()
+        return HttpResponse("La base de datos ha sido descargada correctamente.")
