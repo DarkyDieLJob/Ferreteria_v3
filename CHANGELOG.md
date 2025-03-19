@@ -2,6 +2,64 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.8.0](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.6.5...v3.8.0) (2025-03-19)
+
+
+### Features
+
+* **Utils:** :zap: Se agregaron algunas formas de extraer informacion a partir de las ventas. ([ba269c1](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/ba269c10b4f849c692cec1d55016592c2d8b33ff))
+
+
+### Bug Fixes
+
+* **Actualizador:** :hammer: Se implementa, el buckup automagico de la base de datos. ([68aa16d](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/68aa16d5fe2488d6590ab503e59a020fc439bf73))
+* **Actualizador:** :hammer: Se implemeto la descarga de la base de datos via link. ([2125817](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/21258171afa754998b81402011fc9ca06e7b1ef0))
+* **app_pedido:** :bug: Se corrige el nombre de un archivo ([d79b087](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/d79b087283a47b6f314b9056b58bcea10bc53078))
+* **app_pedido:** :bug: Se corrigen y agregan modelos para afrontar las nuevas vistas ([a6e8f6a](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/a6e8f6ab1c3d380866d2fcb4d9e06707357dd35f))
+* **app_pedido:** :bug: Se corrigieron urls ([62322d4](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/62322d40dbe3254f3f67c0408be1c60410b521c6))
+* **app_pedido:** :bug: Se corrigio un bug por el cual se mostraba una columna vacia en editar_pedido ([f8f2f72](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/f8f2f729016b2bc8f5fbc2a44b6b86fc666fbd06))
+* **app_pedido:** :bug: Se corrigio un erro por el que no se actualizaba el estado del articulo controlado. ([6e6a8b7](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/6e6a8b7e36c4d73a5c8d52496b8adc0aa5e828d2))
+* **app_pedido:** :bug: Se corrigio un error por el cual al crear un nuevo pedido se mostraba una pantalla en blanco. ([187f3c8](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/187f3c8e9182342d7e419d66756b45f2a9847be9))
+* **app_pedido:** :bug: Se corrigio un error por el cual no se autocompletaba  el resultado de busqueda ([365be3d](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/365be3d48a3cc2af4ecec58f14d912f7bd1232ec))
+* **app_pedido:** :bug: Se corrigio un error por el cual no se creaba un nuevo pedido si habia uno enviado. ([c425fe6](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/c425fe66ab5da2145affa10cce45f4ccba428349))
+* **app_pedido:** :bug: Se corrigio un error por el cual no se generaba la fecha a la hora de crear un nuevo pedido ([1c15e2a](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/1c15e2a267c712323032a88fb6eccfa4dcd4b825))
+* **app_pedido:** :bug: Se corrigio un error por el cual no se procesaban las devoluciones. ([3d5caab](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/3d5caabac35e0acb7f96096fd5e259379083002c))
+* **app_pedido:** :bug: Se corrigio un error por el cual no se redirigia correctamente a detalles del pedido. ([7c8eeef](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/7c8eeef20af76752057c90bd89682fa994c27c02))
+* **app_pedido:** :bug: Se corrigio un error por el cual no se redirigia correctamente a la vista de detalles al enviar un pedido. ([3918d5a](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/3918d5a31a68442902510d55c49c71d568ea1fbc))
+* **app_pedido:** :bug: Se corrigio un error por el cual se podia enviar un pedido vacio. ([ebf7d1a](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/ebf7d1ab2cd28e55d2c40394d62be6213518f0b9))
+* **app_pedido:** :bug: Se corriguieron las urls para coincidir con el espacio de nombres ([09ba6a6](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/09ba6a6a95d7c040d0efa5911d5a1c546ed42e6a))
+* **app_pedido:** :bug: Se corriigo un erro por el cual el buscador de articulos no filtraba correctamente por proveedor. ([fef874b](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/fef874b22de364535167a9770a8b96581229513b))
+* **app_pedido:** :bug: Se eliminan dos campos ocultos inecesarios, en en formulario para agregar articulo. ([7c9e46f](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/7c9e46fe9a0d439302647a3414372008cd51057f))
+* **app_pedido:** :bug: Se impemento feedback respecto del logueo de usuario. ([0689528](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/068952844fdb36777d92aa630954145e56b84403))
+* **app_pedido:** :coffin: Se descontinua el anterior formulario de pedidos ([64d8b7f](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/64d8b7feafa28ff67e471f167e68330db0f5c660))
+* **app_pedido:** :hammer: Implementacion de vistar para agregar al pedido y enviar el pedido ([d410524](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/d41052496d18838b562e75a3415a98e97b8d59a3))
+* **app_pedido:** :hammer: Se agrega corrige y agrega la url "nuevo_pedido" ([9670650](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/9670650b3ed2c24a492511837cb7de635e4de946))
+* **app_pedido:** :hammer: Se agrego esqueleto para detalles y control de pedidos ([4450b7f](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/4450b7fa4e4f1972a5993baae39aa6e30d5326f7))
+* **app_pedido:** :hammer: Se amplio la tabla de home para reflejar los estados de los pedidos. ([535788e](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/535788ece400d9cf9f0e6158eae2c9d4dd06fc63))
+* **app_pedido:** :hammer: Se implementa e control de pedido ([bae6e50](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/bae6e507b5b2797bda233b7e68071d447f69ae73))
+* **app_pedido:** :hammer: Se implementa el esqueleto funcional de las devoluciones. ([14828ca](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/14828ca726a64459cf813bb1e988a8c60af0152f))
+* **app_pedido:** :hammer: Se implementa esqueleto para las devoluciones. ([123cad3](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/123cad37f9d7f8a319fc48f6e78e90f3c7785da7))
+* **app_pedido:** :hammer: Se implementa la nueva vista de edicion de pedidos. ([6c3f7e9](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/6c3f7e91a23ff3c71cc5149c9b89568047196fb8))
+* **app_pedido:** :hammer: Se implementa las vistas segun estados. ([d3495f4](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/d3495f4941bcbbba3937b8829c8460bc53ffe2a2))
+* **app_pedido:** :hammer: Se implementa un vanbar basico. ([44e9cbc](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/44e9cbcc5f5739c81fa6eeb3cb2634a9a31e4e28))
+* **app_pedido:** :hammer: Se implementan las primeras vistas por separado ([6c78bbf](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/6c78bbf18a98f377431d2060ba891868e30aaabe))
+* **app_pedido:** :hammer: Se implementan los botones de agregado y cancelado a los articulos pedidos y faltantes. ([d4b7b77](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/d4b7b777a9c5af767dbb19e46d93bb646d8e06e9))
+* **app_pedido:** :hammer: Se implemento el agregado de articulos faltantes al pedido ([f231699](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/f23169986a47ba0d69d052d99f3fa67d507da1b6))
+* **app_pedido:** :hammer: Se implemento el agregado de articulos que no habian sido pedidos. ([fe529b2](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/fe529b2bccbc5af7143a4020051177276a32ebd2))
+* **app_pedido:** :hammer: Se implemento el caso en el que el articulo controlado no llego. ([e0abec4](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/e0abec45eef090fd012e39d3ee0ef6a82ae58a48))
+* **app_pedido:** :hammer: Se implemento la edicion de pedidos básica. ([684b76b](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/684b76be05105553644a430a3796fa1469a35ea0))
+* **app_pedido:** :hammer: Se implemento la modificacion de cantidades en el pedido ([a14b99d](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/a14b99ddab7b0ee1d0cd7a88978c5737e1a1e063))
+* **app_pedido:** :hammer: Se implemento un filtro de busqueda de articulos por proveedor. ([daf0a4f](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/daf0a4f7d10d21beb3647f9a34d5b79ad3568a38))
+* **app_pedido:** :hammer: Se implentaron, parcialmente, las devoluciones ([4c9706e](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/4c9706e08397b7b5b6427f802d591f04af37929d))
+* **app_pedido:** :hammer: Se relacionaron las vistas y paso el primer testeo ([5cfe691](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/5cfe691ef321a5c621dece00072338227aa814f1))
+* **app_pedido:** :recycle: Se corrigio un error por el cual se tomaba otro archivo, del mismo nombre, sin las modificaciones. ([87e5538](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/87e55381b979a6fa993fd9c511cbd7068ebcee8c))
+* **app_pedido:** :zap: Se implementa redireccionamiento desde home. ([0cc01dd](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/0cc01dd889e9b1bdf349c25607f8d9122292bdac))
+* **app_pedido:** :zap: Se implemento la estructura basica de pedido.home ([58c6f4e](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/58c6f4e04c4a08a9e46cf8556b550d9e3639691e))
+* **app_pedido:** :zap: Se reordenan las urls de app_pedido ([1a88e2d](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/1a88e2d7d86433f9065dfb4a351b279f0a641779))
+* **BDD:** :hammer: Se implemento un boton para agregar al pedido. ([a4bec03](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/a4bec039f9cf90a71590c000123c1b9af1165cbf))
+* **Scripts:** :hammer: Se agrega una funcionalidad por consola ([8ba3e1b](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/8ba3e1b93b0afdf3fac0ccc95408451aab297775))
+* **Static Templates:** :zap: Se implementaron links para los pedidos ([ef7c199](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/ef7c199f80f2de3a1545188853c22445841c151a))
+
 ## [3.7.0](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.6.5...v3.7.0) (2025-01-25)
 
 
