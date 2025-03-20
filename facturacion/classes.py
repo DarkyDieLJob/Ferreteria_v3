@@ -152,7 +152,7 @@ class TicketFactura():
         print("get_cliente_id: ", self.transaccion.get_cliente_id())
         self.cabecera = TicketCabecera(self.transaccion.get_cliente_id())
         
-        self.cantidad = math.ceil(self.formas_pago.get_importe() / 25000)
+        self.cantidad = math.ceil(self.formas_pago.get_importe() / 999999999.00)
         
         self.items = []
         for articulo_vendido in self.transaccion.articulos_vendidos.all():
