@@ -370,6 +370,35 @@ class Clientes(TemplateView):
 
 
 
+import asyncio
+import json
+from django.http import JsonResponse
 
+def consulta_impresora_fiscal_generica(request):
+    if request.method == 'GET':  # Usamos POST para enviar el comando
+        try:
+            NUEVO_VALOR_MAXIMO = 999999999.00
+            CONSULTA = 0x96
+            parametros = ("1000.00", "999999999.00", "0.00", "2", "P", "P", "P", "N", "P", "Cuenta Corriente", "P", "M", "M", "T", "M", "P", "N", "N", "P")
+            comando = {
+                "setConfigurationData": [0x65, parametros] ,
+                "printerName": "IMPRESORA_FISCAL",
+                }  # Obtiene el comando del cuerpo de la solicitud
+            comando = {"getConfigurationData": CONSULTA,"printerName": "IMPRESORA_FISCAL",}
+            
+            s = asyncio.run(conectar_a_websocket(comando))
+
+            try:
+                data = json.loads(s)  # Intenta analizar la respuesta como JSON
+                return JsonResponse(data, safe=False)  # Devuelve la respuesta como JSON
+            except json.JSONDecodeError:
+                return JsonResponse({"respuesta_cruda": s})  # Si no es JSON, devuelve la respuesta cruda
+
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Comando inválido (debe ser JSON)"}, status=400)
+        except Exception as e:
+            return JsonResponse({"error": f"Error al ejecutar el comando: {e}"}, status=500)
+    else:
+        return JsonResponse({"error": "Método no permitido"}, status=405)
 
     
