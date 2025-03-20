@@ -18,7 +18,7 @@ def agregar_al_pedido(request, articulo_id):
     articulo_faltante.cantidad = articulo_faltante.cantidad - float(1)
     articulo_faltante.save()
     
-    pedido = Pedido.objects.get(proveedor_id=proveedor_id, estado='Pd')
+    pedido, _ = Pedido.objects.get_or_create(proveedor_id=proveedor_id, estado='Pd')
     pedido.articulo_pedido.add(articulo_pedido)
     pedido.save()
     return JsonResponse({'status': 'ok'})
