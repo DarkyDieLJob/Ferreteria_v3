@@ -134,6 +134,8 @@ class Transaccion(models.Model):
     metodo_de_pago = models.ForeignKey(MetodoPago, on_delete=models.CASCADE)
     fecha = models.DateTimeField(auto_now_add=True)
     total = models.FloatField(default=0.0)
+    tipo_cbte = models.CharField(max_length=3, default="")
+    numero_cbte = models.IntegerField(default=0)
     
     def __str__(self):
         text = "{}-{}-{}".format(self.fecha, self.metodo_de_pago, self.total,)

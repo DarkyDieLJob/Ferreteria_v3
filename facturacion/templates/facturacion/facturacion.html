@@ -31,6 +31,8 @@
                             <tr>
                                 <th>Fecha</th>
                                 <th>Cajero</th>
+                                <th>Tipo</th>
+                                <th>Numero comprobante</th>
                                 <th>Cliente</th>
                                 <th>Metodo de Pago</th>
                                 <th>Monto</th>
@@ -42,6 +44,8 @@
                                     <tr>
                                         <td>{{ dato.fecha }}</td>
                                         <td>{{ dato.usuario }}</td>
+                                        <td>{{ dato.tipo_cbte }}</td>
+                                        <td>{{ dato.numero_cbte }}</td>
                                         <td>{{ dato.cliente }}</td>
                                         <td>{{ dato.metodo_de_pago }}</td>
                                         <td>$ {{ dato.total }}</td>

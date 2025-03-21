@@ -52,19 +52,31 @@ def procesar_transaccion(request):
             try:
                 rta = asyncio.run(conectar_a_websocket(boleta))
                 print("Respuesta: ")
-                print(rta)
+                print(f"Respuesta tipo: {type(rta)}: {rta}") 
+                respuesta = rta.get("rta")
+                #print(f"respuesta rta['rta']: tipo:{type(respuesta)}:  {respuesta}")
+                rta_interno = respuesta[0]
+                #print(f"rta_interno: tipo:{type(rta_interno)}:  {rta_interno}")
+                numero_cbte = int(rta_interno.get("rta"))
+                #print(f"numero_cbte: tipo:{type(numero_cbte)}:  {numero_cbte}")
+                tipo_cbte = boleta['printTicket']['cabecera']['tipo_cbte']
             except asyncio.CancelledError as e:
                 print("ticket cancelado")
+                return HttpResponse(status=500)
             except asyncio.TimeoutError as e:
                 print("tiempo de respuesta excedido")
+                return HttpResponse(status=500)
             except Exception as e:
                 print("sin boletas??")
                 print(e)
+                return HttpResponse(status=500)
         articulos = registro_dic["articulos"]
         articulos.delete()
         articulos_sin_registro = registro_dic["articulos_sin_registro"]
         articulos_sin_registro.delete()
         transaccion = registro_dic["transaccion"]
+        transaccion.tipo_cbte = tipo_cbte
+        transaccion.numero_cbte = numero_cbte
         transaccion.save()
 
 
