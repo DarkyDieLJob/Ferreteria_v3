@@ -391,12 +391,16 @@ def consulta_impresora_fiscal_generica(request):
         try:
             NUEVO_VALOR_MAXIMO = 999999999.00
             CONSULTA = 0x96
+            GET_ENCABEZADO = [0x5e, ('1',)]
+            SET_ENCABEZADO = [0x5d, ('1','Calle 57 811, La Plata')]
             parametros = ("1000.00", "999999999.00", "0.00", "2", "P", "P", "P", "N", "P", "Cuenta Corriente", "P", "M", "M", "T", "M", "P", "N", "N", "P")
             comando = {
                 "setConfigurationData": [0x65, parametros] ,
                 "printerName": "IMPRESORA_FISCAL",
                 }  # Obtiene el comando del cuerpo de la solicitud
             comando = {"getConfigurationData": CONSULTA,"printerName": "IMPRESORA_FISCAL",}
+            comando = {"setConfigurationData": GET_ENCABEZADO,"printerName": "IMPRESORA_FISCAL",}
+            comando = {"setConfigurationData": SET_ENCABEZADO,"printerName": "IMPRESORA_FISCAL",}
             
             s = asyncio.run(conectar_a_websocket(comando))
 
@@ -413,4 +417,23 @@ def consulta_impresora_fiscal_generica(request):
     else:
         return JsonResponse({"error": "Método no permitido"}, status=405)
 
-    
+def reimprimir_cbte(request):
+    if request.method == 'POST':  # Usamos POST para enviar el comando
+        try:
+            # Obtiene el comando del cuerpo de la solicitud
+            comando = json.loads(request.body)
+            comando["printerName"] = "IMPRESORA_FISCAL"
+            s = asyncio.run(conectar_a_websocket(comando))
+
+            try:
+                data = json.loads(s)  # Intenta analizar la respuesta como JSON
+                return JsonResponse(data, safe=False)  # Devuelve la respuesta como JSON
+            except json.JSONDecodeError:
+                return JsonResponse({"respuesta_cruda": s})  # Si no es JSON, devuelve la respuesta cruda
+
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Comando inválido (debe ser JSON)"}, status=400)
+        except Exception as e:
+            return JsonResponse({"error": f"Error al ejecutar el comando: {e}"}, status=500)
+    else:
+        return JsonResponse({"error": "Método no permitido"}, status=405)
