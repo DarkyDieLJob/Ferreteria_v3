@@ -2,6 +2,9 @@
 mp_access_token.txt
 token.json
 *.pyc
+*.xls
+*.ods
+*.csv
 __pycache__/
 Scraping/
 rust_mozprofile2tDZsO/
