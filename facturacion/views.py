@@ -75,8 +75,12 @@ def procesar_transaccion(request):
         articulos_sin_registro = registro_dic["articulos_sin_registro"]
         articulos_sin_registro.delete()
         transaccion = registro_dic["transaccion"]
-        transaccion.tipo_cbte = tipo_cbte
-        transaccion.numero_cbte = numero_cbte
+        try:
+            transaccion.tipo_cbte = tipo_cbte
+            transaccion.numero_cbte = numero_cbte
+        except Exception as e:
+            print("No se pudo asignar el tipo_cbte o numero_cbte a la transaccion:", e)
+        
         transaccion.save()
 
 
