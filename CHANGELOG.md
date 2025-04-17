@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.9.4](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.9.3...v3.9.4) (2025-04-17)
+
+
+### Bug Fixes
+
+* **core:** :recycle: ([1dc49bb](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/1dc49bb58830a9cecb043b2705e79b53b5541e66))
+
 ### [3.9.3](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.9.2...v3.9.3) (2025-04-17)
 
 ### [3.9.1](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.9.0...v3.9.1) (2025-04-16)
