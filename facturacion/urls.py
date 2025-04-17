@@ -1,7 +1,7 @@
 from django.urls import path
 from facturacion.views import obtener_metodos_pago, procesar_transaccion, obtener_cliente, agregar_articulo_sin_registro
 from facturacion.views import eliminar_articulo, eliminar_articulo_sin_registro, actualizar_cantidad_articulo
-from facturacion.views import actualizar_cantidad_articulo_sin_registro, vista_cierre_z
+from facturacion.views import actualizar_cantidad_articulo_sin_registro
 from facturacion.views import Facturacion, CierreZVieW, Clientes, FacturacionMensual, consulta_impresora_fiscal_generica
 
 urlpatterns = [
