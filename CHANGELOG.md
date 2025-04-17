@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.9.1](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.9.0...v3.9.1) (2025-04-17)
+
+
+### Bug Fixes
+
+* **Facturacion:** :bug: Se corrige la vista de consulta a la impresora ([bf0a33d](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/bf0a33d85f96d43093b550e74fea472ab31951ca))
+* **Facturacion:** :fire: Se elimino una vieja vista Z ([292f47c](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/292f47c2908bacc726413a7dad7e74744d842eb7))
+* **Facturacion:** :zap: Se reemplazan los prints en consola por logs ([d5a9e0f](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/d5a9e0fa440c10bd673f2a4379cff40a3a1dad70))
+* **Facturacion:** :zap: Se reemplazan los prints en cosola por logs ([ce3efde](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/ce3efde2745a8aca4062d583cebc1ba0ba64a092))
+
 ## [3.9.0](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.6.5...v3.9.0) (2025-03-21)
 
 
