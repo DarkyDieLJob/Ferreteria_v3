@@ -2,7 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-<<<<<<< HEAD
+### [3.9.3](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.9.2...v3.9.3) (2025-04-17)
+
+### [3.9.1](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.9.0...v3.9.1) (2025-04-16)
+
+
+### Bug Fixes
+
+* **Facturacion:** :bug: Se corrigio un error por el cual no se recargaba la pagina al cerrar una transaccion ([21ad714](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/21ad7141e0b6bc6b676c678f4530273a392e74d5))
+
 ### [3.9.1](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.9.0...v3.9.1) (2025-04-16)
 =======
 ### [3.9.2](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.9.0...v3.9.2) (2025-04-17)
