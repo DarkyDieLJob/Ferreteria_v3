@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
+import asyncio
 import websockets
 import json
-# Import the configured logger
-from .log_config import logger
+
+import logging
+
+logger = logging.getLogger(__name__)
 from core_config.settings import IP_BEW_SOCKET # Ensure this setting is correctly configured
 
 async def conectar_a_websocket(data):

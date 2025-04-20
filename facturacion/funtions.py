@@ -5,8 +5,10 @@ from .models import Cliente, MetodoPago, Transaccion, ArticuloVendido
 from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse # Added JsonResponse for potential error returns
 from django.db import transaction # Import transaction for atomic operations
-# Import the configured logger
-from .log_config import logger
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 # ======================================

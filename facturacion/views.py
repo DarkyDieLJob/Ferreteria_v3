@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from django.shortcuts import redirect
-from bdd.views import Inicio
+#viejo archivo
+from bdd.views_old import Inicio
+from bdd.views.main import Inicio
 from bdd.models import Carrito, Articulo, ArticuloSinRegistro, Item, Lista_Pedidos, NavBar
 from boletas.models import Boleta
 from facturacion.forms import ClienteForm
@@ -20,8 +22,9 @@ from django.views.generic import TemplateView
 # from django.shortcuts import redirect # Redundant import
 from actualizador.task import ejecutar_cola_tareas
 # Import the configured logger
-from .log_config import logger # <<--- Asegúrate que este import sea correcto
+import logging
 
+logger = logging.getLogger(__name__)
 
 from utils.ordenar_query import agrupar_transacciones_por_fecha
 from django.db.models import Sum, Count

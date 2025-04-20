@@ -5,8 +5,10 @@ from django.db.models import F, Sum
 import math
 from bdd.models import Carrito, Articulo, ArticuloSinRegistro
 from facturacion.models import Cliente, Transaccion
-# Import the configured logger
-from .log_config import logger
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 # ======================================
 # Classes for New Ticket Generation (JSON based)
