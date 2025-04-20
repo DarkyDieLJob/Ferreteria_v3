@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.9.5](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.9.4...v3.9.5) (2025-04-20)
+
+
+### Bug Fixes
+
+* **Actualizador:** :hammer: Se implemento el nuevo sistema de registro ([0872071](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/087207177e67d1c9044486b70646874d58b8948a))
+* **BDD:** :recycle: Se ordeno el codigo de la primera version, en vias de segir corrigiendo y minimizando codigo mal escrito ([b6f8fa6](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/b6f8fa684f7876530ac113f0b6856e29d744a842))
+* **core:** :fire: Se elimino el viejo sistema de registro ([80f1257](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/80f12571734ea09551b8cc465637575e57348447))
+* **Facturacion:** :hammer: Se implemento el nuevo sistema de registro ([37fa55f](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/37fa55fcf584a60a9239bf9cd124265f0a441afa))
+
 ### [3.9.4](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.9.3...v3.9.4) (2025-04-17)
 
 
