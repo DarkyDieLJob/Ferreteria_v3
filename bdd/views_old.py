@@ -43,6 +43,9 @@ from django.http import FileResponse
 from django.db.models import Exists, OuterRef
 from django.db.models import QuerySet
 from django.db.models import Exists, OuterRef, Value, BooleanField
+import logging
+
+logger = logging.getLogger(__name__)
 
 class DateInput(forms.DateInput):
     """

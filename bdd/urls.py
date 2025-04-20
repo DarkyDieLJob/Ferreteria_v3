@@ -1,10 +1,10 @@
 # Importamos la función path para definir patrones de URL
 from django.urls import path
 # Importamos la vista WelcomeView que acabamos de crear
-from .views import Imprimir, usuarios_caja, consultar_carrito, crear_modificar_lista_pedidos, ItemsView 
-from .views import seleccionar_proveedor, cambiar_cantidad_pedido, editar_item, agregar_articulo_a_carrito
-from .views import carrito, eliminar_articulo_pedido, ListarCarteles, descargar_archivo
-from .views import reportar_item, enviar_reporte
+from .views_old import Imprimir, usuarios_caja, consultar_carrito, crear_modificar_lista_pedidos, ItemsView 
+from .views_old import seleccionar_proveedor, cambiar_cantidad_pedido, editar_item, agregar_articulo_a_carrito
+from .views_old import carrito, eliminar_articulo_pedido, ListarCarteles, descargar_archivo
+from .views_old import reportar_item, enviar_reporte
 
 
 from .models import NavBar, Armador
@@ -69,10 +69,10 @@ urlpatterns += [
     path('reportar_item/<int:articulo_id>/', reportar_item , name='reportar_item'),
     path('enviar_reporte/<int:articulo_id>/', enviar_reporte , name='enviar_reporte'),
 ]
-for url in urlpatterns:
-    print(url)
+# for url in urlpatterns:
+#     print(url)
 # Incluimos otros patrones de URL estáticos
-#urlpatterns += [
-#    path('inicio/', MiVista.as_view(), name='inicio'),
-#    path('', MiVista.as_view(), name='inicio'),
-#]
+# urlpatterns += [
+#     path('inicio/', MiVista.as_view(), name='inicio'),
+#     path('', MiVista.as_view(), name='inicio'),
+# ]
