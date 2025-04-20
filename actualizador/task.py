@@ -1,6 +1,9 @@
 import subprocess
 import threading
-from actualizador.log_config import logging
+
+import logging
+
+logger = logging.getLogger(__name__)
 from .actualizador_main import principal
 from .actualizador_csv import principal_csv, apply_custom_round
 from .sincronizador import buckup

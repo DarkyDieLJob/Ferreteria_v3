@@ -4,6 +4,9 @@ from django.conf import settings
 import os
 from bdd.classes import Patoba
 
+import logging
+
+logger = logging.getLogger(__name__)
 def medir_tiempo(func):
     def wrapper(*args, **kwargs):
         inicio = time.time()  # Tiempo de inicio
