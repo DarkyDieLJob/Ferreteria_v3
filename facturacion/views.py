@@ -490,7 +490,7 @@ class CierreZVieW(TemplateView):
     def get(self, request, *args, **kwargs):
         """Displays the page with past Z closures."""
         context = self.get_context_data(**kwargs)
-        context["cierres_fiscales"] = CierreZ.objects.order_by('-fecha_hora') # Show newest first
+        context["cierres_fiscales"] = CierreZ.objects.order_by('-fecha') # Show newest first
         logger.info("Accediendo a la vista de Cierre Z (GET).")
         return self.render_to_response(context)
 
