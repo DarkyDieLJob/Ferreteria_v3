@@ -579,7 +579,7 @@ class CierreZVieW(TemplateView):
             context['error_websocket'] = f"Error de conexión: {ws_err}"
 
         # Always re-fetch the list for the template after POST
-        context["cierres_fiscales"] = CierreZ.objects.order_by('-fecha_hora')
+        context["cierres_fiscales"] = CierreZ.objects.order_by('-fecha')
         return self.render_to_response(context)
 
 
