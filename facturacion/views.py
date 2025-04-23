@@ -504,71 +504,91 @@ class CierreZVieW(TemplateView):
         }
 
         try:
-            respuesta_ws_str = asyncio.run(conectar_a_websocket(cierre_z_comando))
-            logger.info(f"Respuesta cruda del websocket para Cierre Z: {respuesta_ws_str}")
+            # Renombrar la variable para que sea más claro que es un diccionario
+            respuesta_ws_dict = asyncio.run(conectar_a_websocket(cierre_z_comando))
+            logger.info(f"Respuesta del websocket (tipo {type(respuesta_ws_dict)}) para Cierre Z: {respuesta_ws_dict}")
 
-            # Safely parse the response string (assuming it looks like a dict)
-            import ast
+            # Ya no necesitamos importar ast ni usar literal_eval
+            # import ast
             try:
-                # Using ast.literal_eval is safer than eval() but still assumes a Python literal structure
-                data = ast.literal_eval(respuesta_ws_str)
-                logger.debug(f"Respuesta parseada (tipo {type(data)}): {data}")
+                # Usa el diccionario directamente. ELIMINA la línea de literal_eval.
+                # data = ast.literal_eval(respuesta_ws_str) # <--- ¡¡ELIMINAR ESTA LÍNEA!!
+                data = respuesta_ws_dict  # <--- USA EL DICCIONARIO DIRECTAMENTE
 
+                # Puedes añadir un log para confirmar
+                logger.debug(f"Usando respuesta parseada directamente (tipo {type(data)}): {data}")
+
+                # El resto de tu lógica para extraer datos y crear CierreZ debería funcionar ahora,
+                # ya que 'data' es el diccionario que esperabas obtener DESPUÉS de literal_eval.
                 if isinstance(data, dict) and "rta" in data and isinstance(data["rta"], list) and len(data["rta"]) > 0:
-                    rta = data["rta"][0].get("rta")
-                    if rta and isinstance(rta, dict):
-                        logger.info(f"Datos RTA extraídos para Cierre Z: {rta}")
+                    rta_interno_lista = data["rta"]
+                    if rta_interno_lista:
+                        rta_dict_wrapper = rta_interno_lista[0]
+                        if isinstance(rta_dict_wrapper, dict) and "rta" in rta_dict_wrapper:
+                            rta = rta_dict_wrapper.get("rta") # Diccionario con los datos del cierre
+                            if rta and isinstance(rta, dict):
+                                logger.info(f"Datos RTA extraídos para Cierre Z: {rta}")
 
-                        # Create and save CierreZ instance
-                        # Add validation and default values for robustness
-                        cierre_z_obj = CierreZ(
-                            RESERVADO_SIEMPRE_CERO=int(rta.get("RESERVADO_SIEMPRE_CERO", 0)),
-                            cant_doc_fiscales=int(rta.get("cant_doc_fiscales", 0)),
-                            cant_doc_nofiscales_homologados=int(rta.get("cant_doc_nofiscales_homologados", 0)),
-                            ultima_nc_a=int(rta.get("ultima_nc_a", 0)),
-                            ultima_nc_b=int(rta.get("ultima_nc_b", 0)),
-                            monto_percepciones=float(rta.get("monto_percepciones", 0.0)),
-                            monto_percepciones_nc=float(rta.get("monto_percepciones_nc", 0.0)),
-                            monto_credito_nc=float(rta.get("monto_credito_nc", 0.0)),
-                            ultimo_doc_a=int(rta.get("ultimo_doc_a", 0)),
-                            ultimo_doc_b=int(rta.get("ultimo_doc_b", 0)),
-                            zeta_numero=rta.get("zeta_numero", "N/A"),
-                            monto_imp_internos_nc=float(rta.get("monto_imp_internos_nc", 0.0)),
-                            cant_doc_fiscales_cancelados=int(rta.get("cant_doc_fiscales_cancelados", 0)),
-                            monto_iva_doc_fiscal=float(rta.get("monto_iva_doc_fiscal", 0.0)),
-                            monto_imp_internos=float(rta.get("monto_imp_internos", 0.0)),
-                            status_fiscal=rta.get("status_fiscal", "N/A"),
-                            status_impresora=rta.get("status_impresora", "N/A"),
-                            monto_iva_nc=float(rta.get("monto_iva_nc", 0.0)),
-                            monto_ventas_doc_fiscal=float(rta.get("monto_ventas_doc_fiscal", 0.0)),
-                            cant_doc_nofiscales=int(rta.get("cant_doc_nofiscales", 0))
-                            # fecha_hora is usually auto_now_add=True in the model
-                        )
-                        cierre_z_obj.save()
-                        logger.info(f"Nuevo Cierre Z guardado con ID: {cierre_z_obj.id} y número Z: {cierre_z_obj.zeta_numero}")
-                        context['cierre_exitoso'] = True # Add flag for template feedback
-                        context['nuevo_cierre'] = cierre_z_obj # Pass the new object if needed
+                                # --- Aquí sigue tu código para crear y guardar CierreZ ---
+                                cierre_z_obj = CierreZ(
+                                    RESERVADO_SIEMPRE_CERO=int(rta.get("RESERVADO_SIEMPRE_CERO", 0)),
+                                    cant_doc_fiscales=int(rta.get("cant_doc_fiscales", 0)),
+                                    cant_doc_nofiscales_homologados=int(rta.get("cant_doc_nofiscales_homologados", 0)),
+                                    ultima_nc_a=int(rta.get("ultima_nc_a", 0)),
+                                    ultima_nc_b=int(rta.get("ultima_nc_b", 0)),
+                                    monto_percepciones=float(rta.get("monto_percepciones", 0.0)),
+                                    monto_percepciones_nc=float(rta.get("monto_percepciones_nc", 0.0)),
+                                    monto_credito_nc=float(rta.get("monto_credito_nc", 0.0)),
+                                    ultimo_doc_a=int(rta.get("ultimo_doc_a", 0)),
+                                    ultimo_doc_b=int(rta.get("ultimo_doc_b", 0)),
+                                    zeta_numero=rta.get("zeta_numero", "N/A"),
+                                    monto_imp_internos_nc=float(rta.get("monto_imp_internos_nc", 0.0)),
+                                    cant_doc_fiscales_cancelados=int(rta.get("cant_doc_fiscales_cancelados", 0)),
+                                    monto_iva_doc_fiscal=float(rta.get("monto_iva_doc_fiscal", 0.0)),
+                                    monto_imp_internos=float(rta.get("monto_imp_internos", 0.0)),
+                                    status_fiscal=rta.get("status_fiscal", "N/A"),
+                                    status_impresora=rta.get("status_impresora", "N/A"),
+                                    monto_iva_nc=float(rta.get("monto_iva_nc", 0.0)),
+                                    monto_ventas_doc_fiscal=float(rta.get("monto_ventas_doc_fiscal", 0.0)),
+                                    cant_doc_nofiscales=int(rta.get("cant_doc_nofiscales", 0))
+                                    
+                                )
+                                cierre_z_obj.save()
+                                logger.info(f"Nuevo Cierre Z guardado con ID: {cierre_z_obj.id} y número Z: {cierre_z_obj.zeta_numero}")
+                                return redirect('/vista_cierre_z/') # Redirigir a la vista de Cierre Z después de guardar
+                                # --- Fin del código de CierreZ ---
 
-                        # Trigger background tasks after successful closure
-                        try:
-                             ejecutar_cola_tareas()
-                             logger.info("Cola de tareas ejecutada después del Cierre Z.")
-                        except Exception as task_err:
-                             logger.error("Error al ejecutar la cola de tareas después del Cierre Z.", exc_info=True)
+                                # Ejecutar cola de tareas...
+                                try:
+                                    ejecutar_cola_tareas()
+                                    logger.info("Cola de tareas ejecutada después del Cierre Z.")
+                                except Exception as task_err:
+                                    logger.error("Error al ejecutar la cola de tareas después del Cierre Z.", exc_info=True)
 
+                            else:
+                                logger.error("La clave 'rta' interna no contiene un diccionario válido o está vacía.")
+                                context['error_procesamiento'] = "Formato de respuesta interna inválido (no es diccionario)."
+                        else:
+                            logger.error("El primer elemento de la lista 'rta' no es un diccionario o no contiene la clave 'rta'.")
+                            context['error_procesamiento'] = "Formato de respuesta interna inválido (wrapper)."
                     else:
-                        logger.error("Formato inesperado en la clave 'rta' interna de la respuesta del Cierre Z.")
-                        context['error_procesamiento'] = "Formato de respuesta interna inválido."
+                        logger.error("La lista 'rta' está vacía.")
+                        context['error_procesamiento'] = "Formato de respuesta inválido (lista rta vacía)."
                 else:
-                     logger.error("Formato inesperado en la respuesta principal del Cierre Z.")
-                     context['error_procesamiento'] = "Formato de respuesta principal inválido."
+                    logger.error("Formato inesperado en la respuesta principal del Cierre Z (no es dict, falta 'rta', etc.).")
+                    context['error_procesamiento'] = "Formato de respuesta principal inválido."
 
-            except (ValueError, SyntaxError, TypeError) as parse_err:
-                 logger.error(f"Error al parsear la respuesta del websocket para Cierre Z: {parse_err}", exc_info=True)
-                 context['error_procesamiento'] = f"Error al interpretar respuesta: {parse_err}"
-            except Exception as db_err: # Catch potential DB errors during save
-                 logger.error(f"Error al guardar el objeto CierreZ en la base de datos.", exc_info=True)
-                 context['error_procesamiento'] = "Error al guardar el cierre en la base de datos."
+            # Mantenemos los bloques except generales, pero el error de literal_eval ya no debería ocurrir.
+            # Es buena idea capturar KeyError por si falta alguna clave esperada en el diccionario 'rta'.
+            except KeyError as ke:
+                logger.error(f"Error de clave al procesar la respuesta del Cierre Z: Falta la clave {ke}", exc_info=True)
+                context['error_procesamiento'] = f"Dato faltante en la respuesta: {ke}"
+            except ValueError as ve: # Podría ocurrir en las conversiones int()/float()
+                logger.error(f"Error de valor al convertir datos del Cierre Z: {ve}", exc_info=True)
+                context['error_procesamiento'] = f"Error de formato en un valor numérico: {ve}"
+            except Exception as e: # Captura general para otros errores (DB, etc.)
+                logger.error(f"Error general al procesar o guardar el Cierre Z: {e}", exc_info=True)
+                context['error_procesamiento'] = f"Error inesperado: {e}"
 
 
         except asyncio.TimeoutError:
