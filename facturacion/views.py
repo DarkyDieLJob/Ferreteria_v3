@@ -20,7 +20,7 @@ from .cliente import conectar_a_websocket
 import asyncio
 from django.views.generic import TemplateView
 # from django.shortcuts import redirect # Redundant import
-from actualizador.task import ejecutar_cola_tareas
+from actualizador.task import agregar_tareas_en_cola
 # Import the configured logger
 import logging
 
@@ -555,13 +555,14 @@ class CierreZVieW(TemplateView):
                                 )
                                 cierre_z_obj.save()
                                 logger.info(f"Nuevo Cierre Z guardado con ID: {cierre_z_obj.id} y número Z: {cierre_z_obj.zeta_numero}")
-                                return redirect('/vista_cierre_z/') # Redirigir a la vista de Cierre Z después de guardar
+                                # Redirigir a la vista de Cierre Z después de guardar
                                 # --- Fin del código de CierreZ ---
 
                                 # Ejecutar cola de tareas...
                                 try:
-                                    ejecutar_cola_tareas()
+                                    agregar_tareas_en_cola()
                                     logger.info("Cola de tareas ejecutada después del Cierre Z.")
+                                    return redirect('/vista_cierre_z/') # Redirigir a la vista de Cierre Z después de guardar
                                 except Exception as task_err:
                                     logger.error("Error al ejecutar la cola de tareas después del Cierre Z.", exc_info=True)
 
