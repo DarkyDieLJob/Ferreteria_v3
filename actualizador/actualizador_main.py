@@ -491,7 +491,6 @@ def principal():
     # Reemplazo de print("fin1")
     logger.info("Proceso principal finalizado.")
 
-
 # --- Bloque de Ejecución Principal ---
 if __name__ == '__main__':
     # Configura Django si es necesario (ej. si se ejecuta fuera de manage.py)
