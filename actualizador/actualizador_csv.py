@@ -90,6 +90,11 @@ def crear_o_actualizar_registro(row):
     except Exception as e:
         logger.error(f"No se pudo escribir la fila en items.csv: {row}. Error: {e}")
 
+def crear_o_actualizar_registro(row):
+    with open('items.csv', 'a', newline='', encoding='utf8') as file:
+            writer = csv.writer(file)
+            # Agrega la fila con error al archivo CSV
+            writer.writerow(row.values())
     try:
         # Recuperar o crear una instancia de Sub_Carpeta
         sub_carpeta_nombre = row.pop('sub_carpeta', None) # Usar pop con default
@@ -158,6 +163,9 @@ def crear_o_actualizar_registro(row):
         except Exception as csv_e:
             logger.error(f"No se pudo escribir la fila con error en errores.csv para código {codigo_item}. Error CSV: {csv_e}")
 
+import sys
+import time
+from django.db import transaction
 
 
 def crear_o_actualizar_registros_en_lotes(rows, tamaño_lote):
@@ -285,6 +293,10 @@ def crear_o_actualizar_registros_en_lotes(rows, tamaño_lote):
         logger.info(f"Lote {i//tamaño_lote + 1} procesado en {fin - inicio:.4f} segundos.")
         # logger.info(f"Uso de memoria aproximado del lote: {uso_memoria_final - uso_memoria_inicial} bytes")
 
+        fin = time.time()  # Fin del temporizador
+        uso_memoria_final = sum(sys.getsizeof(i) for i in items_para_actualizar)
+        print(f"Tiempo de ejecución: {fin - inicio} segundos")
+        print(f"Uso de memoria: {uso_memoria_final} bytes")
 
 def desactualizar_anteriores(filtro):
     """Marca como no actualizados los items cuyo código termina con el filtro dado."""
@@ -334,7 +346,7 @@ def buscar_modificar_registros(csv_file, filtro):
     except Exception as e:
         logger.error(f"Error general al leer o procesar el archivo CSV {csv_file}: {e}", exc_info=True)
     logger.info(f'Procesamiento individual finalizado para: {filtro}')
-
+    print('cargado: ', filtro, flush=True)
 
 def buscar_modificar_registros_lotes(csv_file, filtro, tamaño_lote=10000):
     """Procesa un archivo CSV para crear o actualizar registros en lotes."""
@@ -572,6 +584,15 @@ def reset(username, contraseña):
     except Exception as e:
         logger.error(f"Error al resetear contraseña para {username}: {e}", exc_info=True)
 
+def reset(username, contraseña):
+    u = User.objects.get(username=username)
+    u.set_password(contraseña)
+    u.save()
+
+import csv
+
+import csv
+from django.db.models import Q
 
 def filtrar_trabajados():
     """Filtra items marcados como 'trabajado' por proveedor y los guarda en archivos CSV."""
