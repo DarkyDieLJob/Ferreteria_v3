@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 # --> Simplificado para el ejemplo, ajusta según tu estructura real
 from bdd.views.base import MiVista
 from bdd.views.forms import MyForm
+from actualizador.task import agregar_tareas_en_cola
 
 
 from bdd.classes import Patoba
@@ -29,9 +30,26 @@ from bdd.models import Listado_Planillas, Proveedor
 from .sincronizador import reckup
 # from .task import recolectar_procesar, actualizar, ejecutar_cola_tareas # Comentado si no se usa en este fragmento
 # from core_config.celery import app # Comentado si no se usa en este fragmento
-
+import time
+import datetime
 
 # Create your views here.
+
+class ActualizarAhora(TemplateView):
+    template_name = 'actualizador/actualizar_ahora.html' # Ajusta la ruta si es necesario
+
+    def get(self, request, *args, **kwargs):
+        logger.info("Iniciando proceso de actualización inmediata.")
+        try:
+            # Aqui se le pasa la hora actual mas un minuto
+            hora_actual = datetime.datetime.now() + datetime.timedelta(minutes=1)
+            agregar_tareas_en_cola(hora_actual)
+            logger.info("Proceso de actualización inmediata completado.")
+            return HttpResponse("La actualización ha sido realizada correctamente.")
+        except Exception as e:
+            logger.error("Error durante el proceso de actualización inmediata:")
+            logger.exception(e)
+            return HttpResponse(f"Error al realizar la actualización: {e}", status=500)
 
 class Actualizar(MiVista):
     def get_context_data(self, **kwargs):
