@@ -1,6 +1,6 @@
 from django.test import TestCase
-from .models import Contenedor, Script, Pie, Url, Nav_Bar
-'''
+from core_andamios.models import Contenedor, Script, Pie, Url, Nav_Bar
+
 class ModeloTest(TestCase):
     def setUp(self):
         self.contenedor = Contenedor.objects.create(nombre='Contenedor 0', text_display='Texto Visible', html='<div></div>')
@@ -23,4 +23,3 @@ class ModeloTest(TestCase):
 
     def test_modelo_nav_bar(self):
         self.assertEqual(self.nav_bar.nombre, 'Nav_Bar 0')
-        '''
