@@ -141,6 +141,9 @@ class MyForm(forms.Form):
         #print(form_data)
 
 
+"""
+Clase base para todas las vistas que gestiona el contexto y la lógica de las vistas.
+"""
 class MiVista(TemplateView):
     template_name = 'generic_template.html'
     ruta_actual = ''
@@ -427,6 +430,9 @@ class MiVista(TemplateView):
         context['datos'] = filtered_data
         return self.render_to_response(context)
 
+"""
+Vista de inicio que muestra la página principal.
+"""
 class Inicio(MiVista):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -444,6 +450,9 @@ class Inicio(MiVista):
         # Aquí puedes agregar código después de llamar al método post original
         return response
 
+"""
+Vista de prueba para verificar funcionalidades.
+"""
 class Prueba(MiVista):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -464,6 +473,9 @@ class Prueba(MiVista):
 #-----------------------------------------------------------------------------------------
 
 
+"""
+Formulario de búsqueda que permite al usuario seleccionar una Marca, Cajón, Cajonera y Sector específicos.
+"""
 class BusquedaForm(forms.Form):
     """
     Formulario de búsqueda que permite al usuario seleccionar una Marca, Cajón, Cajonera y Sector específicos.
@@ -473,6 +485,9 @@ class BusquedaForm(forms.Form):
     cajonera = forms.ModelChoiceField(queryset=Cajonera.objects.all(), required=False)
     sector = forms.ModelChoiceField(queryset=Sector.objects.all(), required=False)
 
+"""
+Vista que maneja la lógica de búsqueda y muestra los resultados al usuario.
+"""
 class BusquedaView(FormView):
     """
     Vista de formulario que maneja la lógica de búsqueda y muestra los resultados al usuario.
@@ -516,6 +531,9 @@ class BusquedaView(FormView):
 
 
 
+"""
+Vista que muestra los items de un cajón específico.
+"""
 class ItemsView(View):
     def get(self, request, cajon_id):
         # Obtener items del cajón especificado
@@ -535,6 +553,9 @@ class ItemsView(View):
         return JsonResponse(data, safe=False)
 #-----------------------------------------------------------------------------------------
 
+"""
+Vista que imprime información específica.
+"""
 class Imprimir(TemplateView):
     template_name = 'generic_template.html'
     ruta_actual = ''
@@ -607,7 +628,9 @@ class Imprimir(TemplateView):
 
 #------------------------------------------- AJAX ----------------------------------------
 
-def crear_modificar_lista_pedidos(request, proveedor_id=1):
+"""
+Función que crea o modifica una lista de pedidos.
+"""
     if request.method == 'GET':
         items = Lista_Pedidos.objects.filter(proveedor_id=proveedor_id)
         data = []
@@ -674,13 +697,17 @@ def crear_modificar_lista_pedidos(request, proveedor_id=1):
 
 
 
-def seleccionar_proveedor(request):
+"""
+Función que selecciona un proveedor específico.
+"""
     proveedores = Proveedor.objects.all()
     return render(request, 'seleccionar_proveedor.html', {'proveedores': proveedores})
 
 
 
-def cambiar_cantidad_pedido(request, id_articulo, cantidad):
+"""
+Función que cambia la cantidad de un pedido específico.
+"""
     print(request)
     if request.method == 'POST':
         # Aquí puedes buscar el artículo por ID y actualizar la cantidad
@@ -697,7 +724,9 @@ def cambiar_cantidad_pedido(request, id_articulo, cantidad):
 
 
 from django.forms.models import model_to_dict
-def editar_item(request,id_articulo):
+"""
+Función que edita un artículo en el sistema.
+"""
     
     if request.user.is_authenticated:
         carrito = Carrito(usuario=request.user)
@@ -754,7 +783,9 @@ def editar_item(request,id_articulo):
 
 
 
-def agregar_articulo_a_carrito(request, id_articulo):
+"""
+Función que agrega un artículo al carrito de compras.
+"""
     if request.method == 'POST':
         data = json.loads(request.body)
         print(data)
@@ -879,7 +910,9 @@ def calcular_total(datos):
 
 
 
-def consultar_carrito(request):
+"""
+Función que consulta el carrito de compras del usuario.
+"""
     if request.method == 'GET':
         datos = {}
         if request.user.is_authenticated:
