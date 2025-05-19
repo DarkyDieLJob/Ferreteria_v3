@@ -1,6 +1,9 @@
 name: CI
 
 on:
+  push:
+    branches:
+      - pre-release
   pull_request:
     branches:
       - pre-release
@@ -25,4 +28,4 @@ jobs:
 
       - name: Run tests
         run: |
-          python manage.py test
+          pytest
