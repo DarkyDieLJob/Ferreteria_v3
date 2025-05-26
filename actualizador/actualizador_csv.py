@@ -3,7 +3,7 @@ import logging  # Importar el módulo logging
 from django.conf import settings as const
 from bdd.classes import Patoba
 from x_cartel.models import Carteles, CartelesCajon
-from bdd.models import  Item, Sub_Carpeta, Sub_Titulo, ListaProveedores, Proveedor # Añadido Proveedor si no estaba
+from bdd.models import Item, Sub_Carpeta, Sub_Titulo, ListaProveedores, Proveedor
 import csv
 import unicodedata
 from django.db import transaction
@@ -13,9 +13,7 @@ from django.contrib.auth.models import User
 from boletas.models import Boleta
 from django.db.models import Q
 
-
 # Configuración del logger
-# Configuración básica de logging (puedes personalizarla más)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
