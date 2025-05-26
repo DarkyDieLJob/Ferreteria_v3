@@ -4,7 +4,8 @@ import logging
 import queue
 import time
 import datetime
-import sys # Para logging más detallado si es necesario
+import sys
+from typing import Optional # Para logging más detallado si es necesario
 
 # Configura un logger específico para este módulo si lo deseas, o usa el root logger
 logger = logging.getLogger(__name__)
@@ -130,7 +131,7 @@ class ColaTareasWorker:
                     cls._instance = super(ColaTareasWorker, cls).__new__(cls)
         return cls._instance
 
-    def __init__(self):
+    def __init__(self, hora_inicio: Optional[datetime.time] = None):
         if not hasattr(self, '_initialized'):
             with self._lock:
                 if not hasattr(self, '_initialized'):
@@ -138,7 +139,7 @@ class ColaTareasWorker:
                     self.hilo_principal = threading.Thread(target=self.ejecutar_tareas, daemon=True)
                     # La lógica de hora_inicio/fecha_inicio aquí es global para el worker.
                     # Si necesitas scheduling por tarea, usa Celery/Django-Q.
-                    self.hora_inicio = datetime.time(23, 59)
+                    self.hora_inicio = hora_inicio if hora_inicio else datetime.time(23, 59)
                     self._worker_started = False
                     self._initialized = True
                     logger.info("Instancia de ColaTareasWorker inicializada.")
@@ -215,7 +216,7 @@ class ColaTareasWorker:
                 time.sleep(5)
 
 # --- Función para llamar desde las vistas (NO BLOQUEANTE) ---
-def agregar_tareas_en_cola():
+def agregar_tareas_en_cola(hora_inicio: Optional[datetime.time] = None):
     """
     Función auxiliar para agregar el conjunto estándar de tareas
     (principal, csv, backup) a la cola compartida. Retorna inmediatamente.
@@ -224,6 +225,7 @@ def agregar_tareas_en_cola():
     try:
         worker = ColaTareasWorker() # Obtiene la instancia Singleton
         # Asegúrate que las funciones referenciadas existan y estén importadas
+        worker.hora_inicio = hora_inicio if hora_inicio else datetime.time(23, 59)
         worker.agregar_tarea(principal)
         worker.agregar_tarea(principal_csv)
         worker.agregar_tarea(buckup) # O backup si es el nombre correcto
