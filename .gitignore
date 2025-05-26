@@ -5,6 +5,7 @@ token.json
 *.xls
 *.ods
 *.csv
+*.log
 __pycache__/
 Scraping/
 rust_mozprofile2tDZsO/
