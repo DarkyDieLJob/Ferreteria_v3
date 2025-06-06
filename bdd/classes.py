@@ -11,6 +11,7 @@ from django.db.models import Q
 import pandas as pd
 import os
 from django.conf import settings
+
 import requests
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
@@ -663,8 +664,6 @@ class Patoba():
             print(f"Enlaces de descarga actualizados para {output_xlsx_file_name} y {output_ods_file_name}")
         except Exception as e:
             print(f"Error al actualizar enlaces en Listado_Plantillas para {spreadsheets['spreadsheetId']}: {e}")
-
-
 
     def borrar_por_id(self, id):
         # Elimina el archivo
