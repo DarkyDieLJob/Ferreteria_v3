@@ -11,6 +11,9 @@ from django.db.models import Q
 import pandas as pd
 import os
 from django.conf import settings
+import requests
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 
 SCOPES = ["https://www.googleapis.com/auth/drive",
           "https://www.googleapis.com/auth/drive.file",
@@ -598,88 +601,70 @@ class Patoba():
         return zip_content
 
     def actualizar_plantilla(self, spreadsheets, sp):
-        import requests
-        from django.core.files.storage import default_storage
-        from django.core.files.base import ContentFile
+        filtros = ['Reemplazable', 'Intermedio', 'Diccionario', 'Etiquetado', 'BDD']
 
-        filtros = ['Reemplazable','Intermedio','Diccionario','Etiquetado','BDD']
-
-
-        # Exporta la hoja de cálculo como un archivo xlsx
+        # --- Paso 1: Descargar el archivo XLSX de Google Sheets ---
         export_url = f'https://docs.google.com/spreadsheets/d/{spreadsheets["spreadsheetId"]}/export?format=xlsx'
         response = requests.get(export_url, headers={'Authorization': f'Bearer {self.credenciales.token}'})
+        response.raise_for_status() # Lanza un error si la descarga falla (ej. 404, 500)
         xlsx_data = response.content
 
+        # --- Paso 2: Guardar el archivo XLSX original (temporalmente) ---
         file_name = f'{spreadsheets["properties"]["title"]}.xlsx'
+        original_xlsx_relative_path = os.path.join('descargas', file_name)
+        original_xlsx_full_path = os.path.join(settings.MEDIA_ROOT, original_xlsx_relative_path)
 
-        try:
-            file_path = os.path.join(settings.MEDIA_ROOT, 'descargas', file_name)
+        if default_storage.exists(original_xlsx_relative_path):
+            default_storage.delete(original_xlsx_relative_path)
 
-            if default_storage.exists(file_path):
-                default_storage.delete(file_path)
-        except:
-            file_path = f'/Users/DarkyDieL/Documents/GitHub/pagina-pf-paoli/media/descargas/{file_name}'
+        default_storage.save(original_xlsx_relative_path, ContentFile(xlsx_data))
 
-            if default_storage.exists(file_path):
-                default_storage.delete(file_path)
+        # --- Paso 3: Procesar el archivo XLSX con Pandas ---
+        xlsx_file = pd.read_excel(original_xlsx_full_path, sheet_name=None)
 
-        default_storage.save(file_path, ContentFile(xlsx_data))
+        # --- Paso 4: Preparar los nombres de los nuevos archivos de salida ---
+        output_base_name = f"{spreadsheets['properties']['title']}-{sp.fecha}"
+        output_xlsx_file_name = f"{output_base_name}.xlsx"
+        output_ods_file_name = f"{output_base_name}.ods"
 
-        # Lee todas las hojas del archivo xlsx
-        xlsx_file = pd.read_excel(file_path, sheet_name=None)
+        output_xlsx_relative_path = os.path.join('descargas', output_xlsx_file_name)
+        output_ods_relative_path = os.path.join('descargas', output_ods_file_name)
 
-        try:
-            # Crea un objeto ExcelWriter para guardar en formato xlsx
-            file_path_xlsx = os.path.join(settings.MEDIA_ROOT, 'descargas', f"{spreadsheets['properties']['title']}-{sp.fecha}.xlsx")
-            if default_storage.exists(file_path_xlsx):
-                default_storage.delete(file_path_xlsx)
-            xlsx_writer = pd.ExcelWriter(file_path_xlsx)
-        except:
-            # Crea un objeto ExcelWriter para guardar en formato xls
-            file_path_xlsx = f'/Users/DarkyDieL/Documents/GitHub/pagina-pf-paoli/media/descargas/{spreadsheets["properties"]["title"]}-{sp.fecha}.xlsx'
-            if default_storage.exists(file_path_xlsx): #<-- File "/home/darkydiel/mysite/bdd/gestor_google.py", line 533
-                default_storage.delete(file_path_xlsx)
-            xlsx_writer = pd.ExcelWriter(file_path_xlsx)
+        output_xlsx_full_path = os.path.join(settings.MEDIA_ROOT, output_xlsx_relative_path)
+        output_ods_full_path = os.path.join(settings.MEDIA_ROOT, output_ods_relative_path)
 
-        try:
-            # Crea un objeto ExcelWriter para guardar en formato ods
-            file_path_ods = os.path.join(settings.MEDIA_ROOT, 'descargas', f"{spreadsheets['properties']['title']}-{sp.fecha}.ods")
-            if default_storage.exists(file_path_ods):
-                default_storage.delete(file_path_ods)
-            ods_writer = pd.ExcelWriter(file_path_ods, engine='odf')
-        except:
-            # Crea un objeto ExcelWriter para guardar en formato ods
-            file_path_ods = f'/Users/DarkyDieL/Documents/GitHub/pagina-pf-paoli/media/descargas/{spreadsheets["properties"]["title"]}-{sp.fecha}.ods'
-            if default_storage.exists(file_path_ods):
-                default_storage.delete(file_path_ods)
-            ods_writer = pd.ExcelWriter(file_path_ods, engine='odf')
+        # --- Paso 5: Preparar los ExcelWriter y eliminar archivos existentes ---
+        if default_storage.exists(output_xlsx_relative_path):
+            default_storage.delete(output_xlsx_relative_path)
+        if default_storage.exists(output_ods_relative_path):
+            default_storage.delete(output_ods_relative_path)
 
-        # Itera sobre las hojas del archivo xlsx
+        xlsx_writer = pd.ExcelWriter(output_xlsx_full_path, engine='xlsxwriter')
+        ods_writer = pd.ExcelWriter(output_ods_full_path, engine='odf')
+
+        # --- Paso 6: Iterar y guardar hojas de cálculo ---
         for sheet_name, df in xlsx_file.items():
             if sheet_name in filtros:
-                if sheet_name == 'BDD':
-                    continue
                 continue
             else:
-                # Guarda la hoja en formato xlsx
                 df.to_excel(xlsx_writer, sheet_name=sheet_name, index=False)
-
-                # Guarda la hoja en formato ods
                 df.to_excel(ods_writer, sheet_name=sheet_name, index=False)
 
-        # Guarda los archivos xls y ods
+        # Guarda y cierra los archivos
         xlsx_writer.close()
         ods_writer.close()
 
-
+        # --- Paso 7: Actualizar los enlaces de descarga en el modelo 'sp' ---
         try:
-            # Genera un enlace de descarga para el archivo xlsx y lo guarda en sp.link_descarga
-            sp.link_descarga = f'media/descargas/{spreadsheets["properties"]["title"]}-{sp.fecha}.xlsx'
-            sp.link_descarga_ods = f'media/descargas/{spreadsheets["properties"]["title"]}-{sp.fecha}.ods'
+            sp.link_descarga = f'media/descargas/{output_xlsx_file_name}'
+            sp.link_descarga_ods = f'media/descargas/{output_ods_file_name}'
             sp.descargar = True
             sp.save()
-        except:
-            print("no se encontro {} en Listado_Plantillas".format(spreadsheets["spreadsheetId"]))
+            print(f"Enlaces de descarga actualizados para {output_xlsx_file_name} y {output_ods_file_name}")
+        except Exception as e:
+            print(f"Error al actualizar enlaces en Listado_Plantillas para {spreadsheets['spreadsheetId']}: {e}")
+
+
 
     def borrar_por_id(self, id):
         # Elimina el archivo
