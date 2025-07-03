@@ -1,0 +1,345 @@
+{% extends "base.html" %}
+
+{% block title %}Informe de Cobertura de Pruebas{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'core_testing:dashboard' %}">Testing</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Informe de Cobertura</li>
+                </ol>
+            </nav>
+            
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2">Informe de Cobertura</h1>
+                    <p class="lead mb-0">Resumen de la cobertura de pruebas en las ejecuciones</p>
+                </div>
+                <div>
+                    <span class="badge bg-primary fs-6">
+                        Promedio: {{ avg_coverage|floatformat:2 }}%
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumen general -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total de Ejecuciones</h5>
+                    <h2 class="display-4">{{ total_runs }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Cobertura Promedio</h5>
+                    <h2 class="display-4">{{ avg_coverage|floatformat:1 }}%</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Mejor Cobertura</h5>
+                    <h2 class="display-4">
+                        {% if coverage_reports %}
+                            {{ coverage_reports.0.percent_covered|floatformat:1 }}%
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h5 class="card-title">Peor Cobertura</h5>
+                    <h2 class="display-4">
+                        {% if coverage_reports %}
+                            {{ coverage_reports|last.percent_covered|floatformat:1 }}%
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tendencias -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Tendencia de Cobertura</h5>
+                </div>
+                <div class="card-body">
+                    <div id="coverageTrend" style="height: 300px;">
+                        <div class="text-center py-5 text-muted">
+                            <i class="fas fa-chart-line fa-3x mb-3"></i>
+                            <p>Gráfico de tendencia de cobertura (se requiere JavaScript)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historial de ejecuciones -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Historial de Ejecuciones</h5>
+                    <div>
+                        <a href="{% url 'core_testing:dashboard' %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver al Dashboard
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Fecha</th>
+                                    <th>Duración</th>
+                                    <th>Cobertura</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for report in coverage_reports %}
+                                <tr>
+                                    <td>#{{ report.test_run.id }}</td>
+                                    <td>
+                                        <a href="{% url 'core_testing:testrun_detail' report.test_run.id %}">
+                                            {{ report.test_run.name|truncatechars:30 }}
+                                        </a>
+                                    </td>
+                                    <td>{{ report.test_run.started_at|date:"d/m/Y H:i" }}</td>
+                                    <td>
+                                        {% if report.test_run.completed_at %}
+                                            {{ report.test_run.completed_at|timesince:report.test_run.started_at }}
+                                        {% else %}
+                                            En progreso...
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress flex-grow-1 me-2" style="height: 6px;">
+                                                <div class="progress-bar bg-{% if report.percent_covered > 80 %}success{% elif report.percent_covered > 50 %}warning{% else %}danger{% endif %}" 
+                                                     role="progressbar" 
+                                                     style="width: {{ report.percent_covered|floatformat:2 }}%" 
+                                                     aria-valuenow="{{ report.percent_covered|floatformat:2 }}" 
+                                                     aria-valuemin="0" 
+                                                     aria-valuemax="100">
+                                                </div>
+                                            </div>
+                                            <span class="text-nowrap">{{ report.percent_covered|floatformat:1 }}%</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{% if report.test_run.status == 'completed' %}success{% elif report.test_run.status == 'failed' %}danger{% else %}warning{% endif %}">
+                                            {{ report.test_run.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'core_testing:testrun_detail' report.test_run.id %}" 
+                                           class="btn btn-sm btn-outline-primary"
+                                           title="Ver detalles">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-muted">
+                                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                                        <p class="mb-0">No hay informes de cobertura disponibles</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% if coverage_reports.has_other_pages %}
+                <div class="card-footer">
+                    <nav aria-label="Paginación">
+                        <ul class="pagination justify-content-center mb-0">
+                            {% if coverage_reports.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1" aria-label="Primera">
+                                    <span aria-hidden="true">&laquo;&laquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ coverage_reports.previous_page_number }}" aria-label="Anterior">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">&laquo;&laquo;</span>
+                            </li>
+                            <li class="page-item disabled">
+                                <span class="page-link">&laquo;</span>
+                            </li>
+                            {% endif %}
+                            
+                            {% for i in coverage_reports.paginator.page_range %}
+                                {% if coverage_reports.number == i %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ i }}</span>
+                                </li>
+                                {% elif i > coverage_reports.number|add:'-3' and i < coverage_reports.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if coverage_reports.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ coverage_reports.next_page_number }}" aria-label="Siguiente">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ coverage_reports.paginator.num_pages }}" aria-label="Última">
+                                    <span aria-hidden="true">&raquo;&raquo;</span>
+                                </a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">&raquo;</span>
+                            </li>
+                            <li class="page-item disabled">
+                                <span class="page-link">&raquo;&raquo;</span>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        margin-bottom: 1.5rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    .card-header {
+        font-weight: 600;
+    }
+    .display-4 {
+        font-size: 2.5rem;
+        font-weight: 300;
+        line-height: 1.2;
+    }
+    .progress {
+        min-width: 80px;
+    }
+    .table th {
+        font-weight: 600;
+        background-color: #f8f9fa;
+    }
+    .badge {
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+$(document).ready(function() {
+    // Configuración del gráfico de tendencia
+    const ctx = document.getElementById('coverageTrend').getContext('2d');
+    
+    // Datos para el gráfico (ejemplo)
+    const labels = [
+        {% for report in coverage_reports %}
+            '{{ report.test_run.started_at|date:"d/m/Y H:i" }}'{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+    
+    const data = {
+        labels: labels,
+        datasets: [{
+            label: 'Cobertura (%)',
+            data: [
+                {% for report in coverage_reports %}
+                    {{ report.percent_covered|floatformat:2 }}{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            fill: false,
+            borderColor: 'rgb(75, 192, 192)',
+            tension: 0.1
+        }]
+    };
+    
+    // Configuración del gráfico
+    const config = {
+        type: 'line',
+        data: data,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'Cobertura: ' + context.parsed.y.toFixed(2) + '%';
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                },
+                x: {
+                    ticks: {
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
+                }
+            }
+        }
+    };
+    
+    // Crear el gráfico si hay datos
+    if (labels.length > 0) {
+        new Chart(ctx, config);
+    }
+});
+</script>
+{% endblock %}

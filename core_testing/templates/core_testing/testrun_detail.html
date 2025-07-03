@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}Ejecución de Test #{{ test_run.id }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'core_testing:dashboard' %}">Testing</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Ejecución #{{ test_run.id }}</li>
+                </ol>
+            </nav>
+            
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h1 class="h2">Ejecución de Test</h1>
+                    <p class="lead mb-0">Detalles y resultados de la ejecución</p>
+                </div>
+                <div>
+                    <span class="badge bg-{% if test_run.status == 'completed' %}success{% elif test_run.status == 'failed' %}danger{% else %}warning{% endif %} fs-6">
+                        {{ test_run.get_status_display }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Información general -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Información de la Ejecución</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tbody>
+                            <tr>
+                                <th>ID:</th>
+                                <td>#{{ test_run.id }}</td>
+                            </tr>
+                            <tr>
+                                <th>Nombre:</th>
+                                <td>{{ test_run.name }}</td>
+                            </tr>
+                            <tr>
+                                <th>Iniciado por:</th>
+                                <td>{{ test_run.started_by.username }}</td>
+                            </tr>
+                            <tr>
+                                <th>Iniciado el:</th>
+                                <td>{{ test_run.started_at|date:"d/m/Y H:i:s" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Duración:</th>
+                                <td>
+                                    {% if test_run.completed_at %}
+                                        {{ test_run.completed_at|timesince:test_run.started_at }}
+                                    {% else %}
+                                        En progreso...
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% if coverage %}
+                            <tr>
+                                <th>Cobertura:</th>
+                                <td>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar bg-success" role="progressbar" 
+                                             style="width: {{ coverage.percent_covered|floatformat:2 }}%" 
+                                             aria-valuenow="{{ coverage.percent_covered|floatformat:2 }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                            {{ coverage.percent_covered|floatformat:2 }}%
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">
+                                        {{ coverage.covered_statements }} de {{ coverage.total_statements }} sentencias
+                                    </small>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'core_testing:dashboard' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver al Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            {% if coverage and coverage.coverage_data %}
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Resumen de Cobertura</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for file, data in coverage.coverage_data.items %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-truncate" title="{{ file }}">
+                                    {{ file|truncatechars:30 }}
+                                </span>
+                                <span class="badge bg-{% if data.percent_covered > 80 %}success{% elif data.percent_covered > 50 %}warning{% else %}danger{% endif %}">
+                                    {{ data.percent_covered|floatformat:1 }}%
+                                </span>
+                            </div>
+                            <div class="progress mt-1" style="height: 4px;">
+                                <div class="progress-bar bg-{% if data.percent_covered > 80 %}success{% elif data.percent_covered > 50 %}warning{% else %}danger{% endif %}" 
+                                     role="progressbar" 
+                                     style="width: {{ data.percent_covered|floatformat:2 }}%" 
+                                     aria-valuenow="{{ data.percent_covered|floatformat:2 }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Resultados de los tests -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Casos de Prueba</h5>
+                    <div>
+                        <span class="badge bg-success">{{ test_run.testcase_set.filter.status='passed'|length }} exitosos</span>
+                        <span class="badge bg-danger">{{ test_run.testcase_set.filter.status='failed'|length }} fallidos</span>
+                        <span class="badge bg-warning">{{ test_run.testcase_set.filter.status='error'|length }} con error</span>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for test_case in test_cases %}
+                        <div class="list-group-item
+                            {% if test_case.status == 'passed' %}list-group-item-success{% endif %}
+                            {% if test_case.status == 'failed' %}list-group-item-danger{% endif %}
+                            {% if test_case.status == 'error' %}list-group-item-warning{% endif %}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">{{ test_case.name }}</h6>
+                                <div>
+                                    <span class="badge bg-{% if test_case.status == 'passed' %}success{% elif test_case.status == 'failed' %}danger{% else %}warning{% endif %}">
+                                        {{ test_case.get_status_display }}
+                                    </span>
+                                    <small class="text-muted ms-2">
+                                        {{ test_case.execution_time|floatformat:3 }}s
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            {% if test_case.description %}
+                            <p class="mb-1 mt-2">{{ test_case.description }}</p>
+                            {% endif %}
+                            
+                            {% if test_case.metadata %}
+                            <div class="mt-2">
+                                <button class="btn btn-sm btn-outline-secondary" type="button" 
+                                        data-bs-toggle="collapse" 
+                                        data-bs-target="#metadata-{{ forloop.counter }}" 
+                                        aria-expanded="false" 
+                                        aria-controls="metadata-{{ forloop.counter }}">
+                                    <i class="fas fa-code"></i> Ver detalles
+                                </button>
+                                
+                                <div class="collapse mt-2" id="metadata-{{ forloop.counter }}">
+                                    <div class="card card-body bg-light p-2">
+                                        <pre class="mb-0" style="max-height: 300px; overflow: auto;">
+{{ test_case.metadata|pprint }}
+                                        </pre>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% empty %}
+                        <div class="list-group-item">
+                            <p class="mb-0 text-muted text-center py-3">No se encontraron casos de prueba para esta ejecución.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Logs de la ejecución (si existen) -->
+            {% if test_run.logs %}
+            <div class="card mt-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Logs de Ejecución</h5>
+                </div>
+                <div class="card-body p-0">
+                    <pre class="bg-dark text-light p-3 mb-0" style="max-height: 300px; overflow: auto;">{{ test_run.logs }}</pre>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .progress {
+        position: relative;
+    }
+    .progress-bar span {
+        position: absolute;
+        display: block;
+        width: 100%;
+        color: #000;
+        font-weight: bold;
+        text-shadow: 0 0 2px #fff;
+    }
+    pre {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        font-family: 'Courier New', monospace;
+        font-size: 0.85rem;
+    }
+    .list-group-item {
+        transition: all 0.2s;
+    }
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+    }
+    .badge {
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Actualizar la página cada 5 segundos si la ejecución está en progreso
+    {% if test_run.status == 'running' %}
+    setTimeout(function() {
+        window.location.reload();
+    }, 5000);
+    {% endif %}
+    
+    // Inicializar tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+{% endblock %}

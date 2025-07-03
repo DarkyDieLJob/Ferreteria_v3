@@ -34,6 +34,7 @@ urlpatterns = [
     path('', include('core_docs.urls')),
     path('', include('core_index.urls')),
     path('', include('actualizador.urls')),
+    path('testing/', include('core_testing.urls', namespace='core_testing')),
     path('', RedirectView.as_view(url='/bienbenida/'), name='index'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 

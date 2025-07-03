@@ -190,6 +190,41 @@
    ```
    El sistema estará disponible en `http://localhost:8000`
 
+## Documentación del Proyecto
+
+El proyecto sigue una estructura de documentación estandarizada para mantener el código bien documentado y fácil de mantener.
+
+### 1. Estructura de Documentación
+
+Cada aplicación del proyecto sigue esta estructura:
+
+```
+cada_aplicacion/
+├── docs/                 # Documentación detallada
+│   ├── ARQUITECTURA.md   # Diseño de la aplicación
+│   └── FLUJOS.md        # Flujos de trabajo principales
+├── README.md            # Documentación básica
+└── OBJETIVOS.md         # Objetivos y roadmap
+```
+
+### 2. Generar Documentación
+
+Para generar la estructura de documentación en todas las aplicaciones:
+
+```bash
+# Instalar dependencias si es necesario
+pip install -r requirements.txt
+
+# Generar documentación
+python scripts/crear_documentacion.py
+```
+
+### 3. Documentación Detallada
+
+Para más información sobre la documentación, consulta:
+- [Guía de Documentación](docs/GUIA_DOCUMENTACION.md)
+- [Estructura de Documentación](docs/ESTRUCTURA_DOCUMENTACION.md)
+
 ## Flujo de Trabajo de Desarrollo
 
 ### 1. Estructura de Ramas
@@ -199,7 +234,15 @@
 - `feature/*`: Ramas de características específicas
 - `hotfix/*`: Ramas para correcciones urgentes
 
-### 2. Proceso de Desarrollo
+### 2. Documentación de Cambios
+
+Al hacer cambios en el código, asegúrate de:
+
+1. Actualizar la documentación afectada
+2. Usar commits semánticos
+3. Documentar cambios importantes en CHANGELOG.md
+
+### 3. Proceso de Desarrollo
 
 1. **Crear una nueva característica**:
    ```bash
