@@ -17,7 +17,7 @@ from typing import Tuple, List, Optional
 
 # Configuración
 DOC_BRANCH = "documentation"
-DEVELOP_BRANCH = "develop"
+DEVELOP_BRANCH = "main"  # Cambiado de 'develop' a 'main'
 FEATURE_PREFIX = "feature/documentation"
 
 def run_command(cmd: List[str], cwd: str = None) -> Tuple[bool, str]:
