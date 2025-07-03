@@ -3,7 +3,12 @@ from django.conf import settings
 from django.views.static import serve
 from django.http import Http404
 from django.shortcuts import render
+import logging
+import markdown2
+import emojis
+import os
 
+logger = logging.getLogger(__name__)
 
 def serve_docs(request, path):
     """
@@ -19,23 +24,26 @@ def serve_docs(request, path):
     Devoluciones
     ------------
     HttpResponse
-        Una instancia de HttpResponse que contiene el documento solicitado.
+        Un objeto HttpResponse con el documento solicitado.
 
     Notas
     -----
     Los documentos HTML deben estar ubicados en 'core_docs/docs/_build/html' dentro del directorio BASE_DIR.
     Si el archivo solicitado no se encuentra, esta función redirigirá a 'index.html' como página predeterminada.
     """
-    document_root = settings.BASE_DIR / 'core_docs/docs/_build/html'
-    try:
-        return serve(request, path, document_root=document_root)
-    except Http404:
-        # Si el archivo no se encuentra, puedes redirigir a 'index.html' como página predeterminada
-        return serve(request, 'index.html', document_root=document_root)
+    # Construir la ruta completa al archivo de documentación
+    docs_dir = os.path.join(settings.BASE_DIR, 'core_docs/docs/_build/html')
+    full_path = os.path.join(docs_dir, path)
+    
+    logger.debug(f"Buscando documento en: {full_path}")
 
-import markdown2
-import emojis
-import os
+    # Verificar si el archivo existe
+    if not os.path.exists(full_path):
+        logger.error(f"El archivo solicitado no existe: {full_path}")
+        raise Http404(f"El archivo solicitado no existe: {full_path}")
+
+    # Servir el archivo
+    return serve(request, path, document_root=docs_dir)
 
 def changeLog(request):
     dir_file = os.path.join(settings.BASE_DIR, 'CHANGELOG.md')

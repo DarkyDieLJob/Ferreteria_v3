@@ -1,0 +1,52 @@
+import os
+import subprocess
+from django.conf import settings
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.apps import apps
+
+# Flag para evitar bucles infinitos de reconstrucción
+rebuilding_docs = False
+
+def build_docs():
+    """
+    Construye la documentación usando Sphinx.
+    """
+    global rebuilding_docs
+    
+    # Evita bucles infinitos
+    if rebuilding_docs:
+        return
+    
+    rebuilding_docs = True
+    try:
+        docs_dir = os.path.join(settings.BASE_DIR, 'core_docs/docs')
+        os.chdir(docs_dir)
+        subprocess.run(['make', 'clean'], check=True)
+        subprocess.run(['make', 'html'], check=True)
+        print("Documentación reconstruida exitosamente")
+    except Exception as e:
+        print(f"Error al reconstruir la documentación: {e}")
+    finally:
+        rebuilding_docs = False
+
+def setup_signals():
+    """
+    Configura los signals después de que las apps estén listas.
+    """
+    Item = apps.get_model('bdd', 'Item')
+    Proveedor = apps.get_model('bdd', 'Proveedor')
+    Lista_Pedidos = apps.get_model('bdd', 'Lista_Pedidos')
+    Listado_Planillas = apps.get_model('bdd', 'Listado_Planillas')
+
+    @receiver(post_save, sender=Item)
+    @receiver(post_save, sender=Proveedor)
+    @receiver(post_save, sender=Lista_Pedidos)
+    @receiver(post_save, sender=Listado_Planillas)
+    def update_docs(sender, instance, **kwargs):
+        """
+        Reconstruye la documentación cuando se actualiza un modelo importante.
+        """
+        build_docs()
+
+    return update_docs
