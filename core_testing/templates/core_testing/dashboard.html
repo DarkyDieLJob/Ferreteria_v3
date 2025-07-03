@@ -1,47 +1,86 @@
-{% extends "base.html" %}
+{% extends "core_testing/base_testing.html" %}
+{% load math_filters %}
 
 {% block title %}Dashboard de Testing{% endblock %}
 
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+{% endblock %}
+
+{% block page_title %}Dashboard de Testing{% endblock %}
+
 {% block content %}
-<div class="container-fluid mt-4">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1 class="display-4">Dashboard de Testing</h1>
+<div class="row">
             <p class="lead">Gestiona y ejecuta pruebas automatizadas en el sistema.</p>
+            
+            {% if error_message %}
+            <div class="alert alert-danger" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                {{ error_message }}
+            </div>
+            {% endif %}
         </div>
     </div>
 
     <!-- Estadísticas generales -->
     <div class="row mb-4">
-        <div class="col-md-3">
+        <div class="col-md-2">
             <div class="card bg-primary text-white">
-                <div class="card-body">
+                <div class="card-body text-center">
                     <h5 class="card-title">Total de Ejecuciones</h5>
-                    <h2 class="display-4">{{ total_runs }}</h2>
+                    <h2 class="display-5">{{ total_runs }}</h2>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
             <div class="card bg-success text-white">
-                <div class="card-body">
+                <div class="card-body text-center">
                     <h5 class="card-title">Pruebas Exitosas</h5>
-                    <h2 class="display-4">{{ total_passed }}</h2>
+                    <h2 class="display-5">{{ total_passed }}</h2>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
             <div class="card bg-danger text-white">
-                <div class="card-body">
+                <div class="card-body text-center">
                     <h5 class="card-title">Pruebas Fallidas</h5>
-                    <h2 class="display-4">{{ total_failed }}</h2>
+                    <h2 class="display-5">{{ total_failed }}</h2>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
             <div class="card bg-warning text-dark">
-                <div class="card-body">
+                <div class="card-body text-center">
                     <h5 class="card-title">Errores</h5>
-                    <h2 class="display-4">{{ total_errors }}</h2>
+                    <h2 class="display-5">{{ total_errors }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Omitidas</h5>
+                    <h2 class="display-5">{{ total_skipped|default:0 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-secondary text-white">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Tasa de Éxito</h5>
+                    <h2 class="display-5">
+                        {% if total_runs > 0 %}
+                            {% with total=total_passed|add:total_failed|add:total_errors|add:total_skipped %}
+                                {% if total > 0 %}
+                                    {% widthratio total_passed total 100 %}
+                                {% else %}
+                                    0
+                                {% endif %}
+                            {% endwith %}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </h2>
                 </div>
             </div>
         </div>
@@ -51,19 +90,20 @@
     <div class="row">
         <div class="col-md-8">
             <div class="card">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Interfaces de Testing Disponibles</h5>
+                    <span class="badge bg-light text-dark">{{ interfaces|length }} interfaces</span>
                 </div>
                 <div class="list-group list-group-flush">
-                    {% for interface in interfaces %}
-                    <a href="{% url 'core_testing:interface' interface.module %}" 
+                    {% for name, interface in interfaces.items %}
+                    <a href="{% url 'core_testing:interface' interface.module_name %}" 
                        class="list-group-item list-group-item-action">
                         <div class="d-flex w-100 justify-content-between">
                             <h5 class="mb-1">{{ interface.name }}</h5>
-                            <small class="text-muted">v{{ interface.version }}</small>
+                            <small class="text-muted">v{{ interface.version|default:'1.0.0' }}</small>
                         </div>
-                        <p class="mb-1">{{ interface.description }}</p>
-                        <small class="text-muted">Módulo: {{ interface.module }}</small>
+                        <p class="mb-1">{{ interface.description|default:'Sin descripción disponible' }}</p>
+                        <small class="text-muted">Módulo: {{ name }}</small>
                     </a>
                     {% empty %}
                     <div class="list-group-item">
@@ -77,26 +117,70 @@
         <!-- Últimas ejecuciones -->
         <div class="col-md-4">
             <div class="card">
-                <div class="card-header bg-info text-white">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Últimas Ejecuciones</h5>
+                    <span class="badge bg-light text-dark">{{ recent_runs|length }} ejecuciones</span>
                 </div>
                 <div class="list-group list-group-flush" style="max-height: 400px; overflow-y: auto;">
                     {% for run in recent_runs %}
-                    <a href="{% url 'core_testing:testrun_detail' run.id %}" 
+                    <a href="#" 
                        class="list-group-item list-group-item-action">
                         <div class="d-flex w-100 justify-content-between">
-                            <h6 class="mb-1">{{ run.name|truncatechars:30 }}</h6>
-                            <small class="text-{% if run.status == 'completed' %}success{% elif run.status == 'failed' %}danger{% else %}warning{% endif %}">
-                                {{ run.get_status_display }}
+                            <h6 class="mb-1">{{ run.name|default:'Ejecución sin nombre'|truncatechars:30 }}</h6>
+                            <small class="text-{% if run.status == 'passed' %}success{% elif run.status == 'failed' %}danger{% else %}warning{% endif %}">
+                                {{ run.status|title }}
                             </small>
                         </div>
                         <small class="text-muted">
-                            Iniciado por {{ run.started_by.username }} el {{ run.started_at|date:"d/m/Y H:i" }}
+                            {% if run.created_at %}
+                                {{ run.created_at|date:"d/m/Y H:i" }}
+                            {% else %}
+                                Fecha no disponible
+                            {% endif %}
+                            {% if run.duration %}
+                                • {{ run.duration|floatformat:2 }}s
+                            {% endif %}
                         </small>
+                        {% with total=run.tests_passed|add:run.tests_failed|add:run.tests_error|add:run.tests_skipped|default:1 %}
+                        <div class="progress mt-2" style="height: 5px;">
+                            {% if run.tests_passed > 0 %}
+                                {% with passed_percent=run.tests_passed|div:total|mul:100|floatformat:0|default:0 %}
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     style="width: {{ passed_percent }}%" 
+                                     title="{{ run.tests_passed }} pruebas exitosas">
+                                </div>
+                                {% endwith %}
+                            {% endif %}
+                            {% if run.tests_failed > 0 %}
+                                {% with failed_percent=run.tests_failed|div:total|mul:100|floatformat:0|default:0 %}
+                                <div class="progress-bar bg-danger" role="progressbar" 
+                                     style="width: {{ failed_percent }}%" 
+                                     title="{{ run.tests_failed }} pruebas fallidas">
+                                </div>
+                                {% endwith %}
+                            {% endif %}
+                            {% if run.tests_error > 0 %}
+                                {% with error_percent=run.tests_error|div:total|mul:100|floatformat:0|default:0 %}
+                                <div class="progress-bar bg-warning" role="progressbar" 
+                                     style="width: {{ error_percent }}%" 
+                                     title="{{ run.tests_error }} errores">
+                                </div>
+                                {% endwith %}
+                            {% endif %}
+                            {% if run.tests_skipped > 0 %}
+                                {% with skipped_percent=run.tests_skipped|div:total|mul:100|floatformat:0|default:0 %}
+                                <div class="progress-bar bg-secondary" role="progressbar" 
+                                     style="width: {{ skipped_percent }}%" 
+                                     title="{{ run.tests_skipped }} pruebas omitidas">
+                                </div>
+                                {% endwith %}
+                            {% endif %}
+                        </div>
+                        {% endwith %}
                     </a>
                     {% empty %}
                     <div class="list-group-item">
-                        <p class="mb-0">No hay ejecuciones recientes.</p>
+                        <p class="mb-0 text-muted">No hay ejecuciones recientes.</p>
                     </div>
                     {% endfor %}
                 </div>
@@ -107,33 +191,5 @@
                 </div>
             </div>
         </div>
-    </div>
 </div>
-{% endblock %}
-
-{% block extra_css %}
-<style>
-    .card {
-        margin-bottom: 1.5rem;
-        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    }
-    .card-header {
-        font-weight: 600;
-    }
-    .display-4 {
-        font-size: 2.5rem;
-        font-weight: 300;
-        line-height: 1.2;
-    }
-    .list-group-item {
-        border-left: none;
-        border-right: none;
-    }
-    .list-group-item:first-child {
-        border-top: none;
-    }
-    .list-group-item:last-child {
-        border-bottom: none;
-    }
-</style>
 {% endblock %}

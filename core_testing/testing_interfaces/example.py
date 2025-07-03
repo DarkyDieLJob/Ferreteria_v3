@@ -2,7 +2,7 @@
 Ejemplo de interfaz de testing.
 Implementa una interfaz de prueba simple para demostrar el funcionamiento.
 """
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from django.http import HttpRequest
 
 from .base import TestingInterface

@@ -1,0 +1,119 @@
+"""
+Módulo para manejar el almacenamiento de resultados de pruebas en archivos.
+"""
+import json
+import os
+from pathlib import Path
+from typing import Dict, List, Optional, Any
+from django.conf import settings
+from django.core.serializers.json import DjangoJSONEncoder
+from datetime import datetime
+
+# Directorio base para almacenar los resultados
+STORAGE_DIR = getattr(settings, 'TEST_RESULTS_DIR', None)
+if not STORAGE_DIR:
+    STORAGE_DIR = os.path.join(settings.BASE_DIR, 'test_results')
+    os.makedirs(STORAGE_DIR, exist_ok=True)
+
+class TestResultStorage:
+    """Clase para manejar el almacenamiento de resultados de pruebas."""
+    
+    @staticmethod
+    def get_run_filename(run_id: str) -> str:
+        """Obtiene la ruta del archivo para un run específico."""
+        return os.path.join(STORAGE_DIR, f'test_run_{run_id}.json')
+    
+    @staticmethod
+    def save_test_run(run_data: Dict[str, Any]) -> str:
+        """
+        Guarda los datos de una ejecución de prueba en un archivo JSON.
+        
+        Args:
+            run_data: Diccionario con los datos de la ejecución
+            
+        Returns:
+            str: Ruta al archivo guardado
+        """
+        run_id = run_data.get('id', str(datetime.now().timestamp()))
+        run_data['id'] = run_id
+        run_data['created_at'] = run_data.get('created_at', datetime.now().isoformat())
+        
+        filename = TestResultStorage.get_run_filename(run_id)
+        with open(filename, 'w', encoding='utf-8') as f:
+            json.dump(run_data, f, cls=DjangoJSONEncoder, indent=2, ensure_ascii=False)
+        
+        return filename
+    
+    @staticmethod
+    def load_test_run(run_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Carga los datos de una ejecución de prueba desde un archivo.
+        
+        Args:
+            run_id: ID de la ejecución a cargar
+            
+        Returns:
+            Optional[Dict]: Datos de la ejecución o None si no se encuentra
+        """
+        filename = TestResultStorage.get_run_filename(run_id)
+        if not os.path.exists(filename):
+            return None
+            
+        with open(filename, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    
+    @staticmethod
+    def list_test_runs(limit: int = 10) -> List[Dict[str, Any]]:
+        """
+        Lista las ejecuciones de prueba más recientes.
+        
+        Args:
+            limit: Número máximo de ejecuciones a devolver
+            
+        Returns:
+            List[Dict]: Lista de ejecuciones ordenadas por fecha descendente
+        """
+        if not os.path.exists(STORAGE_DIR):
+            return []
+            
+        runs = []
+        for filename in os.listdir(STORAGE_DIR):
+            if not filename.startswith('test_run_') or not filename.endswith('.json'):
+                continue
+                
+            try:
+                with open(os.path.join(STORAGE_DIR, filename), 'r', encoding='utf-8') as f:
+                    run_data = json.load(f)
+                    runs.append(run_data)
+            except (json.JSONDecodeError, IOError) as e:
+                continue
+        
+        # Ordenar por fecha de creación (más recientes primero)
+        runs.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+        return runs[:limit]
+    
+    @staticmethod
+    def get_test_stats() -> Dict[str, int]:
+        """
+        Obtiene estadísticas generales de las pruebas.
+        
+        Returns:
+            Dict: Estadísticas de pruebas
+        """
+        runs = TestResultStorage.list_test_runs(limit=1000)  # Número alto para incluir todas
+        
+        stats = {
+            'total_runs': len(runs),
+            'total_passed': 0,
+            'total_failed': 0,
+            'total_errors': 0,
+            'total_skipped': 0,
+        }
+        
+        for run in runs:
+            stats['total_passed'] += run.get('tests_passed', 0)
+            stats['total_failed'] += run.get('tests_failed', 0)
+            stats['total_errors'] += run.get('tests_error', 0)
+            stats['total_skipped'] += run.get('tests_skipped', 0)
+        
+        return stats
