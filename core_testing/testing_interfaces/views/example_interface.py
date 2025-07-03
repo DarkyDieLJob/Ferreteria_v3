@@ -1,0 +1,30 @@
+"""
+Vista para la interfaz de ejemplo avanzada de testing.
+"""
+from django.views.generic import TemplateView
+from core_testing.testing_interfaces.base import TestingView
+from core_testing.testing_interfaces.example_interface import ExampleTestingInterface
+
+
+class ExampleInterfaceTestingView(TestingView):
+    """
+    Vista para la interfaz de ejemplo avanzada de testing.
+    Ya incluye LoginRequiredMixin a través de TestingView.
+    """
+    interface_class = ExampleTestingInterface
+    template_name = 'core_testing/interface.html'
+    
+    def __init__(self, **kwargs):
+        # Asegurarse de que interface_class esté definido
+        self.interface_class = ExampleTestingInterface
+        super().__init__(**kwargs)
+    
+    def get_context_data(self, **kwargs):
+        """Añade contexto adicional a la plantilla."""
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'page_title': 'Interfaz de Ejemplo Avanzada',
+            'active_tab': 'example_interface',
+            'interface': self.get_interface()
+        })
+        return context

@@ -111,8 +111,18 @@ class ExampleTestingInterface(TestingInterface):
         return ""
 
 
+# Importar TestingView desde el módulo base
+from django.views.generic import TemplateView
+from .base import TestingView, TestingInterface
+
 # Vista específica para esta interfaz
-class ExampleTestingView(TestingInterface):
+class ExampleTestingView(TestingView):
     """Vista para la interfaz de ejemplo."""
     interface_class = ExampleTestingInterface
     template_name = "core_testing/example_interface.html"
+    
+    def get_context_data(self, **kwargs):
+        """Añade el contexto necesario para la plantilla."""
+        context = super().get_context_data(**kwargs)
+        context['interface'] = self.get_interface()
+        return context

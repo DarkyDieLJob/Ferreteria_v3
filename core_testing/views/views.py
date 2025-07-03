@@ -3,24 +3,31 @@ Vistas para el módulo de testing.
 Proporciona las vistas necesarias para interactuar con las interfaces de testing.
 """
 import importlib
+from django.db.models import Avg
 import inspect
+import logging
+import os
 import pkgutil
 from typing import Type, Dict, List, Any, Optional
 
 from django.shortcuts import render, get_object_or_404
 from django.views import View
-from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse, Http404
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.utils.module_loading import import_string
 from django.conf import settings
 
 from core_testing.models import TestRun, TestCase, TestCoverage
 from core_testing.testing_interfaces.base import TestingInterface, TestingView
+from core_testing.storage import TestResultStorage
+
+logger = logging.getLogger(__name__)
 
 
 class InterfaceTestingView(LoginRequiredMixin, View):
     """Vista para interactuar con una interfaz de testing específica."""
     template_name = 'core_testing/interface.html'
+    interface_class = None  # Debe ser sobreescrito por las clases hijas
     
     def get(self, request: HttpRequest, interface_name: str) -> HttpResponse:
         """
@@ -33,7 +40,7 @@ class InterfaceTestingView(LoginRequiredMixin, View):
         Returns:
             HttpResponse con la interfaz de testing renderizada
         """
-        interface_class = self._get_interface_class(interface_name)
+        interface_class = self.get_interface_class()
         if not interface_class:
             return render(
                 request, 
@@ -42,45 +49,71 @@ class InterfaceTestingView(LoginRequiredMixin, View):
                 status=404
             )
             
-        interface = interface_class()
+        interface = self.get_interface()
         tests = interface.get_available_tests()
         
-        context = {
+        context = self.get_context_data()
+        context.update({
             'interface_name': interface_name,
             'tests': tests,
             'interface': interface,
-        }
+        })
         return render(request, self.template_name, context)
     
-    def _get_interface_class(
-        self, 
-        interface_name: str
-    ) -> Optional[Type[TestingInterface]]:
+    def get_interface_class(self):
         """
-        Obtiene la clase de la interfaz de testing por su nombre.
+        Obtiene la clase de la interfaz de testing.
         
-        Args:
-            interface_name: Nombre de la interfaz a cargar
-            
         Returns:
-            Clase de la interfaz de testing o None si no se encuentra
+            Clase de la interfaz de testing
+            
+        Raises:
+            Http404: Si la interfaz no existe o no se puede cargar
         """
+        if hasattr(self, 'interface_class') and self.interface_class is not None:
+            return self.interface_class
+            
+        if not hasattr(self, 'kwargs') or 'interface_name' not in self.kwargs:
+            raise Http404("No se especificó la interfaz de testing")
+            
+        interface_name = self.kwargs['interface_name']
+        module_path = f'core_testing.testing_interfaces.{interface_name}'
+        
         try:
-            module = importlib.import_module(
-                f'core_testing.testing_interfaces.{interface_name}'
-            )
+            module = importlib.import_module(module_path)
             for name, obj in inspect.getmembers(module, inspect.isclass):
-                is_interface = (
-                    issubclass(obj, TestingInterface) and 
+                if (issubclass(obj, TestingInterface) and 
                     obj != TestingInterface and 
-                    obj.__module__ == f'core_testing.testing_interfaces.{interface_name}'
-                )
-                if is_interface:
+                    obj.__module__ == module_path):
                     return obj
         except (ImportError, AttributeError) as e:
-            print(f"Error loading interface {interface_name}: {e}")
-            return None
-        return None
+            logger.error(f"Error al cargar la interfaz {interface_name}: {e}")
+            
+        raise Http404(f"Interfaz de testing no encontrada: {interface_name}")
+    
+    def get_interface(self):
+        """
+        Obtiene una instancia de la interfaz de testing.
+        
+        Returns:
+            Instancia de la interfaz de testing
+            
+        Raises:
+            Http404: Si la interfaz no existe o no se puede cargar
+        """
+        interface_class = self.get_interface_class()
+        return interface_class()
+    
+    def get_context_data(self, **kwargs):
+        """
+        Retorna el contexto para la plantilla.
+        
+        Returns:
+            dict: Contexto para la plantilla
+        """
+        context = {}
+        context.update(kwargs)
+        return context
 
 
 class TestRunDetailView(LoginRequiredMixin, View):
@@ -116,55 +149,102 @@ def discover_testing_interfaces() -> Dict[str, Type[TestingInterface]]:
         Dict[str, Type[TestingInterface]]: Diccionario con las interfaces encontradas
     """
     interfaces = {}
+    logger = logging.getLogger(__name__)
+    logger.info("=" * 80)
+    logger.info("INICIANDO BÚSQUEDA DE INTERFACES DE TESTING")
+    logger.info("=" * 80)
     
     try:
-        # Obtener todos los módulos en el directorio testing_interfaces
-        package = importlib.import_module('core_testing.testing_interfaces')
+        # Obtener la ruta del directorio de interfaces
+        import os
+        from django.conf import settings
         
-        # Manejar el caso en que estemos en un entorno de prueba con mocks
-        if hasattr(package, '__path__'):
-            package_path = package.__path__
-        else:
-            # En caso de que no haya __path__ (como en un mock), usar una ruta por defecto
-            import os
-            package_path = [os.path.join(os.path.dirname(__file__), 'testing_interfaces')]
+        # Ruta al directorio de interfaces
+        interfaces_dir = os.path.join(settings.BASE_DIR, 'core_testing', 'testing_interfaces')
+        logger.info(f"Buscando interfaces en: {interfaces_dir}")
         
-        # Iterar sobre todos los módulos en el paquete
-        for finder, module_name, _ in pkgutil.iter_modules(package_path):
-            # No cargar el módulo base
-            if module_name == 'base' or module_name == '__pycache__':
+        # Verificar si el directorio existe
+        if not os.path.exists(interfaces_dir):
+            logger.error(f"ERROR: El directorio de interfaces no existe: {interfaces_dir}")
+            return {}
+        
+        # Verificar permisos del directorio
+        logger.info(f"Permisos del directorio: {oct(os.stat(interfaces_dir).st_mode)[-3:]}")
+        logger.info(f"Contenido del directorio: {os.listdir(interfaces_dir)}")
+            
+        # Listar archivos en el directorio
+        for filename in os.listdir(interfaces_dir):
+            logger.info(f"Procesando archivo: {filename}")
+            
+            # Ignorar archivos que no son módulos de Python
+            if not filename.endswith('.py'):
+                logger.info(f"  - Ignorando (no es .py): {filename}")
                 continue
                 
+            if filename in ['__init__.py', 'base.py', '__pycache__']:
+                logger.info(f"  - Ignorando (archivo especial): {filename}")
+                continue
+                
+            # Obtener el nombre del módulo sin la extensión
+            module_name = filename[:-3]
+            full_module_name = f'core_testing.testing_interfaces.{module_name}'
+            
+            logger.info(f"  - Intentando cargar módulo: {full_module_name}")
+            
             try:
-                # Importar el módulo
-                full_module_name = f'core_testing.testing_interfaces.{module_name}'
+                # Importar el módulo dinámicamente
                 module = importlib.import_module(full_module_name)
+                logger.info(f"  - Módulo importado correctamente: {module.__name__}")
                 
                 # Buscar clases que hereden de TestingInterface
                 for name, obj in inspect.getmembers(module, inspect.isclass):
+                    logger.info(f"  - Examinando clase: {name} (módulo: {getattr(obj, '__module__', 'desconocido')})")
+                    
                     # Verificar si es una clase de interfaz de prueba válida
-                    if (
-                        issubclass(obj, TestingInterface) and 
-                        obj != TestingInterface
-                    ):
-                        # Verificar si el módulo coincide o si estamos en un entorno de prueba
-                        if (
-                            hasattr(obj, '__module__') and 
-                            (obj.__module__ == module.__name__ or 'unittest.mock' in str(type(obj)))
-                        ):
-                            # Usar el nombre del módulo como clave, a menos que la clase tenga un nombre específico
-                            interface_name = getattr(obj, 'interface_name', module_name)
-                            interfaces[interface_name] = obj
+                    try:
+                        is_testing_interface = (
+                            inspect.isclass(obj) and 
+                            issubclass(obj, TestingInterface) and 
+                            obj != TestingInterface and
+                            obj.__module__ == module.__name__
+                        )
+                        
+                        if is_testing_interface:
+                            logger.info(f"  - CLASE VÁLIDA ENCONTRADA: {name} en {module_name}")
+                            logger.info(f"     - Módulo: {obj.__module__}")
+                            logger.info(f"     - Base classes: {[b.__name__ for b in obj.__bases__]}")
+                            logger.info(f"     - Atributos: {dir(obj)}")
                             
-            except (ImportError, AttributeError) as e:
-                # Log the error
-                logger = logging.getLogger(__name__)
-                logger.error("Error al cargar el módulo %s: %s", module_name, e, exc_info=True)
-                
-    except ImportError as e:
-        # Log the error if we can't import the package at all
-        logger = logging.getLogger(__name__)
-        logger.error("Error al importar el paquete core_testing.testing_interfaces: %s", e, exc_info=True)
+                            # Usar el nombre de la interfaz o el nombre de la clase como clave
+                            interface_name = getattr(obj, 'name', name)
+                            logger.info(f"  - Registrando interfaz: {interface_name} (clase: {obj.__name__})")
+                            
+                            # Asegurarse de que el nombre sea único
+                            if interface_name in interfaces:
+                                logger.warning(f"  - ATENCIÓN: Nombre de interfaz duplicado: {interface_name}")
+                                interface_name = f"{interface_name}_{module_name}"
+                                
+                            interfaces[interface_name] = obj
+                            logger.info(f"  - Interfaz registrada: {interface_name}")
+                        else:
+                            logger.info(f"  - Clase ignorada (no es una interfaz de testing válida): {name}")
+                            
+                    except Exception as e:
+                        logger.error(f"  - ERROR al procesar la clase {name}: {str(e)}", exc_info=True)
+                        
+            except ImportError as e:
+                logger.error(f"  - ERROR al importar el módulo {full_module_name}: {str(e)}", exc_info=True)
+            except Exception as e:
+                logger.error(f"  - ERROR inesperado al procesar {full_module_name}: {str(e)}", exc_info=True)
+        
+        logger.info("=" * 80)
+        logger.info(f"BÚSQUEDA COMPLETADA. Interfaces encontradas: {list(interfaces.keys())}")
+        logger.info("=" * 80)
+        
+    except Exception as e:
+        logger.error("=" * 80)
+        logger.error(f"ERROR CRÍTICO en discover_testing_interfaces: {str(e)}", exc_info=True)
+        logger.error("=" * 80)
     
     return interfaces
 
@@ -173,40 +253,116 @@ class TestingDashboardView(LoginRequiredMixin, View):
     """Vista principal del dashboard de testing."""
     template_name = 'core_testing/dashboard.html'
     
-    def get(self, request: HttpRequest) -> HttpResponse:
-        """
-        Muestra el dashboard con todas las interfaces de testing disponibles.
-        """
+    def get(self, request, *args, **kwargs):
+        """Maneja las solicitudes GET para el dashboard de testing."""
+        context = self.get_context_data()
+        return render(request, self.template_name, context)
+    
+    def get_context_data(self, **kwargs):
+        """Obtiene el contexto para la plantilla del dashboard."""
+        context = {}
+        
+        # Obtener las interfaces de testing disponibles
         interfaces = discover_testing_interfaces()
         
-        # Obtener estadísticas de ejecución
-        test_runs = TestRun.objects.order_by('-started_at')[:10]
+        # Agregar el nombre del módulo a cada interfaz
+        for name, interface in interfaces.items():
+            # Usar el nombre del módulo de la clase si está disponible, de lo contrario usar el nombre de la clase en minúsculas
+            if hasattr(interface, '__module__'):
+                module_name = interface.__module__.split('.')[-1]
+            else:
+                module_name = interface.__name__.lower()
+            
+            # Agregar el nombre del módulo como un atributo a la clase
+            interface.module_name = module_name
         
-        # Preparar el contexto con las interfaces y estadísticas
-        context = {
-            'interfaces': [
-                {
-                    'name': interface_class.name,
-                    'description': getattr(interface_class, 'description', ''),
-                    'version': getattr(interface_class, 'version', '1.0.0'),
-                    'module': module_name,
-                }
-                for module_name, interface_class in interfaces.items()
-            ],
-            'recent_runs': test_runs,
-            'total_runs': TestRun.objects.count(),
-            'total_passed': TestCase.objects.filter(status='passed').count(),
-            'total_failed': TestCase.objects.filter(status='failed').count(),
-            'total_errors': TestCase.objects.filter(status='error').count(),
-        }
+        try:
+            # Obtener las últimas ejecuciones de pruebas desde archivos
+            recent_runs = TestResultStorage.list_test_runs(limit=10)
+            
+            # Asegurarse de que cada run tenga los campos necesarios
+            for run in recent_runs:
+                # Si el run tiene un campo 'results', usamos esos datos
+                if 'results' in run and isinstance(run['results'], dict):
+                    run.update({
+                        'tests_passed': run['results'].get('passed', 0),
+                        'tests_failed': run['results'].get('failed', 0),
+                        'tests_error': run['results'].get('error', 0),
+                        'tests_skipped': run['results'].get('skipped', 0),
+                    })
+                # Si no, intentamos obtener los valores directamente
+                else:
+                    run.update({
+                        'tests_passed': run.get('passed', run.get('tests_passed', 0)),
+                        'tests_failed': run.get('failed', run.get('tests_failed', 0)),
+                        'tests_error': run.get('error', run.get('tests_error', 0)),
+                        'tests_skipped': run.get('skipped', run.get('tests_skipped', 0)),
+                    })
+                
+                # Asegurar que los valores sean enteros
+                run['tests_passed'] = int(run['tests_passed'])
+                run['tests_failed'] = int(run['tests_failed'])
+                run['tests_error'] = int(run['tests_error'])
+                run['tests_skipped'] = int(run['tests_skipped'])
+            
+            # Obtener estadísticas desde archivos
+            stats = TestResultStorage.get_test_stats()
+            
+            # Calcular total de pruebas para porcentajes
+            total_tests = max(1, sum([
+                stats.get('total_passed', 0),
+                stats.get('total_failed', 0),
+                stats.get('total_errors', 0),
+                stats.get('total_skipped', 0)
+            ]))
+            
+            # Calcular porcentajes
+            context.update({
+                'interfaces': interfaces,
+                'recent_runs': recent_runs,
+                'total_runs': stats.get('total_runs', 0),
+                'total_passed': stats.get('total_passed', 0),
+                'total_failed': stats.get('total_failed', 0),
+                'total_errors': stats.get('total_errors', 0),
+                'total_skipped': stats.get('total_skipped', 0),
+                'passed_percent': int((stats.get('total_passed', 0) / total_tests) * 100) if total_tests > 0 else 0,
+                'failed_percent': int((stats.get('total_failed', 0) / total_tests) * 100) if total_tests > 0 else 0,
+                'error_percent': int((stats.get('total_errors', 0) / total_tests) * 100) if total_tests > 0 else 0,
+                'skipped_percent': int((stats.get('total_skipped', 0) / total_tests) * 100) if total_tests > 0 else 0,
+            })
+            
+            # Agregar logs para depuración
+            print(f"Interfaces encontradas: {len(interfaces)}")
+            print(f"Ejecuciones recientes: {len(recent_runs)}")
+            if recent_runs:
+                print(f"Ejemplo de datos de ejecución: {recent_runs[0]}")
+            print(f"Total de pruebas pasadas: {context['total_passed']}")
+            print(f"Total de pruebas fallidas: {context['total_failed']}")
+            print(f"Total de errores: {context['total_errors']}")
+            
+        except Exception as e:
+            logger.error(f"Error al cargar datos de pruebas: {str(e)}", exc_info=True)
+            # Si hay un error, mostrar datos vacíos
+            context.update({
+                'interfaces': interfaces,
+                'recent_runs': [],
+                'total_runs': 0,
+                'total_passed': 0,
+                'total_failed': 0,
+                'total_errors': 0,
+                'total_skipped': 0,
+                'error_message': f"Error al cargar los datos: {str(e)}"
+            })
         
-        return render(request, self.template_name, context)
+        return context
 
 
 class InterfaceTestingView(TestingView):
     """
     Vista para interactuar con una interfaz de testing específica.
     Esta vista se encarga de cargar dinámicamente la interfaz solicitada.
+    
+    Nota: Ya incluye LoginRequiredMixin a través de TestingView.
     """
     template_name = 'core_testing/interface.html'
     
@@ -216,14 +372,32 @@ class InterfaceTestingView(TestingView):
         
         Returns:
             Type[TestingInterface]: Clase de la interfaz de testing
+            
+        Raises:
+            Http404: Si la interfaz no se encuentra
         """
+        # Si la clase ya está definida como atributo, usarla
+        if hasattr(self, 'interface_class') and self.interface_class is not None:
+            return self.interface_class
+            
+        # Si no, intentar cargarla dinámicamente
         interface_name = self.kwargs.get('interface_name')
+        if not interface_name:
+            raise Http404("No se especificó una interfaz de testing")
+            
         interfaces = discover_testing_interfaces()
         
-        if interface_name not in interfaces:
-            raise Http404(f"Interfaz de testing no encontrada: {interface_name}")
-            
-        return interfaces[interface_name]
+        # Buscar la interfaz por nombre de módulo
+        for name, interface in interfaces.items():
+            if hasattr(interface, 'module_name') and interface.module_name == interface_name:
+                return interface
+        
+        # Si no se encuentra por module_name, intentar por el nombre de la clase
+        for name, interface in interfaces.items():
+            if name.lower() == interface_name.lower():
+                return interface
+        
+        raise Http404(f"Interfaz de testing no encontrada: {interface_name}")
     
     def get_context_data(self, **kwargs):
         """Agrega información adicional al contexto."""
@@ -411,7 +585,7 @@ class TestCoverageReportView(LoginRequiredMixin, View):
         Muestra un informe de cobertura de pruebas.
         """
         # Obtener las últimas ejecuciones con cobertura
-        coverage_reports = TestCoverage.objects.select_related('test_run').order_by('-test_run__started_at')[:50]
+        coverage_reports = TestCoverage.objects.select_related('test_run').order_by('-test_run__created_at')[:50]
         
         # Calcular estadísticas generales
         total_runs = TestCoverage.objects.count()

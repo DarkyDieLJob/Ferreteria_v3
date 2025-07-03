@@ -1,8 +1,16 @@
-{% extends 'core_testing/test_base.html' %}
+{% extends 'core_testing/base_testing.html' %}
 
 {% block title %}Interfaces de Testing{% endblock %}
 
-{% block testing_content %}
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item active" aria-current="page">Interfaces</li>
+{% endblock %}
+
+{% block page_title %}Interfaces de Testing{% endblock %}
+
+{% block page_subtitle %}Selecciona una interfaz para ver sus pruebas disponibles{% endblock %}
+
+{% block content %}
 <div class="card">
     <div class="card-header bg-primary text-white">
         <h4 class="mb-0">Interfaces de Testing Disponibles</h4>
