@@ -80,3 +80,5 @@ media/pedidos/Sumar.xlsx
 media/pedidos/Suprabond.xlsx
 media/pedidos/Violini.xlsx
 media/pedidos/YAYI.xlsx
+db.sqlite3-wal
+db.sqlite3-shm

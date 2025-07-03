@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h2>{{ interface_name }} <small class="text-light">v{{ interface_version }}</small></h2>
+                </div>
+                <div class="card-body">
+                    <p class="lead">{{ interface_description }}</p>
+                    
+                    <div class="row mt-4">
+                        <!-- Lista de tests -->
+                        <div class="col-md-4">
+                            <div class="list-group" id="testList">
+                                {% for test in tests %}
+                                <a href="#" class="list-group-item list-group-item-action test-item" 
+                                   data-test-id="{{ test.id }}"
+                                   data-form-required="{{ test.form_required|yesno:'true,false' }}">
+                                    <h5 class="mb-1">{{ test.name }}</h5>
+                                    <p class="mb-1 text-muted">{{ test.description }}</p>
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- Área de configuración y resultados -->
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 id="testTitle">Seleccione un test</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div id="testConfig">
+                                        <p class="text-muted">Seleccione un test de la lista para configurarlo y ejecutarlo.</p>
+                                    </div>
+                                    
+                                    <div id="testResults" class="mt-4" style="display: none;">
+                                        <h5>Resultados</h5>
+                                        <div class="alert" id="resultAlert"></div>
+                                        <pre id="resultData" class="bg-light p-3" style="max-height: 300px; overflow: auto;"></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Manejar clic en un test de la lista
+    $('.test-item').click(function(e) {
+        e.preventDefault();
+        
+        // Actualizar estado visual
+        $('.test-item').removeClass('active');
+        $(this).addClass('active');
+        
+        const testId = $(this).data('test-id');
+        const testName = $(this).find('h5').text();
+        const formRequired = $(this).data('form-required');
+        
+        // Actualizar título
+        $('#testTitle').text(testName);
+        
+        // Mostrar u ocultar formulario según sea necesario
+        if (formRequired) {
+            // Cargar formulario vía AJAX
+            $.ajax({
+                url: '{% url "core_testing:get_test_form" %}',
+                method: 'GET',
+                data: { test_id: testId },
+                success: function(response) {
+                    $('#testConfig').html(response);
+                    $('#testResults').hide();
+                }
+            });
+        } else {
+            // Si no requiere formulario, mostrar solo el botón de ejecutar
+            $('#testConfig').html(`
+                <p>Este test no requiere configuración adicional.</p>
+                <form id="testForm" method="post" action="">
+                    <input type="hidden" name="test_id" value="${testId}">
+                    <button type="submit" class="btn btn-primary">Ejecutar Test</button>
+                </form>
+            `);
+            $('#testResults').hide();
+        }
+    });
+    
+    // Manejar envío del formulario
+    $(document).on('submit', '#testForm', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const formData = form.serialize();
+        
+        $.ajax({
+            url: window.location.href,
+            method: 'POST',
+            data: formData,
+            success: function(response) {
+                $('#testResults').html(response).show();
+            },
+            error: function(xhr) {
+                $('#testResults').html(
+                    '<div class="alert alert-danger">Error al ejecutar el test: ' + 
+                    xhr.responseText + '</div>'
+                ).show();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
