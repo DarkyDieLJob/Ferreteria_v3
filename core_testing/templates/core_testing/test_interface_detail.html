@@ -1,8 +1,21 @@
-{% extends 'core_testing/test_base.html' %}
+{% extends 'core_testing/base_testing.html' %}
 
 {% block title %}{{ interface.name }} - Testing{% endblock %}
 
-{% block testing_content %}
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item"><a href="{% url 'core_testing:test_interfaces' %}">Interfaces</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ interface.name }}</li>
+{% endblock %}
+
+{% block page_title %}{{ interface.name }}{% endblock %}
+
+{% block page_subtitle %}{{ interface.description }}{% endblock %}
+
+{% block page_actions %}
+    <span class="badge bg-secondary">v{{ interface.version }}</span>
+{% endblock %}
+
+{% block content %}
 <div class="card mb-4">
     <div class="card-header bg-primary text-white">
         <div class="d-flex justify-content-between align-items-center">

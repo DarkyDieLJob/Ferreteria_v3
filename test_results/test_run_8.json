@@ -1,0 +1,102 @@
+{
+  "id": "8",
+  "name": "Test Run 8",
+  "status": "failed",
+  "created_at": "2025-06-12T04:27:50.219960+00:00",
+  "duration": 5.246880017829677,
+  "total_tests": 16,
+  "tests_passed": 29,
+  "tests_failed": 2,
+  "tests_error": 1,
+  "tests_skipped": 3,
+  "branch": "main",
+  "commit_hash": "abc123def456",
+  "triggered_by": "tester",
+  "metadata": {
+    "environment": "development",
+    "python_version": "3.9.7",
+    "django_version": "3.2.9"
+  },
+  "test_cases": [
+    {
+      "nodeid": "test_module_0.py::test_case_0",
+      "name": "test_case_0",
+      "file": "/path/to/test_module_0.py",
+      "line": 93,
+      "status": "passed",
+      "duration": 1.9482485318689156,
+      "message": "Test case executed successfully",
+      "traceback": ""
+    },
+    {
+      "nodeid": "test_module_1.py::test_case_1",
+      "name": "test_case_1",
+      "file": "/path/to/test_module_1.py",
+      "line": 93,
+      "status": "skipped",
+      "duration": 0.7817562679971954,
+      "message": "Test case failed",
+      "traceback": "Traceback (most recent call last):\n  File \"test.py\", line 2, in <module>\n    assert False\nAssertionError"
+    },
+    {
+      "nodeid": "test_module_2.py::test_case_2",
+      "name": "test_case_2",
+      "file": "/path/to/test_module_2.py",
+      "line": 19,
+      "status": "xfailed",
+      "duration": 1.7881505057383202,
+      "message": "Test case failed",
+      "traceback": "Traceback (most recent call last):\n  File \"test.py\", line 2, in <module>\n    assert False\nAssertionError"
+    },
+    {
+      "nodeid": "test_module_3.py::test_case_3",
+      "name": "test_case_3",
+      "file": "/path/to/test_module_3.py",
+      "line": 12,
+      "status": "passed",
+      "duration": 0.2685115900066195,
+      "message": "Test case executed successfully",
+      "traceback": ""
+    },
+    {
+      "nodeid": "test_module_4.py::test_case_4",
+      "name": "test_case_4",
+      "file": "/path/to/test_module_4.py",
+      "line": 76,
+      "status": "xpassed",
+      "duration": 1.488388554564275,
+      "message": "Test case failed",
+      "traceback": "Traceback (most recent call last):\n  File \"test.py\", line 2, in <module>\n    assert False\nAssertionError"
+    },
+    {
+      "nodeid": "test_module_5.py::test_case_5",
+      "name": "test_case_5",
+      "file": "/path/to/test_module_5.py",
+      "line": 67,
+      "status": "xfailed",
+      "duration": 0.6045427964209481,
+      "message": "Test case failed",
+      "traceback": "Traceback (most recent call last):\n  File \"test.py\", line 2, in <module>\n    assert False\nAssertionError"
+    },
+    {
+      "nodeid": "test_module_6.py::test_case_6",
+      "name": "test_case_6",
+      "file": "/path/to/test_module_6.py",
+      "line": 32,
+      "status": "failed",
+      "duration": 2.260778452812138,
+      "message": "Test case failed",
+      "traceback": "Traceback (most recent call last):\n  File \"test.py\", line 2, in <module>\n    assert False\nAssertionError"
+    },
+    {
+      "nodeid": "test_module_7.py::test_case_7",
+      "name": "test_case_7",
+      "file": "/path/to/test_module_7.py",
+      "line": 88,
+      "status": "xfailed",
+      "duration": 2.010406663217768,
+      "message": "Test case failed",
+      "traceback": "Traceback (most recent call last):\n  File \"test.py\", line 2, in <module>\n    assert False\nAssertionError"
+    }
+  ]
+}

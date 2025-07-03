@@ -37,6 +37,8 @@ Módulo de pruebas para la aplicación de Ferretería, diseñado para facilitar 
 
 ## Uso
 
+### Panel de Pruebas
+
 1. Inicia el servidor de desarrollo:
    ```bash
    python manage.py runserver
@@ -46,6 +48,47 @@ Módulo de pruebas para la aplicación de Ferretería, diseñado para facilitar 
    ```
    http://localhost:8000/testing/
    ```
+
+### Ejecución de Pruebas desde la Línea de Comandos
+
+Para ejecutar todas las pruebas del módulo:
+```bash
+python manage.py test core_testing --verbosity=2
+```
+
+Para ejecutar pruebas específicas:
+```bash
+# Ejecutar solo las pruebas de interfaces
+python manage.py test core_testing.tests.test_interfaces
+
+# Ejecutar una clase de prueba específica
+python manage.py test core_testing.tests.test_interfaces.TestInterfaceDiscovery
+```
+
+## Sistema de Descubrimiento de Interfaces
+
+El módulo incluye un sistema de descubrimiento automático de interfaces de prueba. Para crear una nueva interfaz de prueba:
+
+1. Crea un nuevo archivo en `core_testing/testing_interfaces/` (ej: `mi_prueba.py`)
+2. Define una clase que herede de `TestingInterface`:
+
+```python
+from core_testing.testing_interfaces.base import TestingInterface
+
+class MiPrueba(TestingInterface):
+    name = "mi_prueba"
+    description = "Descripción de mi prueba"
+    
+    def run_test(self):
+        # Lógica de la prueba
+        return {
+            'success': True,
+            'message': 'Prueba exitosa',
+            'details': 'Detalles adicionales...'
+        }
+```
+
+3. La interfaz estará disponible automáticamente en el panel de pruebas.
 
 ## Estructura del Proyecto
 

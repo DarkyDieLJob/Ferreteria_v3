@@ -5,25 +5,37 @@ Define las rutas para acceder a las funcionalidades de testing.
 from django.urls import path
 from django.views.decorators.csrf import csrf_exempt
 
-from . import views, views_test
+from . import views
+from .views.views_test import list_testing_interfaces, TestInterfaceView
+from .testing_interfaces.views.example import ExampleInterfaceView
+from .testing_interfaces.views.example_interface import ExampleInterfaceTestingView
 
 app_name = 'core_testing'
 
+# URLs para interfaces de testing específicas
 urlpatterns = [
     # Dashboard principal de testing
     path('', views.TestingDashboardView.as_view(), name='dashboard'),
     
-    # Interfaz de testing específica
+    # URLs de interfaces específicas - Usando las vistas directamente
+    path('interface/example/', 
+         ExampleInterfaceView.as_view(), 
+         name='example_interface'),
+         
+    path('interface/example_interface/', 
+         ExampleInterfaceTestingView.as_view(), 
+         name='example_advanced_interface'),
+    
+    # Interfaz de testing genérica (para compatibilidad)
     path('interface/<str:interface_name>/', 
          views.InterfaceTestingView.as_view(), 
          name='interface'),
     
-    # Obtener formulario para un test específico
+    # API endpoints
     path('api/get-test-form/<str:interface_name>/', 
          views.get_test_form, 
          name='get_test_form'),
     
-    # Ejecutar un test (API)
     path('api/run-test/<str:interface_name>/', 
          csrf_exempt(views.run_test_api), 
          name='run_test'),
@@ -38,11 +50,11 @@ urlpatterns = [
          views.TestCoverageReportView.as_view(), 
          name='coverage_report'),
     
-    # Vistas de prueba (temporales)
+    # Rutas de prueba
     path('test/interfaces/', 
-         views_test.list_testing_interfaces, 
+         list_testing_interfaces, 
          name='test_interfaces'),
     path('test/interface/<str:interface_name>/', 
-         views_test.TestInterfaceView.as_view(), 
+         TestInterfaceView.as_view(), 
          name='test_interface'),
 ]

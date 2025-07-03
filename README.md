@@ -178,6 +178,41 @@
    pip install -r requirements.txt
    ```
 
+## Pruebas
+
+El proyecto incluye un sistema completo de pruebas automatizadas. Para más información, consulta la [documentación detallada de pruebas](./docs/SISTEMA_DE_PRUEBAS.md).
+
+### Ejecutar pruebas
+
+```bash
+# Todas las pruebas
+python manage.py test
+
+# Pruebas específicas del módulo core_testing
+python manage.py test core_testing
+
+# Con mayor verbosidad
+python manage.py test --verbosity=2
+```
+
+## Documentación
+
+La documentación detallada del proyecto se encuentra en el directorio `docs/`:
+
+- [Sistema de Pruebas](./docs/SISTEMA_DE_PRUEBAS.md): Guía completa sobre el sistema de pruebas automatizadas.
+- [Estructura de Documentación](./docs/ESTRUCTURA_DOCUMENTACION.md): Explicación de la estructura de documentación del proyecto.
+- [Flujo de Trabajo](./docs/FLUJO_TRABAJO.md): Guía sobre el flujo de desarrollo y contribución.
+
+Para generar documentación adicional, puedes usar:
+
+```bash
+# Instalar dependencias de documentación
+pip install -r docs/requirements.txt
+
+# Generar documentación
+cd docs && make html
+```
+
 3. **Inicialización de la Base de Datos**
    ```bash
    python manage.py migrate
