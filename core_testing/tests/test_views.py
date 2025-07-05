@@ -1,39 +1,14 @@
 """
 Pruebas para las vistas del módulo core_testing.
 """
-import os
-import sys
-import django
 from typing import List, Dict, Any, Optional
 from django.test import TestCase, RequestFactory, override_settings
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.http import Http404, HttpResponse, JsonResponse, HttpRequest
-from django.conf import settings
 from django.utils import timezone
 from unittest.mock import patch, MagicMock, ANY
-
-# Configurar el entorno de Django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core_config.settings')
-django.setup()
-
-# Importar las vistas desde el módulo correcto
-from core_testing.views.views import (
-    TestingDashboardView,
-    InterfaceTestingView,
-    TestRunDetailView,
-    TestCoverageReportView,
-    run_test_api,
-    get_test_form
-)
-
-# Importar modelos
-from core_testing.models import TestRun, TestCoverage
-from core_testing.testing_interfaces.base import TestingInterface
-
-# Obtener el modelo de usuario
-User = get_user_model()
 
 # Configuración para las pruebas
 TEST_SETTINGS = {
@@ -48,84 +23,31 @@ TEST_SETTINGS = {
     ],
 }
 
-# Mock implementation of TestingInterface for testing
-class MockTestingInterface(TestingInterface):
-    """Mock implementation of TestingInterface for testing purposes."""
-    
-    name = "Mock Interface"
-    description = "A mock testing interface for unit tests"
-    version = "1.0.0"
-    
-    def get_available_tests(self) -> List[Dict[str, Any]]:
-        """Return a list of available tests."""
-        return [
-            {
-                'id': 'test1', 
-                'name': 'Test 1', 
-                'description': 'First test',
-                'parameters': [
-                    {'name': 'param1', 'type': 'text', 'required': True, 'label': 'Parameter 1'}
-                ]
-            },
-            {
-                'id': 'test2', 
-                'name': 'Test 2', 
-                'description': 'Second test',
-                'parameters': [
-                    {'name': 'param2', 'type': 'number', 'required': False, 'label': 'Parameter 2'}
-                ]
-            },
-        ]
-    
-    def get_test_form(self, test_id: str, request: Optional[HttpRequest] = None) -> str:
-        """Return HTML form for the specified test."""
-        tests = self.get_available_tests()
-        test = next((t for t in tests if t['id'] == test_id), None)
-        
-        if not test:
-            return "<div class='error'>Test not found</div>"
-            
-        form_fields = ""
-        for param in test.get('parameters', []):
-            required = 'required' if param.get('required', False) else ''
-            form_fields += f"""
-            <div class='form-group'>
-                <label for='{param['name']}'>{param.get('label', param['name'])}</label>
-                <input type='{param['type']}' id='{param['name']}' name='{param['name']}' {required}>
-            </div>
-            """
-            
-        return f"""
-        <form id='test-form' method='post'>
-            {form_fields}
-            <button type='submit' class='btn btn-primary'>Run Test</button>
-        </form>
-        """
-    
-    def run_test(self, test_id: str, **kwargs) -> Dict[str, Any]:
-        """Execute the specified test with the given parameters."""
-        tests = self.get_available_tests()
-        test = next((t for t in tests if t['id'] == test_id), None)
-        
-        if not test:
-            return {
-                'success': False,
-                'test_id': test_id,
-                'message': f'Test {test_id} not found',
-                'details': {}
-            }
-            
-        # Simulate test execution
-        return {
-            'success': True,
-            'test_id': test_id,
-            'message': f'Test {test_id} executed successfully',
-            'details': {
-                'parameters': kwargs,
-                'execution_time': 0.5,  # Simulated execution time in seconds
-                'timestamp': timezone.now().isoformat()
-            }
-        }
+# Importar las vistas desde el módulo correcto
+from core_testing.views.views import (
+    TestingDashboardView,
+    InterfaceTestingView,
+    TestRunDetailView,
+    CoverageReportView
+)
+
+# Importar funciones de utilidad
+from core_testing.views.views import (
+    run_test_api,
+    get_test_form
+)
+
+# Importar modelos
+from core_testing.models import TestRun, ModuleCoverage
+from core_testing.testing_interfaces.base import TestingView, TestingInterface
+from core_testing.testing_interfaces.test_interface import TestInterface
+
+# Obtener el modelo de usuario
+User = get_user_model()
+
+# Usamos la implementación concreta de TestInterface para las pruebas
+# en lugar de crear un mock que herede de la clase abstracta
+MockTestingInterface = TestInterface
 
 @override_settings(**TEST_SETTINGS)
 class TestingDashboardViewTest(TestCase):
@@ -179,28 +101,9 @@ class TestingDashboardViewTest(TestCase):
         self.assertEqual(context['interfaces']['mock_interface'].name, "Mock Interface")
 
 
-class TestInterface(TestingInterface):
-    """Interfaz de prueba para las pruebas unitarias."""
-    name = "Test Interface"
-    description = "Interfaz de prueba para pruebas unitarias"
-    
-    def get_available_tests(self):
-        return [{'id': 'test1', 'name': 'Test 1', 'description': 'Test de prueba'}]
-    
-    def get_test_form(self, test_id, request=None, initial=None):
-        return "<form>Test Form</form>"
-    
-    def run_test(self, test_id, **kwargs):
-        return {'status': 'success', 'message': 'Test ejecutado correctamente'}
-
-
-class TestInterfaceView(InterfaceTestingView):
-    """Vista de prueba que implementa InterfaceTestingView."""
+class TestInterfaceView(TestingView):
+    """Vista de prueba que implementa TestingView."""
     interface_class = TestInterface
-    
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.kwargs = {}
 
 
 @override_settings(**TEST_SETTINGS)
@@ -364,77 +267,76 @@ class TestRunDetailViewTest(TestCase):
         cls.user = User.objects.create_user(
             username='testuser',
             password='testpass123',
-            is_staff=True
+            email='test@example.com'
         )
         
         # Crear un test run de prueba
         cls.test_run = TestRun.objects.create(
-            test_id='test1',
-            interface_name='mock_interface',
-            status='completed',
-            result={'success': True, 'message': 'Test passed'},
-            created_by=cls.user
+            name='Test Run 1',
+            status='passed',
+            started_at=timezone.now(),
+            finished_at=timezone.now()
         )
     
     def setUp(self):
-        self.factory = RequestFactory()
-        self.mock_interface = MockTestingInterface()
+        self.client.force_login(self.user)
+    
+    def test_get_test_run_detail(self):
+        """Verifica que se pueda ver el detalle de un test run."""
+        url = reverse('core_testing:test_run_detail', args=[self.test_run.id])
+        response = self.client.get(url)
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'core_testing/test_run_detail.html')
+        self.assertEqual(response.context['test_run'], self.test_run)
+    
+    def test_get_nonexistent_test_run(self):
+        """Verifica que se maneje correctamente un test run que no existe."""
+        url = reverse('core_testing:test_run_detail', args=[9999])
+        response = self.client.get(url)
+        
+        self.assertEqual(response.status_code, 404)
     
     def test_get_context_data(self):
         """Verifica que el contexto incluya el test run."""
         view = TestRunDetailView()
-        view.kwargs = {'pk': self.test_run.pk}
-        view.request = self.factory.get('/')
-        view.request.user = self.user
+        view.kwargs = {'pk': self.test_run.id}
+        view.request = self.client.get('/').wsgi_request
         
         context = view.get_context_data()
         
         self.assertIn('test_run', context)
         self.assertEqual(context['test_run'], self.test_run)
-        self.assertEqual(context['test_run'].test_id, 'test1')
     
     def test_get_object(self):
         """Verifica que se pueda obtener el objeto TestRun correctamente."""
         view = TestRunDetailView()
-        view.kwargs = {'pk': self.test_run.pk}
+        view.kwargs = {'pk': self.test_run.id}
+        view.request = self.client.get('/').wsgi_request
         
         obj = view.get_object()
         
         self.assertEqual(obj, self.test_run)
-        self.assertEqual(obj.test_id, 'test1')
-        self.assertEqual(obj.interface_name, 'mock_interface')
     
     def test_get_object_does_not_exist(self):
         """Verifica que se lance una excepción cuando el TestRun no existe."""
         view = TestRunDetailView()
-        view.kwargs = {'pk': 9999}  # ID que no existe
+        view.kwargs = {'pk': 9999}
+        view.request = self.client.get('/').wsgi_request
         
         with self.assertRaises(Http404):
             view.get_object()
     
     def test_get_queryset(self):
         """Verifica que el queryset devuelva los test runs correctos."""
-        # Crear otro test run con un usuario diferente
-        other_user = User.objects.create_user(
-            username='otheruser',
-            password='testpass123',
-            is_staff=True
-        )
-        other_test_run = TestRun.objects.create(
-            test_id='test2',
-            interface_name='mock_interface',
-            status='completed',
-            created_by=other_user
-        )
-        
         view = TestRunDetailView()
         view.request = self.factory.get('/')
         view.request.user = self.user
         
-        # Debería devolver solo los test runs del usuario actual
+        # Debería devolver todos los test runs
         queryset = view.get_queryset()
         self.assertEqual(queryset.count(), 1)
-        self.assertEqual(queryset.first().test_id, 'test1')
+        self.assertEqual(queryset.first().name, 'Test Run 1')
     
     def test_get_test_run_detail(self):
         """Verifica que se pueda ver el detalle de un test run."""
@@ -459,8 +361,8 @@ class TestRunDetailViewTest(TestCase):
 
 
 @override_settings(**TEST_SETTINGS)
-class TestCoverageReportViewTest(TestCase):
-    """Pruebas para la vista TestCoverageReportView."""
+class CoverageReportViewTest(TestCase):
+    """Pruebas para la vista CoverageReportView."""
     
     @classmethod
     def setUpTestData(cls):
@@ -468,19 +370,26 @@ class TestCoverageReportViewTest(TestCase):
         cls.user = User.objects.create_user(
             username='testuser',
             password='testpass123',
-            is_staff=True
+            email='test@example.com'
         )
         
-        # Crear datos de cobertura de prueba
-        cls.coverage = TestCoverage.objects.create(
-            interface_name='mock_interface',
-            total_tests=10,
-            passed=8,
-            failed=1,
-            skipped=1,
-            coverage_percentage=80.0,
-            last_run=timezone.now(),
-            created_by=cls.user
+        # Crear una ejecución de prueba
+        cls.test_run = TestRun.objects.create(
+            name='Prueba de cobertura',
+            status='passed',
+            started_at=timezone.now(),
+            finished_at=timezone.now()
+        )
+        
+        # Crear datos de cobertura
+        cls.module_coverage = ModuleCoverage.objects.create(
+            module_name='core_testing.tests',
+            coverage_percent=80.0,
+            lines_covered=80,
+            lines_missing=20,
+            total_lines=100,
+            test_run=cls.test_run,
+            last_updated=timezone.now()
         )
     
     def setUp(self):
@@ -490,63 +399,85 @@ class TestCoverageReportViewTest(TestCase):
         """Verifica que se pueda ver el informe de cobertura."""
         url = reverse('core_testing:coverage_report')
         self.client.force_login(self.user)
+        
         response = self.client.get(url)
         
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'core_testing/coverage_report.html')
         self.assertIn('coverage_data', response.context)
+        self.assertGreaterEqual(len(response.context['coverage_data']), 1)
+        # Verificar que los datos de cobertura estén en el contexto
+        self.assertTrue(any(
+            cov.module_name == 'core_testing.tests' 
+            for cov in response.context['coverage_data']
+        ))
     
     def test_get_coverage_data(self):
         """Verifica que se obtengan correctamente los datos de cobertura."""
-        view = TestCoverageReportView()
-        view.request = self.factory.get('/')
-        view.request.user = self.user
+        view = CoverageReportView()
+        data = view.get_coverage_data()
         
-        coverage_data = view.get_coverage_data()
+        self.assertIn('total_coverage', data)
+        self.assertIn('by_module', data)
+        self.assertGreaterEqual(len(data['by_module']), 1)
         
-        self.assertEqual(len(coverage_data), 1)
-        self.assertEqual(coverage_data[0]['interface_name'], 'mock_interface')
-        self.assertEqual(coverage_data[0]['coverage_percentage'], 80.0)
-        self.assertEqual(coverage_data[0]['passed'], 8)
-        self.assertEqual(coverage_data[0]['failed'], 1)
-        self.assertEqual(coverage_data[0]['skipped'], 1)
+        # Verificar que los datos de cobertura estén en los resultados
+        module_data = next(
+            (m for m in data['by_module'] if m.module_name == 'core_testing.tests'),
+            None
+        )
+        self.assertIsNotNone(module_data)
+        self.assertEqual(module_data.coverage_percent, 80.0)
     
     def test_get_context_data(self):
         """Verifica que el contexto incluya los datos de cobertura."""
-        view = TestCoverageReportView()
+        view = CoverageReportView()
         view.request = self.factory.get('/')
         view.request.user = self.user
         
         context = view.get_context_data()
         
         self.assertIn('coverage_data', context)
-        self.assertEqual(len(context['coverage_data']), 1)
-        self.assertEqual(context['coverage_data'][0]['interface_name'], 'mock_interface')
-    
+        self.assertIn('total_coverage', context)
+        self.assertGreaterEqual(len(context['coverage_data']), 1)
+        
+        # Verificar que los datos de cobertura estén en el contexto
+        self.assertTrue(any(
+            cov.module_name == 'core_testing.tests' 
+            for cov in context['coverage_data']
+        ))
     def test_get_queryset(self):
-        """Verifica que el queryset devuelva solo los datos de cobertura del usuario."""
-        # Crear otro usuario y datos de cobertura
-        other_user = User.objects.create_user(
-            username='otheruser',
-            password='testpass123',
-            is_staff=True
-        )
-        TestCoverage.objects.create(
-            interface_name='other_interface',
-            total_tests=5,
-            passed=4,
-            failed=1,
-            skipped=0,
-            coverage_percentage=80.0,
-            last_run=timezone.now(),
-            created_by=other_user
+        """Verifica que el queryset devuelva los datos de cobertura."""
+        # Crear otra ejecución de prueba
+        other_test_run = TestRun.objects.create(
+            name='Otra prueba',
+            status='passed',
+            started_at=timezone.now(),
+            finished_at=timezone.now()
         )
         
-        view = TestCoverageReportView()
+        # Crear datos de cobertura adicionales
+        ModuleCoverage.objects.create(
+            module_name='other.module',
+            coverage_percent=90.0,
+            lines_covered=90,
+            lines_missing=10,
+            total_lines=100,
+            test_run=other_test_run,
+            last_updated=timezone.now()
+        )
+        
+        view = CoverageReportView()
         view.request = self.factory.get('/')
         view.request.user = self.user
         
-        # Debería devolver solo los datos de cobertura del usuario actual
-        queryset = view.get_queryset()
-        self.assertEqual(queryset.count(), 1)
-        self.assertEqual(queryset.first().interface_name, 'mock_interface')
+        # Obtener el queryset
+        qs = view.get_queryset()
+        
+        # Verificar que se devuelvan todos los datos de cobertura
+        self.assertEqual(qs.count(), 2)
+        
+        # Verificar que los datos de cobertura estén en el queryset
+        module_names = [m.module_name for m in qs]
+        self.assertIn('core_testing.tests', module_names)
+        self.assertIn('other.module', module_names)

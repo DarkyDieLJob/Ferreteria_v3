@@ -1,0 +1,78 @@
+"""
+Implementación de prueba de TestingInterface para usar en pruebas unitarias.
+"""
+from typing import Dict, List, Any, Optional
+from django.http import HttpRequest
+from .base import TestingInterface
+
+
+class TestInterface(TestingInterface):
+    """
+    Implementación de prueba de TestingInterface para usar en pruebas unitarias.
+    """
+    name = "Test Interface"
+    description = "Interfaz de prueba para pruebas unitarias"
+    version = "1.0.0"
+
+    def get_available_tests(self) -> List[Dict[str, Any]]:
+        """Retorna una lista de tests disponibles."""
+        return [
+            {
+                'id': 'test1',
+                'name': 'Test 1',
+                'description': 'Primer test de prueba',
+                'parameters': [
+                    {'name': 'param1', 'type': 'text', 'required': True}
+                ]
+            }
+        ]
+
+    def get_test_form(self, test_id: str, request: Optional[HttpRequest] = None) -> str:
+        """Retorna el formulario HTML para el test especificado."""
+        tests = self.get_available_tests()
+        test = next((t for t in tests if t['id'] == test_id), None)
+        
+        if not test:
+            return "<div class='error'>Test no encontrado</div>"
+            
+        form_fields = ""
+        for param in test.get('parameters', []):
+            required = 'required' if param.get('required', False) else ''
+            form_fields += f"""
+            <div class='form-group'>
+                <label for='{param['name']}'>{param.get('label', param['name'])}</label>
+                <input type='{param['type']}' id='{param['name']}' name='{param['name']}' {required}>
+            </div>
+            """
+            
+        return f"""
+        <form id='test-form' method='post'>
+            {form_fields}
+            <button type='submit' class='btn btn-primary'>Ejecutar Test</button>
+        </form>
+        """
+
+    def run_test(self, test_id: str, **kwargs) -> Dict[str, Any]:
+        """Ejecuta el test especificado."""
+        tests = self.get_available_tests()
+        test = next((t for t in tests if t['id'] == test_id), None)
+        
+        if not test:
+            return {
+                'success': False,
+                'test_id': test_id,
+                'message': f'Test {test_id} no encontrado',
+                'details': {}
+            }
+            
+        # Simular ejecución del test
+        return {
+            'success': True,
+            'test_id': test_id,
+            'message': f'Test {test_id} ejecutado exitosamente',
+            'details': {
+                'parameters': kwargs,
+                'execution_time': 0.5,  # Tiempo de ejecución simulado en segundos
+                'timestamp': '2025-07-04T13:00:00Z'  # Usar timezone.now() en producción
+            }
+        }

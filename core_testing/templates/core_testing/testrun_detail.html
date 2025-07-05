@@ -126,9 +126,10 @@
                 <div class="card-header bg-light d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Casos de Prueba</h5>
                     <div>
-                        <span class="badge bg-success">{{ test_run.testcase_set.filter.status='passed'|length }} exitosos</span>
-                        <span class="badge bg-danger">{{ test_run.testcase_set.filter.status='failed'|length }} fallidos</span>
-                        <span class="badge bg-warning">{{ test_run.testcase_set.filter.status='error'|length }} con error</span>
+                        <span class="badge bg-success">{{ test_stats.passed|default:0 }} exitosos</span>
+                        <span class="badge bg-danger">{{ test_stats.failed|default:0 }} fallidos</span>
+                        <span class="badge bg-warning">{{ test_stats.error|default:0 }} con error</span>
+                        <span class="badge bg-secondary">{{ test_stats.skipped|default:0 }} omitidos</span>
                     </div>
                 </div>
                 <div class="card-body p-0">

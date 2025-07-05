@@ -161,6 +161,119 @@ TEST_DISCOVER_TOP_LEVEL = BASE_DIR
 TEST_DISCOVER_PATTERN = 'test_*.py'
 ```
 
+## Flujo de Trabajo del Dashboard
+
+El dashboard de pruebas proporciona una interfaz centralizada para gestionar y ejecutar pruebas. A continuación, se describe el flujo de trabajo típico:
+
+### 1. Descubrimiento de Interfaces de Prueba
+
+El sistema descubre automáticamente las interfaces de prueba siguiendo estos pasos:
+
+1. **Búsqueda en `core_testing/testing_interfaces/`**:
+   - Busca archivos Python que contengan clases que hereden de `TestingInterface`
+   - Ignora archivos que comiencen con guión bajo (`_`)
+
+2. **Registro de Interfaces**:
+   - Cada interfaz se registra con un nombre único
+   - Se valida que implemente los métodos requeridos
+   - Se carga en memoria para su uso en el dashboard
+
+### 2. Estructura de una Interfaz de Prueba
+
+Cada interfaz debe seguir esta estructura básica:
+
+```python
+from core_testing.testing_interfaces.base import TestingInterface
+from django import forms
+
+class MiPruebaForm(forms.Form):
+    """Formulario de configuración para la prueba."""
+    parametro = forms.CharField(required=False, help_text="Descripción del parámetro")
+
+class MiInterfazDePrueba(TestingInterface):
+    """Documentación de la interfaz de prueba."""
+    
+    # Metadatos requeridos
+    name = "nombre_unico"
+    description = "Descripción detallada"
+    category = "Categoría"  # Opcional
+    
+    def get_available_tests(self):
+        """Devuelve las pruebas disponibles en esta interfaz."""
+        return [{
+            'name': 'nombre_prueba',
+            'description': 'Descripción de la prueba',
+            'form_class': MiPruebaForm,  # Opcional
+            'requires_form': True  # Si requiere configuración
+        }]
+    
+    def run_test(self, test_name, **kwargs):
+        """Ejecuta la prueba especificada."""
+        if test_name == 'nombre_prueba':
+            try:
+                # Lógica de la prueba
+                return {
+                    'success': True,
+                    'message': 'Prueba exitosa',
+                    'details': {}
+                }
+            except Exception as e:
+                return {
+                    'success': False,
+                    'message': f'Error: {str(e)}',
+                    'details': {}
+                }
+        
+        raise ValueError(f'Prueba no encontrada: {test_name}')
+    
+    def get_test_form(self, test_name):
+        """Devuelve el formulario para configurar la prueba."""
+        tests = self.get_available_tests()
+        test = next((t for t in tests if t['name'] == test_name), None)
+        if test and test.get('requires_form', False):
+            return test['form_class']
+        return None
+```
+
+### 3. Ciclo de Vida de una Prueba
+
+1. **Inicio**:
+   - El usuario accede al dashboard en `/testing/`
+   - El sistema carga todas las interfaces disponibles
+
+2. **Configuración**:
+   - El usuario selecciona una interfaz
+   - Si la prueba requiere configuración, se muestra un formulario
+   - El usuario completa los parámetros necesarios
+
+3. **Ejecución**:
+   - El usuario hace clic en "Ejecutar Prueba"
+   - El sistema crea un nuevo `TestRun`
+   - Se ejecuta la prueba en un hilo separado
+   - Los resultados se actualizan en tiempo real
+
+4. **Resultados**:
+   - Se muestran los resultados en el dashboard
+   - Se guarda el historial en la base de datos
+   - Se generan métricas y estadísticas
+
+### 4. Personalización del Dashboard
+
+Puedes personalizar la apariencia del dashboard:
+
+1. **Plantillas**:
+   - Sobrescribe `core_testing/dashboard.html`
+   - Usa `{% extends 'core_testing/base_testing.html' %}`
+   - Personaliza los bloques necesarios
+
+2. **Estilos CSS**:
+   - Agrega estilos personalizados en `static/core_testing/css/`
+   - Sobrescribe las clases existentes o agrega nuevas
+
+3. **JavaScript**:
+   - Agrega scripts personalizados en `static/core_testing/js/`
+   - Usa eventos del DOM para interactuar con el dashboard
+
 ## Solución de Problemas
 
 ### Problemas Comunes
