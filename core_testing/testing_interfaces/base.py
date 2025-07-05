@@ -15,6 +15,8 @@ class TestingInterface(ABC):
     Interfaz base para todos los módulos de testing.
     Define los métodos que deben implementar las interfaces de testing específicas.
     """
+    # Evitar que pytest intente recolectar esta clase como prueba
+    __test__ = False
     
     # Metadatos de la interfaz
     name: str = "Interfaz Base"
