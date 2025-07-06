@@ -89,16 +89,16 @@
                             </td>
                             <td>
                                 {% if run.test_cases.count > 0 %}
-                                    <span class="text-success">{{ run.test_cases.filter(status='passed').count }} ✔</span> /
-                                    <span class="text-danger">{{ run.test_cases.filter(status='failed').count }} ✖</span> /
-                                    <span class="text-warning">{{ run.test_cases.filter(status='error').count }} ⚠</span> /
-                                    <span class="text-muted">{{ run.test_cases.filter(status='skipped').count }} ⏭</span>
+                                    <span class="text-success">{{ run.passed_count|default:0 }} ✔</span> /
+                                    <span class="text-danger">{{ run.failed_count|default:0 }} ✖</span> /
+                                    <span class="text-warning">{{ run.error_count|default:0 }} ⚠</span> /
+                                    <span class="text-muted">{{ run.skipped_count|default:0 }} ⏭</span>
                                 {% else %}
                                     Sin pruebas
                                 {% endif %}
                             </td>
                             <td>
-                                <a href="{% url 'core_testing:run_detail' run.id %}" class="btn btn-sm btn-outline-primary">
+                                <a href="{% url 'core_testing:test_run_detail' run.id %}" class="btn btn-sm btn-outline-primary">
                                     <i class="fas fa-eye"></i> Ver
                                 </a>
                             </td>
