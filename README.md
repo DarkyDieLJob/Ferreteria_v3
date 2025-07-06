@@ -7,9 +7,47 @@ Sistema de gestión integral para ferretería con control de inventario, ventas,
 - 🛒 **Gestión de Inventario** - Control completo de productos, marcas y ubicaciones
 - 📦 **Sistema de Compras** - Gestión de proveedores y órdenes de compra
 - 💰 **Ventas y Facturación** - Punto de venta integrado con facturación electrónica
-- 📊 **Dashboard de Pruebas** - Monitoreo en tiempo real del estado de las pruebas
+- 🧪 **Sistema de Pruebas** - Framework de pruebas integrado con seguimiento de cobertura
+  - 📊 Dashboard interactivo de pruebas
+  - 📈 Tendencias de cobertura de código
+  - 🔍 Búsqueda y filtrado de ejecuciones de pruebas
+  - 📝 Documentación integrada con el flujo de desarrollo
 - 🔍 **Búsqueda Avanzada** - Búsqueda rápida de productos por múltiples criterios
 - 📱 **Interfaz Responsiva** - Funciona en dispositivos de escritorio y móviles
+
+## Flujo de Trabajo de Pruebas
+
+### Desarrollo de Pruebas
+
+1. **Rama de Desarrollo**
+   - Todo el desarrollo de pruebas se realiza en la rama `develop`
+   - Cada cambio debe incluir pruebas unitarias y de integración
+   - Se debe mantener la cobertura de código por encima del 80%
+
+2. **Ejecución de Pruebas**
+   ```bash
+   # Ejecutar todas las pruebas con cobertura
+   python manage.py run_tests --coverage
+   
+   # Ejecutar pruebas específicas
+   python manage.py test core_testing.tests.test_basic
+   
+   # Verificar cobertura de código
+   coverage report -m
+   ```
+
+3. **Integración con Documentación**
+   - Los cambios en las pruebas deben documentarse en `TESTING_PLAN.md`
+   - Se debe actualizar `PLAN_PRUEBAS.md` con cualquier cambio en la estrategia de pruebas
+   - Los PRs de `develop` a `documentation` deben incluir actualizaciones de documentación
+
+4. **Flujo de Integración**
+   ```mermaid
+   graph LR
+     A[develop] -->|PR| B[documentation]
+     B -->|PR| C[pre-release]
+     C -->|PR| D[main]
+   ```
 
 ## Instalación
 

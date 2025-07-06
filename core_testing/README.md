@@ -1,9 +1,31 @@
-# 🧪 Módulo de Testing - Ferretería
+# 🧪 Módulo de Pruebas - Core Testing
+
+> **Última actualización**: 06/07/2025  
+> **Versión estable**: 1.0.0
 
 ## 📝 Descripción
 Módulo integral de pruebas para la aplicación de Ferretería, diseñado para facilitar la ejecución, monitoreo y gestión de pruebas funcionales y de integración.
 
 ## 🚀 Características Principales
+
+- ✅ **Ejecución de Pruebas**
+  - Soporte para pruebas unitarias y de integración
+  - Ejecución en paralelo para mayor velocidad
+  - Filtrado por módulo o categoría
+
+- 📊 **Dashboard Interactivo**
+  - Monitoreo en tiempo real
+  - Visualización de tendencias
+  - Detalles de ejecuciones pasadas
+
+- 📈 **Cobertura de Código**
+  - Reportes detallados
+  - Identificación de código no cubierto
+  - Seguimiento histórico
+
+- 🔄 **Integración**
+  - Flujo de trabajo con ramas `develop` → `documentation` → `pre-release`
+  - Compatible con el sistema CI/CD existente
 
 - 🖥️ Dashboard interactivo para monitoreo de pruebas
 - 🔄 Ejecución de pruebas con un solo comando (`run_tests`)

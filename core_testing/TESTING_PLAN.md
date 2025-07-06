@@ -3,12 +3,14 @@
 ## Objetivo
 Mejorar la cobertura y calidad de las pruebas en el módulo core_testing, asegurando que las pruebas sean relevantes para la implementación actual del dashboard simplificado.
 
-## Estado Actual (05/07/2025)
+## Estado Actual (06/07/2025)
 - ✅ Se han eliminado pruebas obsoletas relacionadas con interfaces antiguas
 - ✅ Se han actualizado las pruebas para reflejar la implementación actual del dashboard
 - ✅ Se ha corregido la configuración de URLs y vistas para las pruebas
 - ✅ Se ha mejorado la cobertura de pruebas para las vistas principales
 - ✅ Se han corregido errores en las plantillas y filtros personalizados
+- ✅ Se ha actualizado la documentación del plan de pruebas
+- ✅ Se ha corregido el flujo de trabajo para integración con la rama documentation
 
 ## Fase 1: Limpieza de Pruebas Obsoletas (Completada ✅)
 
