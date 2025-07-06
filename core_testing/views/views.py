@@ -127,17 +127,17 @@ class TestRunDetailView(LoginRequiredMixin, View):
     """Vista para mostrar los detalles de una ejecución de pruebas."""
     template_name = 'core_testing/testrun_detail.html'
     
-    def get(self, request: HttpRequest, run_id: int) -> HttpResponse:
+    def get(self, request: HttpRequest, pk: int) -> HttpResponse:
         """Muestra los detalles de una ejecución de pruebas.
         
         Args:
             request: Objeto HttpRequest
-            run_id: ID de la ejecución de pruebas
+            pk: ID de la ejecución de pruebas
             
         Returns:
             HttpResponse con los detalles de la ejecución
         """
-        test_run = get_object_or_404(TestRun, id=run_id)
+        test_run = get_object_or_404(TestRun, id=pk)
         test_cases = test_run.test_cases.all()
         
         # Obtener la cobertura del módulo principal (si existe)
@@ -788,7 +788,25 @@ class TestRunListView(LoginRequiredMixin, ListView):
                 Q(id__icontains=search)
             )
             
-        return queryset.select_related('triggered_by')
+        return queryset.prefetch_related('test_cases').select_related('triggered_by')
+    
+    def get_context_data(self, **kwargs):
+        """
+        Agrega conteos de pruebas por estado al contexto.
+        """
+        context = super().get_context_data(**kwargs)
+        
+        # Si estamos en una página de resultados
+        if 'page_obj' in context:
+            # Pre-cargar los conteos para todas las ejecuciones en la página
+            test_runs = context['page_obj'].object_list
+            for run in test_runs:
+                run.passed_count = run.test_cases.filter(status='passed').count()
+                run.failed_count = run.test_cases.filter(status='failed').count()
+                run.error_count = run.test_cases.filter(status='error').count()
+                run.skipped_count = run.test_cases.filter(status='skipped').count()
+        
+        return context
 
 
 class ModuleCoverageDetailView(LoginRequiredMixin, DetailView):
@@ -847,39 +865,6 @@ class TestHistoryView(LoginRequiredMixin, TemplateView):
             'success_rate': success_rate,
         })
         return context
-
-
-class CoverageTrendsView(LoginRequiredMixin, TemplateView):
-    """
-    Vista para mostrar tendencias de cobertura a lo largo del tiempo.
-    """
-    template_name = 'core_testing/coverage_trends.html'
-    
-    def get_context_data(self, **kwargs):
-        """
-        Obtiene los datos para mostrar las tendencias de cobertura.
-        """
-        context = super().get_context_data(**kwargs)
-        
-        # Obtener datos de cobertura para gráficos
-        modules = ModuleCoverage.objects.values('module_name').distinct()
-        trends_data = {}
-        
-        for module in modules:
-            module_name = module['module_name']
-            coverage_data = ModuleCoverage.objects.filter(
-                module_name=module_name
-            ).order_by('last_updated').values('last_updated', 'coverage_percent')
-            
-            if coverage_data.exists():
-                trends_data[module_name] = [
-                    (entry['last_updated'].strftime('%Y-%m-%d'), entry['coverage_percent'])
-                    for entry in coverage_data
-                ]
-        
-        context['trends_data'] = trends_data
-        return context
-
 
 class AppDetailView(LoginRequiredMixin, TemplateView):
     """Vista para mostrar detalles de una aplicación específica.
