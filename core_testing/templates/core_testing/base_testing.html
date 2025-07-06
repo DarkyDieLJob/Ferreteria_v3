@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% load testing_filters %}
+
+{% block extra_css %}
+{{ block.super }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+    /* Estilos generales */
+    body {
+        background-color: #f8f9fa;
+    }
+    
+    /* Barra de navegación */
+    .navbar {
+        box-shadow: 0 2px 4px rgba(0,0,0,.1);
+    }
+    
+    /* Tarjetas */
+    .card {
+        border: none;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        margin-bottom: 1.5rem;
+    }
+    
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid rgba(0,0,0,.125);
+        font-weight: 600;
+    }
+    
+    /* Botones */
+    .btn {
+        border-radius: 0.25rem;
+        font-weight: 500;
+    }
+    
+    /* Badges */
+    .badge {
+        font-weight: 500;
+        padding: 0.35em 0.65em;
+    }
+    
+    /* Formularios */
+    .form-control, .form-select {
+        border-radius: 0.25rem;
+        padding: 0.375rem 0.75rem;
+    }
+    
+    /* Tablas */
+    .table {
+        margin-bottom: 0;
+    }
+    
+    .table th {
+        border-top: none;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+        color: #6c757d;
+    }
+    
+    /* Progreso */
+    .progress {
+        height: 0.5rem;
+        border-radius: 0.25rem;
+    }
+    
+    /* Alertas */
+    .alert {
+        border: none;
+        border-radius: 0.5rem;
+    }
+    
+    /* Breadcrumb */
+    .breadcrumb {
+        background-color: transparent;
+        padding: 0.5rem 0;
+        margin-bottom: 1rem;
+    }
+    
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: ">";
+    }
+    
+    /* Estilos específicos para el dashboard */
+    .stat-card {
+        border-left: 4px solid #0d6efd;
+    }
+    
+    .stat-card .stat-value {
+        font-size: 1.75rem;
+        font-weight: 600;
+        line-height: 1.2;
+    }
+    
+    .stat-card .stat-label {
+        color: #6c757d;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+    }
+    
+    /* Estilos para los resultados de los tests */
+    .test-result {
+        padding: 0.5rem 1rem;
+        margin-bottom: 0.5rem;
+        border-radius: 0.25rem;
+    }
+    
+    .test-result.passed {
+        background-color: rgba(25, 135, 84, 0.1);
+        border-left: 4px solid #198754;
+    }
+    
+    .test-result.failed {
+        background-color: rgba(220, 53, 69, 0.1);
+        border-left: 4px solid #dc3545;
+    }
+    
+    .test-result.error {
+        background-color: rgba(255, 193, 7, 0.1);
+        border-left: 4px solid #ffc107;
+    }
+    
+    .test-result.skipped {
+        background-color: rgba(108, 117, 125, 0.1);
+        border-left: 4px solid #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block base_content %}
+<div class="container-fluid mt-4">
+    {% block breadcrumb %}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            {% block breadcrumb_items %}{% endblock %}
+        </ol>
+    </nav>
+    {% endblock %}
+    
+    {% block page_header %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2">{% block page_title %}Título de la Página{% endblock %}</h1>
+                    <p class="lead mb-0">{% block page_subtitle %}{% endblock %}</p>
+                </div>
+                {% block page_actions %}{% endblock %}
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+    
+    {% block content %}{% endblock %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Código JavaScript común para todas las páginas de testing
+$(document).ready(function() {
+    // Inicializar tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
+    // Inicializar popovers
+    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+    var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+        return new bootstrap.Popover(popoverTriggerEl);
+    });
+});
+</script>
+{% endblock %}

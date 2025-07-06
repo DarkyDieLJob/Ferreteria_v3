@@ -1,16 +1,39 @@
 # Ferretería Paoli v3
 
+Sistema de gestión integral para ferretería con control de inventario, ventas, compras y más.
+
+## Características Principales
+
+- 🛒 **Gestión de Inventario** - Control completo de productos, marcas y ubicaciones
+- 📦 **Sistema de Compras** - Gestión de proveedores y órdenes de compra
+- 💰 **Ventas y Facturación** - Punto de venta integrado con facturación electrónica
+- 📊 **Dashboard de Pruebas** - Monitoreo en tiempo real del estado de las pruebas
+- 🔍 **Búsqueda Avanzada** - Búsqueda rápida de productos por múltiples criterios
+- 📱 **Interfaz Responsiva** - Funciona en dispositivos de escritorio y móviles
+
 ## Instalación
 
 ### 1. Requisitos del Sistema
 
-- Python 3.12.9
-- Servicios adicionales para Raspbian:
-  - Unicorn (para producción)
-  - Nginx (para producción)
-  - Docker (para desarrollo)
-- Visual Studio Code (VSCode)
-  - Extension: Conventional Commits
+#### Desarrollo
+- Python 3.12.9+
+- PostgreSQL 13+
+- Redis (para caché y colas)
+- Docker y Docker Compose (opcional)
+
+#### Producción
+- Nginx
+- Gunicorn o uWSGI
+- PostgreSQL 13+
+- Redis
+- Supervisor o systemd
+
+#### Herramientas de Desarrollo Recomendadas
+- Visual Studio Code con extensiones:
+  - Python
+  - Django
+  - Docker
+  - Conventional Commits
 
 ### 2. Instalación en Raspbian
 
@@ -175,8 +198,109 @@
 
 2. **Instalar Dependencias**
    ```bash
+   # Instalar dependencias del sistema
+   sudo apt-get install python3-dev libpq-dev
+   
+   # Crear y activar entorno virtual
+   python -m venv venv
+   source venv/bin/activate  # En Windows: venv\Scripts\activate
+   
+   # Instalar dependencias de Python
    pip install -r requirements.txt
    ```
+
+## Ejecución de Pruebas
+
+El sistema incluye un conjunto completo de pruebas automatizadas que deben ejecutarse usando el comando `run_tests` para garantizar el registro adecuado de resultados en el dashboard:
+
+```bash
+# Ejecutar todas las pruebas y generar reporte de cobertura
+python manage.py run_tests --coverage
+
+# Ejecutar pruebas de un módulo específico
+python manage.py run_tests core_testing.tests
+
+# Ejecutar pruebas en paralelo (más rápido)
+python manage.py run_tests --parallel=4
+
+# Ver todas las opciones disponibles
+python manage.py run_tests --help
+
+# Usar el dashboard de pruebas (requiere servidor en ejecución)
+python manage.py runserver
+# Luego acceder a: http://localhost:8000/testing/dashboard/
+```
+
+> **Importante**: No uses `pytest` directamente, ya que no registrará los resultados en el dashboard. Siempre usa `python manage.py run_tests` para ejecutar las pruebas.
+
+## Estructura del Proyecto
+
+```
+ferreteria_v3/
+├── core/                     # Configuración principal de Django
+├── core_testing/            # Módulo de pruebas automatizadas
+│   ├── management/commands/  # Comandos personalizados
+│   ├── static/               # Archivos estáticos (CSS, JS)
+│   ├── templates/            # Plantillas del dashboard de pruebas
+│   └── tests/                # Pruebas unitarias
+├── facturacion/             # Módulo de facturación
+├── templates/               # Plantillas base
+└── utils/                   # Utilidades compartidas
+```
+
+## Documentación
+
+- [Guía de Desarrollo](docs/desarrollo.md)
+- [Sistema de Pruebas](docs/SISTEMA_DE_PRUEBAS.md)
+- [Estructura de la Documentación](docs/ESTRUCTURA_DOCUMENTACION.md)
+- [Flujo de Trabajo](docs/FLUJO_TRABAJO.md)
+
+## Contribución
+
+1. Crear un fork del repositorio
+2. Crear una rama para tu característica (`git checkout -b feature/nueva-funcionalidad`)
+3. Hacer commit de tus cambios (`git commit -am 'feat: agregar nueva funcionalidad'`)
+4. Hacer push a la rama (`git push origin feature/nueva-funcionalidad`)
+5. Crear un Pull Request
+
+## Licencia
+
+Este proyecto está bajo la licencia MIT. Ver el archivo [LICENSE](LICENSE) para más detalles.
+
+## Pruebas
+
+El proyecto incluye un sistema completo de pruebas automatizadas. Para más información, consulta la [documentación detallada de pruebas](./docs/SISTEMA_DE_PRUEBAS.md).
+
+### Ejecutar pruebas
+
+```bash
+# Todas las pruebas
+python manage.py test
+
+# Pruebas específicas del módulo core_testing
+python manage.py test core_testing
+
+# Con mayor verbosidad
+python manage.py test --verbosity=2
+```
+
+## Documentación
+
+La documentación detallada del proyecto se encuentra en el directorio `docs/`:
+
+- [Sistema de Pruebas](./docs/SISTEMA_DE_PRUEBAS.md): Guía completa sobre el sistema de pruebas automatizadas.
+- [Estructura de Documentación](./docs/ESTRUCTURA_DOCUMENTACION.md): Explicación de la estructura de documentación del proyecto.
+- [Flujo de Trabajo](./docs/FLUJO_TRABAJO.md): Guía sobre el flujo de desarrollo y contribución.
+
+Para generar documentación adicional, puedes usar:
+
+```bash
+# Instalar dependencias de documentación
+pip install -r docs/requirements.txt
+
+# Generar documentación
+cd docs && make html
+```
 
 3. **Inicialización de la Base de Datos**
    ```bash
@@ -190,6 +314,41 @@
    ```
    El sistema estará disponible en `http://localhost:8000`
 
+## Documentación del Proyecto
+
+El proyecto sigue una estructura de documentación estandarizada para mantener el código bien documentado y fácil de mantener.
+
+### 1. Estructura de Documentación
+
+Cada aplicación del proyecto sigue esta estructura:
+
+```
+cada_aplicacion/
+├── docs/                 # Documentación detallada
+│   ├── ARQUITECTURA.md   # Diseño de la aplicación
+│   └── FLUJOS.md        # Flujos de trabajo principales
+├── README.md            # Documentación básica
+└── OBJETIVOS.md         # Objetivos y roadmap
+```
+
+### 2. Generar Documentación
+
+Para generar la estructura de documentación en todas las aplicaciones:
+
+```bash
+# Instalar dependencias si es necesario
+pip install -r requirements.txt
+
+# Generar documentación
+python scripts/crear_documentacion.py
+```
+
+### 3. Documentación Detallada
+
+Para más información sobre la documentación, consulta:
+- [Guía de Documentación](docs/GUIA_DOCUMENTACION.md)
+- [Estructura de Documentación](docs/ESTRUCTURA_DOCUMENTACION.md)
+
 ## Flujo de Trabajo de Desarrollo
 
 ### 1. Estructura de Ramas
@@ -199,7 +358,15 @@
 - `feature/*`: Ramas de características específicas
 - `hotfix/*`: Ramas para correcciones urgentes
 
-### 2. Proceso de Desarrollo
+### 2. Documentación de Cambios
+
+Al hacer cambios en el código, asegúrate de:
+
+1. Actualizar la documentación afectada
+2. Usar commits semánticos
+3. Documentar cambios importantes en CHANGELOG.md
+
+### 3. Proceso de Desarrollo
 
 1. **Crear una nueva característica**:
    ```bash

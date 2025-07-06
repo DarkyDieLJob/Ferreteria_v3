@@ -1,0 +1,92 @@
+{% if result.success %}
+    <div class="alert alert-success">
+        <i class="fas fa-check-circle"></i> {{ result.message }}
+    </div>
+    
+    {% if result.data %}
+        <h6>Datos del resultado:</h6>
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm">
+                <tbody>
+                    {% for key, value in result.data.items %}
+                    <tr>
+                        <th style="width: 30%;">{{ key|title }}</th>
+                        <td>
+                            {% if value is mapping %}
+                                <pre class="mb-0">{{ value|pprint }}</pre>
+                            {% else %}
+                                {{ value|default:"-" }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+    
+    {% if result.warnings %}
+        <div class="alert alert-warning mt-3">
+            <h6><i class="fas fa-exclamation-triangle"></i> Advertencias:</h6>
+            <ul class="mb-0">
+                {% for warning in result.warnings %}
+                    <li>{{ warning }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+    
+{% else %}
+    <div class="alert alert-danger">
+        <i class="fas fa-times-circle"></i> {{ result.message }}
+    </div>
+    
+    {% if result.errors %}
+        <div class="mt-3">
+            <h6>Errores:</h6>
+            {% if result.errors is mapping %}
+                <ul class="mb-0">
+                    {% for field, errors in result.errors.items %}
+                        <li><strong>{{ field|title }}:</strong>
+                            <ul>
+                                {% for error in errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <ul>
+                    {% for error in result.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+    {% endif %}
+    
+    {% if result.traceback %}
+        <div class="mt-3">
+            <h6>Traceback:</h6>
+            <pre class="bg-light p-3" style="max-height: 300px; overflow: auto;">{{ result.traceback }}</pre>
+        </div>
+    {% endif %}
+{% endif %}
+
+{% if result.duration is not None %}
+    <div class="text-muted small mt-2">
+        Tiempo de ejecución: {{ result.duration|floatformat:3 }} segundos
+    </div>
+{% endif %}
+
+{% if result.test_id %}
+    <div class="mt-3">
+        <button class="btn btn-sm btn-outline-secondary" onclick="$('#testResults').hide();">
+            <i class="fas fa-arrow-left"></i> Volver
+        </button>
+        <button class="btn btn-sm btn-primary" onclick="$('#testForm').submit();">
+            <i class="fas fa-redo"></i> Reintentar
+        </button>
+    </div>
+{% endif %}
