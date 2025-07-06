@@ -1,16 +1,39 @@
 # Ferretería Paoli v3
 
+Sistema de gestión integral para ferretería con control de inventario, ventas, compras y más.
+
+## Características Principales
+
+- 🛒 **Gestión de Inventario** - Control completo de productos, marcas y ubicaciones
+- 📦 **Sistema de Compras** - Gestión de proveedores y órdenes de compra
+- 💰 **Ventas y Facturación** - Punto de venta integrado con facturación electrónica
+- 📊 **Dashboard de Pruebas** - Monitoreo en tiempo real del estado de las pruebas
+- 🔍 **Búsqueda Avanzada** - Búsqueda rápida de productos por múltiples criterios
+- 📱 **Interfaz Responsiva** - Funciona en dispositivos de escritorio y móviles
+
 ## Instalación
 
 ### 1. Requisitos del Sistema
 
-- Python 3.12.9
-- Servicios adicionales para Raspbian:
-  - Unicorn (para producción)
-  - Nginx (para producción)
-  - Docker (para desarrollo)
-- Visual Studio Code (VSCode)
-  - Extension: Conventional Commits
+#### Desarrollo
+- Python 3.12.9+
+- PostgreSQL 13+
+- Redis (para caché y colas)
+- Docker y Docker Compose (opcional)
+
+#### Producción
+- Nginx
+- Gunicorn o uWSGI
+- PostgreSQL 13+
+- Redis
+- Supervisor o systemd
+
+#### Herramientas de Desarrollo Recomendadas
+- Visual Studio Code con extensiones:
+  - Python
+  - Django
+  - Docker
+  - Conventional Commits
 
 ### 2. Instalación en Raspbian
 
@@ -175,8 +198,74 @@
 
 2. **Instalar Dependencias**
    ```bash
+   # Instalar dependencias del sistema
+   sudo apt-get install python3-dev libpq-dev
+   
+   # Crear y activar entorno virtual
+   python -m venv venv
+   source venv/bin/activate  # En Windows: venv\Scripts\activate
+   
+   # Instalar dependencias de Python
    pip install -r requirements.txt
    ```
+
+## Ejecución de Pruebas
+
+El sistema incluye un conjunto completo de pruebas automatizadas que deben ejecutarse usando el comando `run_tests` para garantizar el registro adecuado de resultados en el dashboard:
+
+```bash
+# Ejecutar todas las pruebas y generar reporte de cobertura
+python manage.py run_tests --coverage
+
+# Ejecutar pruebas de un módulo específico
+python manage.py run_tests core_testing.tests
+
+# Ejecutar pruebas en paralelo (más rápido)
+python manage.py run_tests --parallel=4
+
+# Ver todas las opciones disponibles
+python manage.py run_tests --help
+
+# Usar el dashboard de pruebas (requiere servidor en ejecución)
+python manage.py runserver
+# Luego acceder a: http://localhost:8000/testing/dashboard/
+```
+
+> **Importante**: No uses `pytest` directamente, ya que no registrará los resultados en el dashboard. Siempre usa `python manage.py run_tests` para ejecutar las pruebas.
+
+## Estructura del Proyecto
+
+```
+ferreteria_v3/
+├── core/                     # Configuración principal de Django
+├── core_testing/            # Módulo de pruebas automatizadas
+│   ├── management/commands/  # Comandos personalizados
+│   ├── static/               # Archivos estáticos (CSS, JS)
+│   ├── templates/            # Plantillas del dashboard de pruebas
+│   └── tests/                # Pruebas unitarias
+├── facturacion/             # Módulo de facturación
+├── templates/               # Plantillas base
+└── utils/                   # Utilidades compartidas
+```
+
+## Documentación
+
+- [Guía de Desarrollo](docs/desarrollo.md)
+- [Sistema de Pruebas](docs/SISTEMA_DE_PRUEBAS.md)
+- [Estructura de la Documentación](docs/ESTRUCTURA_DOCUMENTACION.md)
+- [Flujo de Trabajo](docs/FLUJO_TRABAJO.md)
+
+## Contribución
+
+1. Crear un fork del repositorio
+2. Crear una rama para tu característica (`git checkout -b feature/nueva-funcionalidad`)
+3. Hacer commit de tus cambios (`git commit -am 'feat: agregar nueva funcionalidad'`)
+4. Hacer push a la rama (`git push origin feature/nueva-funcionalidad`)
+5. Crear un Pull Request
+
+## Licencia
+
+Este proyecto está bajo la licencia MIT. Ver el archivo [LICENSE](LICENSE) para más detalles.
 
 ## Pruebas
 

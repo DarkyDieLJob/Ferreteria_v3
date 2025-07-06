@@ -1,17 +1,19 @@
-# Módulo de Testing - Ferretería
+# 🧪 Módulo de Testing - Ferretería
 
-## Descripción
-Módulo de pruebas para la aplicación de Ferretería, diseñado para facilitar la ejecución de pruebas funcionales y de integración en el sistema.
+## 📝 Descripción
+Módulo integral de pruebas para la aplicación de Ferretería, diseñado para facilitar la ejecución, monitoreo y gestión de pruebas funcionales y de integración.
 
-## Características Principales
+## 🚀 Características Principales
 
-- Interfaz web para ejecutar pruebas
-- Gestión de interfaces de prueba personalizables
-- Seguimiento de ejecuciones de pruebas
-- Reportes de cobertura de código
-- Integración con el sistema existente
+- 🖥️ Dashboard interactivo para monitoreo de pruebas
+- 🔄 Ejecución de pruebas con un solo comando (`run_tests`)
+- 📊 Reportes detallados de cobertura de código
+- 🔍 Seguimiento histórico de ejecuciones
+- ⚡ Ejecución en paralelo para mayor velocidad
+- 📈 Métricas y estadísticas de pruebas
+- 🔔 Alertas y notificaciones de fallos
 
-## Configuración Inicial
+## ⚙️ Configuración Inicial
 
 1. Asegúrate de que la aplicación esté en `INSTALLED_APPS` en `settings.py`:
    ```python
@@ -22,12 +24,21 @@ Módulo de pruebas para la aplicación de Ferretería, diseñado para facilitar 
 
 2. Configura la base de datos para pruebas en `local_settings.py`:
    ```python
-   DATABASES = {
-       'default': {
-           'ENGINE': 'django.db.backends.sqlite3',
-           'NAME': BASE_DIR / 'test_db.sqlite3',
+   # Configuración para entorno de pruebas
+   TESTING = DEBUG  # Asume modo de pruebas cuando DEBUG es True
+   
+   if TESTING:
+       DATABASES = {
+           'default': {
+               'ENGINE': 'django.db.backends.sqlite3',
+               'NAME': BASE_DIR / 'test_db.sqlite3',
+           }
        }
-   }
+       
+       # Configuración específica para pruebas
+       PASSWORD_HASHERS = [
+           'django.contrib.auth.hashers.MD5PasswordHasher',
+       ]
    ```
 
 3. Ejecuta las migraciones:
@@ -35,7 +46,43 @@ Módulo de pruebas para la aplicación de Ferretería, diseñado para facilitar 
    python manage.py migrate core_testing
    ```
 
-## Uso
+## 🚀 Uso
+
+### Ejecución de Pruebas
+
+> **Importante**: Siempre usa `python manage.py run_tests` en lugar de `pytest` directamente para garantizar el registro adecuado de resultados.
+
+### 🛠️ Comandos de Gestión
+
+### run_tests
+
+```bash
+# Ejecutar todas las pruebas
+python manage.py run_tests
+
+# Ejecutar con cobertura detallada
+python manage.py run_tests --coverage
+
+# Ejecutar pruebas de una app específica
+python manage.py run_tests nombre_app
+
+# Ejecutar pruebas en paralelo
+python manage.py run_tests --parallel=4
+
+# No detenerse al primer fallo
+python manage.py run_tests --no-failfast
+
+# Mantener la base de datos de pruebas
+python manage.py run_tests --keepdb
+```
+
+### update_coverage
+
+Actualiza las métricas de cobertura sin ejecutar pruebas:
+
+```bash
+python manage.py update_coverage
+```
 
 ### Panel de Pruebas
 
@@ -46,8 +93,14 @@ Módulo de pruebas para la aplicación de Ferretería, diseñado para facilitar 
 
 2. Accede al panel de pruebas en:
    ```
-   http://localhost:8000/testing/
+   http://localhost:8000/testing/dashboard/
    ```
+
+   El dashboard muestra:
+   - Resumen de pruebas ejecutadas
+   - Estadísticas de cobertura
+   - Historial de ejecuciones
+   - Detalles de pruebas fallidas
 
 ### Ejecución de Pruebas desde la Línea de Comandos
 
