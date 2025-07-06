@@ -1,11 +1,15 @@
 """
 Pruebas para la clase base de interfaces de prueba.
 """
+import pytest
 from django.test import TestCase, RequestFactory
 from django.http import HttpRequest
 from unittest.mock import patch, MagicMock
 
 from core_testing.testing_interfaces.base import TestingInterface, TestingView
+
+# Evitar que pytest intente recolectar pruebas de la clase base
+TestingInterface.__test__ = False
 
 
 class TestingInterfaceTest(TestCase):
@@ -15,14 +19,23 @@ class TestingInterfaceTest(TestCase):
         """Verifica que los métodos abstractos estén definidos."""
         # Crear una implementación concreta para probar
         class ConcreteTestingInterface(TestingInterface):
-            def get_tests(self):
-                return []
+                name = "Concrete Interface"
+                description = "Implementación concreta para pruebas"
+                version = "1.0.0"
                 
-            def run_test(self, test_id, **kwargs):
-                return {}
-                
-            def get_test_form(self, test_id, request=None):
-                return ""
+                def get_available_tests(self) -> list[dict[str, any]]:
+                    return []
+                    
+                def run_test(self, test_id: str, **kwargs) -> dict[str, any]:
+                    return {
+                        'success': True,
+                        'test_id': test_id,
+                        'message': 'Test ejecutado correctamente',
+                        'details': {}
+                    }
+                    
+                def get_test_form(self, test_id: str, request: HttpRequest | None = None) -> str:
+                    return "<form>Test Form</form>"
         
         # Verificar que se puede instanciar sin errores
         interface = ConcreteTestingInterface()
@@ -55,14 +68,23 @@ class TestingViewTest(TestCase):
     def test_get_interface_implemented(self):
         """Verifica que get_interface() devuelva la interfaz correcta."""
         class MockInterface(TestingInterface):
-            def get_tests(self):
+            name = "Mock Interface"
+            description = "Interfaz simulada para pruebas"
+            version = "1.0.0"
+            
+            def get_available_tests(self) -> list[dict[str, any]]:
                 return []
                 
-            def run_test(self, test_id, **kwargs):
-                return {}
+            def run_test(self, test_id: str, **kwargs) -> dict[str, any]:
+                return {
+                    'success': True,
+                    'test_id': test_id,
+                    'message': 'Test simulado ejecutado',
+                    'details': {}
+                }
                 
-            def get_test_form(self, test_id, request=None):
-                return ""
+            def get_test_form(self, test_id: str, request: HttpRequest | None = None) -> str:
+                return "<form>Test Form</form>"
                 
         class TestView(TestingView):
             def get_interface(self):
@@ -76,15 +98,27 @@ class TestingViewTest(TestCase):
         """Verifica que get_context_data() incluya la interfaz en el contexto."""
         class MockInterface(TestingInterface):
             name = "Mock Interface"
+            description = "Interfaz simulada para pruebas"
+            version = "1.0.0"
             
-            def get_tests(self):
-                return [{'id': 'test1', 'name': 'Test 1'}]
+            def get_available_tests(self) -> list[dict[str, any]]:
+                return [{
+                    'id': 'test1', 
+                    'name': 'Test 1',
+                    'description': 'Test de ejemplo',
+                    'form_required': False
+                }]
                 
-            def run_test(self, test_id, **kwargs):
-                return {}
+            def run_test(self, test_id: str, **kwargs) -> dict[str, any]:
+                return {
+                    'success': True,
+                    'test_id': test_id,
+                    'message': 'Test simulado ejecutado',
+                    'details': {}
+                }
                 
-            def get_test_form(self, test_id, request=None):
-                return ""
+            def get_test_form(self, test_id: str, request: HttpRequest | None = None) -> str:
+                return "<form>Test Form</form>"
                 
         class TestView(TestingView):
             template_name = 'core_testing/base_testing.html'

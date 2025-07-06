@@ -1,34 +1,219 @@
-# Sistema de Pruebas - Ferretería
+# 🧪 Sistema de Pruebas - Ferretería
 
 ## Visión General
 
-El módulo `core_testing` proporciona un sistema completo para la ejecución y gestión de pruebas en la aplicación de Ferretería. Este documento detalla la arquitectura, configuración y uso del sistema de pruebas.
+El módulo `core_testing` proporciona un sistema completo para la ejecución, monitoreo y gestión de pruebas en la aplicación de Ferretería. Incluye un dashboard interactivo, reportes de cobertura y herramientas para la ejecución de pruebas tanto en desarrollo como en producción.
 
 ## Tabla de Contenidos
 
 1. [Arquitectura](#arquitectura)
 2. [Configuración](#configuración)
-3. [Uso del Panel de Pruebas](#uso-del-panel-de-pruebas)
-4. [Creación de Pruebas Personalizadas](#creación-de-pruebas-personalizadas)
-5. [Ejecución de Pruebas](#ejecución-de-pruebas)
-6. [Solución de Problemas](#solución-de-problemas)
+3. [Dashboard de Pruebas](#dashboard-de-pruebas)
+4. [Uso del Panel de Pruebas](#uso-del-panel-de-pruebas)
+5. [Comando run_tests](#comando-run_tests)
+6. [Creación de Pruebas Personalizadas](#creación-de-pruebas-personalizadas)
+7. [Ejecución de Pruebas](#ejecución-de-pruebas)
+8. [Solución de Problemas](#solución-de-problemas)
+9. [Preguntas Frecuentes](#preguntas-frecuentes)
 
-## Arquitectura
+## 🏗️ Arquitectura
 
-El sistema de pruebas sigue una arquitectura modular con los siguientes componentes principales:
+El sistema de pruebas sigue una arquitectura modular y extensible con los siguientes componentes principales:
 
-- **Panel de Control**: Interfaz web para ejecutar y monitorear pruebas.
-- **Interfaces de Prueba**: Módulos que implementan lógica de prueba específica.
-- **Motor de Ejecución**: Gestiona la ejecución de pruebas y recopila resultados.
-- **Sistema de Reportes**: Genera informes detallados de las pruebas ejecutadas.
+- **Dashboard de Pruebas**: Interfaz web interactiva para monitorear y ejecutar pruebas.
+- **Interfaces de Prueba**: Módulos que implementan lógica de prueba específica siguiendo el patrón `TestingInterface`.
+- **Motor de Ejecución**: Gestiona la ejecución asíncrona de pruebas y recopilación de resultados.
+- **Sistema de Reportes**: Genera informes detallados incluyendo cobertura de código.
+- **API REST**: Endpoints para integración con sistemas CI/CD y monitoreo.
 
-## Configuración
+### Diagrama de Componentes
+
+```mermaid
+graph TD
+    A[Dashboard Web] -->|Ejecuta| B[Motor de Pruebas]
+    B -->|Usa| C[Interfaces de Prueba]
+    C -->|Ejecuta| D[Pruebas Unitarias]
+    C -->|Ejecuta| E[Pruebas de Integración]
+    B -->|Almacena| F[Base de Datos]
+    A -->|Visualiza| G[Reportes y Métricas]
+    H[Comando run_tests] -->|Interactúa con| B
+```
+
+## ⚙️ Configuración
 
 ### Requisitos Previos
 
 - Python 3.8+
 - Django 4.0+
 - Dependencias del proyecto instaladas
+- Navegador web moderno (Chrome, Firefox, Edge, Safari)
+- Node.js (opcional, para desarrollo de componentes frontend)
+
+## 🖥️ Dashboard de Pruebas
+
+El dashboard de pruebas proporciona una interfaz visual para monitorear y gestionar las pruebas del sistema.
+
+### Características Principales
+
+- **Vista General**: Muestra un resumen del estado actual de las pruebas
+- **Reportes de Cobertura**: Visualización interactiva de la cobertura de código
+- **Historial de Ejecuciones**: Registro detallado de pruebas pasadas
+- **Filtros y Búsqueda**: Para encontrar rápidamente pruebas específicas
+- **Exportación de Resultados**: Genera informes en varios formatos
+
+### Acceso al Dashboard
+
+1. Inicia el servidor de desarrollo:
+   ```bash
+   python manage.py runserver
+   ```
+
+2. Navega a:
+   ```
+   http://localhost:8000/testing/dashboard/
+   ```
+
+## 🛠️ Comando run_tests
+
+El comando `run_tests` es la forma recomendada de ejecutar pruebas en el proyecto, ya que garantiza que los resultados se registren correctamente en el dashboard y se generen los reportes necesarios.
+
+### Uso Básico
+
+```bash
+# Ejecutar todas las pruebas con reporte de cobertura
+python manage.py run_tests --coverage
+
+# Ejecutar pruebas de un módulo específico
+python manage.py run_tests core_testing.tests.test_models
+
+# Ejecutar pruebas en paralelo (acelera la ejecución)
+python manage.py run_tests --parallel=4
+
+# Ejecutar pruebas sin detenerse al primer fallo
+python manage.py run_tests --no-failfast
+
+# Ver todas las opciones disponibles
+python manage.py run_tests --help
+```
+
+### Importante
+
+❌ **No uses `pytest` directamente**, ya que:
+- No registrará los resultados en el dashboard
+- No generará reportes de cobertura consistentes
+- No respetará la configuración personalizada del proyecto
+
+✅ **Siempre usa** `python manage.py run_tests` para garantizar:
+- Registro adecuado de resultados
+- Generación de reportes
+- Consistencia en la ejecución de pruebas
+
+### Opciones Disponibles
+
+| Opción | Descripción |
+|--------|-------------|
+| `--coverage` | Genera reporte de cobertura |
+| `--parallel=N` | Ejecuta pruebas en N procesos paralelos |
+| `--keepdb` | Preserva la base de datos de pruebas entre ejecuciones |
+| `--failfast` | Detiene la ejecución al primer fallo |
+| `--verbosity=2` | Nivel de detalle en la salida (0-3) |
+
+### Integración con CI/CD
+
+#### GitHub Actions
+
+Ejemplo de configuración para GitHub Actions que utiliza `run_tests` para ejecutar las pruebas:
+
+```yaml
+name: Run Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run tests with coverage
+      env:
+        DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_db
+        DJANGO_SETTINGS_MODULE: core.settings.test
+      run: |
+        # Ejecutar pruebas con cobertura
+        python manage.py run_tests --coverage --parallel=4
+        
+        # Opcional: Subir cobertura a un servicio como Codecov
+        # bash <(curl -s https://codecov.io/bash)
+```
+
+#### GitLab CI
+
+Ejemplo para GitLab CI/CD:
+
+```yaml
+image: python:3.10
+
+services:
+  - postgres:13-alpine
+
+variables:
+  POSTGRES_DB: test_db
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+  DATABASE_URL: "postgres://postgres:postgres@postgres:5432/test_db"
+
+before_script:
+  - apt-get update
+  - apt-get install -y python3-dev libpq-dev
+  - pip install -r requirements.txt
+
+test:
+  script:
+    - python manage.py run_tests --coverage --parallel=4
+  artifacts:
+    when: always
+    paths:
+      - htmlcov/
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+```
+
+## ⚙️ Configuración
+
+### Requisitos Previos
+
+- Python 3.8+
+- Django 4.0+
+- Dependencias del proyecto instaladas
+- Navegador web moderno (Chrome, Firefox, Edge, Safari)
+- Node.js (opcional, para desarrollo de componentes frontend)
 
 ### Instalación
 
@@ -43,11 +228,21 @@ INSTALLED_APPS += [
 2. Configura la base de datos para pruebas en `local_settings.py`:
 
 ```python
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'test_db.sqlite3',
+# Configuración para pruebas
+TESTING = DEBUG  # Asume modo de pruebas cuando DEBUG es True
+
+if TESTING:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'test_db.sqlite3',
+        }
     }
+    
+    # Configuración específica para pruebas
+    PASSWORD_HASHERS = [
+        'django.contrib.auth.hashers.MD5PasswordHasher',
+    ]
 }
 ```
 

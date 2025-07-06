@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load testing_filters %}
 
 {% block extra_css %}
 {{ block.super }}
@@ -135,7 +136,6 @@
     {% block breadcrumb %}
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'core_testing:dashboard' %}">Testing</a></li>
             {% block breadcrumb_items %}{% endblock %}
         </ol>
     </nav>
