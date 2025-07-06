@@ -17,7 +17,6 @@ __all__ = [
     'TestRunListView',
     'ModuleCoverageDetailView',
     'TestHistoryView',
-    'CoverageTrendsView',
     'api_test_status',
     'api_coverage_data',
     'get_test_form',
