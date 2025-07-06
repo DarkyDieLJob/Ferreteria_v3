@@ -1,5 +1,26 @@
 # Plan de Pruebas - Ferretería Paoli v3
 
+> **Última actualización**: 06/07/2025  
+> **Estado**: En desarrollo  
+> **Rama objetivo**: `documentation`
+
+## Flujo de Trabajo de Pruebas
+
+1. **Desarrollo en `develop`**
+   - Todas las mejoras de pruebas se desarrollan en la rama `develop`
+   - Se crea un PR a la rama `documentation` para revisión
+   - Una vez aprobado, se mergea a `documentation`
+   - Finalmente, se crea un PR de `documentation` a `pre-release`
+
+2. **Ejecución de Pruebas**
+   ```bash
+   # Ejecutar todas las pruebas
+   python manage.py run_tests --coverage
+   
+   # Ejecutar pruebas específicas
+   python manage.py test core_testing.tests.test_basic
+   ```
+
 ## 1. Configuración Inicial
 
 ### 1.1 Verificar cobertura actual

@@ -16,18 +16,30 @@
 3. Integrarse con el flujo de desarrollo existente
 4. Ofrecer métricas útiles para la toma de decisiones
 
-## 🗂️ Estructura del Proyecto
+## 🗂️ Estructura del Proyecto (Actualizada: 06/07/2025)
 
 ```
 core_testing/
-├── models/                  # Modelos de datos
-│   ├── __init__.py
-│   ├── test_run.py          # Resultados de ejecuciones de pruebas
-│   ├── test_case.py         # Casos de prueba individuales
-│   ├── coverage.py          # Datos de cobertura de código
-│   └── test_interface.py    # Interfaz base para pruebas
+├── models.py               # Modelos de datos para pruebas y cobertura
+├── views/                  # Vistas del sistema de pruebas
+│   ├── __init__.py         # Exportación de vistas
+│   ├── views.py            # Vistas principales
+│   └── views_test.py       # Pruebas de las vistas
 │
-├── templates/               # Plantillas del dashboard
+├── templates/              # Plantillas del dashboard
+│   ├── core_testing/       # Plantillas específicas del módulo
+│   │   ├── dashboard.html  # Panel principal
+│   │   ├── testrun_list.html  # Lista de ejecuciones
+│   │   └── ...
+│
+├── tests/                  # Pruebas unitarias
+│   ├── __init__.py
+│   ├── test_basic.py       # Pruebas básicas
+│   └── ...
+│
+├── utils/                  # Utilidades
+├── management/             # Comandos personalizados
+└── testing_interfaces/     # Interfaces de prueba personalizadas
 │   ├── core_testing/
 │   │   ├── base_testing.html    # Plantilla base para el área de testing
 │   │   ├── dashboard.html       # Vista principal del dashboard
