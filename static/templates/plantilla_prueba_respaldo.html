@@ -1,0 +1,152 @@
+{% load static %}
+<!-- plantilla_prueba_respaldo.html -->
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible">
+        <meta name="viewport" content="width=device-width", initial-scale="1">
+        <meta name="index" content="width=device-width",initial-scale="1.0">
+        <title>{% block title %}  {% endblock%}</title>
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+        <link rel="stylesheet" type="text/css" href="{% static 'admin/css/widgets.css' %}">
+        <script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
+        <link rel="stylesheet" type="text/css" href="{% static 'css/estilos.css' %}">
+    </head>
+    <body>
+    <div style="display: flex;">
+        <div style="width: 40%; max-height: 100vh; overflow-y: auto;">
+            <h1 class="desplegable">Búsqueda de Items</h1>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <input type="submit" value="Buscar">
+            </form>
+
+            {% if items %}
+                <h2>Resultados de la búsqueda</h2>
+                <table>
+                    <tr>
+                        <th>Código</th>
+                        <th>Marca</th>
+                        <th>Cajón</th>
+                        <th>Cajonera</th>
+                        <th>Sector</th>
+                    </tr>
+                    {% for item in items %}
+                        <tr>
+                            <td>{{ item.codigo }}</td>
+                            <td>{{ item.marca.codigo }}</td>
+                            <td>{{ item.cajon.codigo }}</td>
+                            <td>{{ item.cajon.cajonera.codigo }}</td>
+                            <td>{{ item.cajon.cajonera.sector.codigo }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            {% endif %}
+            
+            <h1 class="desplegable">Explorador de Items</h1>
+            <ul>
+                {% for sector in sectores %}
+                    <li>
+                        <span class="toggle">Sector: {{ sector.codigo }}</span>
+                        <ul>
+                            {% for cajonera in sector.cajonera_set.all %}
+                                <li>
+                                    <span class="toggle">Cajonera: {{ cajonera.codigo }}</span>
+                                    <ul>
+                                        {% for cajon in cajonera.cajon_set.all %}
+                                            <li>
+                                                <span class="toggle cajon" data-cajon-id="{{ cajon.id }}">Cajón: {{ cajon.codigo }}</span>
+                                                <ul></ul>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div style="width: 60%;">
+
+            <h2>Items del cajón seleccionado</h2>
+            <div class="overflow-auto h-100">
+                <table class="table table-striped w-100" id="items-table" style="display: none;">
+                    <thead class="bg-secondary text-white sticky-top">
+                    <tr>
+                        <th>Código</th>
+                        <th>Descripción</th>
+                        <th>Final</th>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+        
+        </div>
+    
+    </div>
+    <script>
+        // Obtén todos los elementos con la clase 'desplegable'
+        var desplegables = document.getElementsByClassName('desplegable');
+
+        // Añade un evento de clic a cada elemento desplegable
+        for (var i = 0; i < desplegables.length; i++) {
+            desplegables[i].addEventListener('click', function() {
+                // Al hacer clic, muestra u oculta el siguiente elemento (el contenido desplegable)
+                var contenido = this.nextElementSibling;
+                if (contenido.style.display === 'none') {
+                    contenido.style.display = 'block';
+                } else {
+                    contenido.style.display = 'none';
+                }
+            });
+        }
+    </script>
+    <script>
+        // Agregar evento click a los elementos con clase "toggle"
+        document.querySelectorAll('.toggle').forEach(function(element) {
+            element.addEventListener('click', function(event) {
+                // Mostrar u ocultar el siguiente elemento (lista anidada)
+                var nextElement = event.target.nextElementSibling;
+                if (nextElement.style.display === 'none') {
+                    nextElement.style.display = 'block';
+                } else {
+                    nextElement.style.display = 'none';
+                }
+            });
+        });
+
+        // Agregar evento click a los elementos con clase "cajon"
+        document.querySelectorAll('.cajon').forEach(function(element) {
+            element.addEventListener('click', function(event) {
+                // Obtener ID del cajón
+                var cajonId = event.target.getAttribute('data-cajon-id');
+
+                // Obtener items del cajón y mostrarlos en la tabla
+                fetch('/items/' + cajonId)
+                    .then(response => response.json())
+                    .then(items => {
+                        var table = document.getElementById('items-table');
+                        table.style.display = 'block';
+
+                        // Eliminar filas anteriores
+                        while (table.rows.length > 1) {
+                            table.deleteRow(1);
+                        }
+
+                        // Agregar filas con los items del cajón
+                        items.forEach(function(item) {
+                            var row = table.insertRow();
+                            row.insertCell().textContent = item.codigo;
+                            row.insertCell().textContent = item.descripcion;
+                            row.insertCell().textContent = item.final;
+                        });
+                    });
+            });
+        });
+    </script>
+</body>
+</html>

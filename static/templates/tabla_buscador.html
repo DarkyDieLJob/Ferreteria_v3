@@ -1,0 +1,418 @@
+<!-- tabla_buscador.html -->
+<div class="overflow-auto h-100">
+    <table class="table table-striped w-100">
+        <thead class="bg-secondary text-white sticky-top">
+            <tr>
+                    <th>Codigo</th>
+                    <th>Descripcion</th>
+                    <th>Acciones</th>
+            </tr>
+        </thead>
+
+    <tbody>
+        {% for dato in datos %}
+            <tr class="card-row" tabindex="0" data-id="{{ dato.id }}" data-codigo="{{ dato.codigo }}" data-descripcion="{{ dato.descripcion }}" data-final-rollo="{{ dato.final_rollo }}" data-final="{{ dato.final }}" data-final-efectivo="{{ dato.final_efectivo }}" data-final-rollo-efectivo="{{ dato.final_rollo_efectivo }}">
+                <td class="{% if not dato.actualizado %}text-danger{% endif %}">  <h6>{{ dato.codigo }}</h6>
+                </td>
+                <td class="{% if not dato.actualizado %}text-danger{% endif %}">  <h6>{{ dato.descripcion }}</h6>
+                </td>
+                <td>
+                    <button class="btn btn-success ver" id="ver-{{ dato.id }}" display="inline-block">Ver</button>
+                    <button class="btn btn-success agregar" id="agregar-{{ dato.id }}" style="display: none;">Al carrito</button>
+                    <button class="btn btn-primary editar" id="editar-{{ dato.id }}"display="inline-block">Editar</button>
+                    <button class="btn btn-danger reportar" id="reportar-{{ dato.id }}"display="inline-block">Reportar</button>
+                    {% if dato.tiene_cartel %}
+                        <button class="btn btn-success" id="cartel-{{ dato.id }}" onclick="location.href='/x_cartel/imprimir/{{ dato.id }}';">Cartel</button>
+                    {% else %}
+                        <button class="btn btn-success" id="cartel-{{ dato.id }}" onclick="location.href='/x_cartel/imprimir/{{ dato.id }}';" style="display: none;">Cartel</button>
+                    {% endif %}
+                    
+                    {% if dato.tiene_pedido %}
+                        Articulo Pedido
+                    {% else %}
+                        <button class='btn btn-secondary', onclick="agregarAlPedido({{ dato.id}})">Agregar al pedido</button>
+                    {% endif %}
+            
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div id="miModal" class="modal">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-light border border-primary rounded shadow-lg p-4">
+            <span class="close_mimodal">×</span>
+            <form id="miFormulario" class="d-flex flex-column align-items-center">
+                {% csrf_token %}
+                <input type="hidden" id="id_articulo" name="id_articulo">
+
+                <label for="cantidad">Cantidad:</label><br>
+                <input type="number" id="cantidad" name="cantidad"><br>
+
+                <label for="barras">Barras:</label><br>
+                <input type="number" id="barras" name="barras"><br>
+
+                <label for="cajon">Cajón:</label><br>
+                <select id="cajon" name="cajon">
+                    <option value="">Ninguno</option>
+                </select><br>
+
+                <label for="tiene_cartel">Tiene cartel:</label>
+                <input type="checkbox" id="tiene_cartel" name="tiene_cartel"><br>
+
+                <input type="submit" value="Enviar">
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="modalReportar" class="modal">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-light border border-primary rounded shadow-lg p-4">
+            <span class="close_modal_reportar">×</span>
+            <form id="miFormularioReportar" class="d-flex flex-column align-items-center">
+                {% csrf_token %}
+                <input type="hidden" id="id_articulo" name="id_articulo">
+
+                <label for="estado">Estado:</label><br>
+                <select id="estado" name="estado">
+                </select><br>
+
+                <label for="detalles">Detalles:</label><br>
+                <textarea id="detalles" name="detalles" rows="4" cols="50"></textarea><br>
+
+                <input type="submit" value="Enviar">
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="ModalCarrito" class="modal"> 
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-white border border-secondary rounded shadow p-3">
+
+            <span class="close_carrito">×</span>
+            <form id="miFormularioCarrito" class="d-flex flex-column align-items-center">
+                {% csrf_token %}
+                <input type="hidden" id="id_articulo" name="id_articulo">
+                <label for="cantidad">Cantidad:</label><br>
+                <input type="number" id="cantidad_agregar" name="cantidad_agregar" step="0.01" value="1"><br>
+                <input type="submit" value="Enviar">
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    
+</script>
+
+<script>
+    let csrftoken = Cookies.get('csrftoken');
+    window.addEventListener('load', () => {
+
+        var usuarioActual = document.body.getAttribute('data-usuario');
+        var esDarkydiel = (usuarioActual == 'darkydiel');
+
+
+        document.querySelectorAll('.agregar').forEach(boton => {
+            boton.addEventListener('click', event => {
+                // Prevenir la acción por defecto del botón
+                event.preventDefault();
+        
+                // Obtener el id del dato
+                const id = boton.id.split('-')[1];
+        
+                // Llenar el formulario en el modal con el id del artículo
+                document.getElementById('id_articulo').value = id;
+        
+                // Si el usuario es 'darkydiel', agrega botones de opción para los usuarios "caja".
+                if (esDarkydiel) {
+                    fetch('/usuarios_caja/')
+                        .then(response => response.json())
+                        .then(usuarios_caja => {
+                            var formulario = document.getElementById('miFormularioCarrito');
+        
+                            // Elimina los botones de opción existentes.
+                            var existingOptions = formulario.querySelectorAll('input[type="radio"]');
+                            existingOptions.forEach(option => option.parentElement.remove());
+        
+                            // Agrega nuevos botones de opción.
+                            usuarios_caja.forEach(usuario => {
+                                var label = document.createElement('label');
+                                label.textContent = usuario.nombre;  // Asegúrate de que 'nombre' es la propiedad correcta para el nombre del usuario.
+                                var radio = document.createElement('input');
+                                radio.type = 'radio';
+                                radio.name = 'usuario_caja';
+                                radio.value = usuario.id;  // Asegúrate de que 'id' es la propiedad correcta para el ID del usuario.
+                                label.appendChild(radio);
+                                formulario.appendChild(label);
+                            });
+                        });
+                }
+        
+                // Mostrar el modal
+                document.getElementById('ModalCarrito').style.display = 'block';
+            });
+        });
+
+
+        // Obtén el elemento con la clase 'close'
+        var close = document.querySelector('.close_mimodal');
+
+        // Añade un controlador de eventos de clic
+        close.addEventListener('click', function() {
+            // Oculta el modal
+            document.getElementById('miModal').style.display = 'none';
+        });
+
+
+        document.querySelectorAll('.ver').forEach(boton => {
+            boton.addEventListener('click', event => {
+                // Prevenir la acción por defecto del botón
+                event.preventDefault();
+    
+                // Obtener la fila que contiene el botón
+                const row = boton.parentNode.parentNode;
+
+                const codigo = row.dataset.codigo;
+                const finalRollo = row.dataset.finalRollo;
+                const final = row.dataset.final;
+                const finalEfectivo = row.dataset.finalEfectivo;
+                const finalRolloEfectivo = row.dataset.finalRolloEfectivo;
+
+                
+
+
+                // Verificar si la fila ya tiene la clase "info-shown"
+                if (!row.classList.contains('info-shown')) {
+                    // Crear un nuevo elemento tr para mostrar la información adicional
+                    const infoRow = document.createElement('tr');
+                    infoRow.innerHTML = `
+                        <td colspan="3">
+                            <div class="row">
+                                <div class="contenedor">
+                                    <div class="precio">
+                                        <div><h5>Publico</h5></div>
+                                        <div>${final}</div>
+                                    </div>
+                                    <div class="precio">
+                                        <div><h5>Efectivo</h5></div>
+                                        <div>${finalEfectivo}</div>
+                                    </div>
+                                </div>
+                                <div class="contenedor">
+                                    <div class="precio">
+                                        <div><h5>Rollo/Caja</h5></div>
+                                        <div>${finalRollo}</div>
+                                    </div>
+                                    <div class="precio">
+                                        <div><h5>Rollo/Caja Efectivo</h5></div>
+                                        <div>${finalRolloEfectivo}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                `;
+
+                    // Insertar el nuevo elemento tr después de la fila actual
+                    row.parentNode.insertBefore(infoRow, row.nextSibling);
+
+                    // Agregar la clase "info-shown" a la fila para indicar que ya se ha mostrado la información adicional
+                    row.classList.add('info-shown');
+                }
+
+                // Ocultar el botón de "Ver"
+                boton.style.display = 'none';
+
+                // Mostrar el botón de "Agregar al carrito"
+                const id = boton.id.split('-')[1];
+                document.getElementById('agregar-' + id).style.display = 'inline-block';
+                console.log('agregar-' + id)
+            });
+        });
+
+        document.querySelectorAll('.reportar').forEach(boton => {
+            boton.addEventListener('click', event => {
+                event.preventDefault();
+                const id = boton.id.split('-')[1];
+        
+                fetch('/reportar_item/' + id)
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('id_articulo').value = id;
+        
+                        // Llenar el selector con los valores de estado
+                        var selectEstado = document.getElementById('estado');
+                        selectEstado.innerHTML = ''; // Limpiar opciones anteriores
+        
+                        for (var i = 0; i < data.estado.length; i++) {
+                            var option = document.createElement('option');
+                            option.value = data.estado[i];
+                            option.text = data.estado[i];
+        
+                            // Seleccionar la opción correcta
+                            if (data.estado[i] === data.estado_actual) {
+                                option.selected = true;
+                            }
+        
+                            selectEstado.add(option);
+                        }
+        
+                        document.getElementById('detalles').value = data.modal_detalles;
+                        document.getElementById('modalReportar').style.display = 'block';
+                    });
+            });
+        });
+        
+        var formularioReportar = document.getElementById('miFormularioReportar');
+        formularioReportar.addEventListener('submit', function(event) {
+            event.preventDefault();
+            var id_articulo = document.getElementById('id_articulo').value;
+            var estado = document.getElementById('estado').value;
+            var detalles = document.getElementById('detalles').value;
+
+            fetch('/enviar_reporte/' + id_articulo + '/', {
+                method: 'POST',
+                body: JSON.stringify({estado: estado, detalles: detalles}),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                }
+            })
+            .catch(error => console.error('Error:', error))
+            .finally(() => {
+                document.getElementById('modalReportar').style.display = 'none';
+            });
+        });
+
+        // Obtén el elemento con la clase 'close'
+        var close = document.querySelector('.close_modal_reportar');
+
+        // Añade un controlador de eventos de clic
+        close.addEventListener('click', function() {
+            // Oculta el modal
+            document.getElementById('modalReportar').style.display = 'none';
+        });
+
+
+        document.querySelectorAll('.editar').forEach(boton => {
+            boton.addEventListener('click', event => {
+                // Prevenir la acción por defecto del botón
+                event.preventDefault();
+    
+                // Obtener el id del dato
+                const id = boton.id.split('-')[1];
+    
+                // Hacer una solicitud GET a la vista para obtener los datos actuales del artículo
+                fetch('/editar_item/' + id)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Convertir la cadena de texto en un array de objetos
+                        var cajones = JSON.parse(data.cajones);
+
+                        // Llenar el formulario en el modal con los datos actuales del artículo
+                        document.getElementById('id_articulo').value = id;
+                        document.getElementById('cantidad').value = data.modal_cantidad;
+                        document.getElementById('barras').value = data.modal_barras;
+                        
+                        document.getElementById('tiene_cartel').checked = data.modal_tiene_cartel;
+
+                        // Llenar el selector con los valores de cajon
+                        document.getElementById('cajon').innerHTML = cajones.map(c => `<option value="${c.pk}"${data.modal_cajon && c.pk === data.modal_cajon.id ? ' selected' : ''}>${c.fields.codigo}</option>`).join('');
+                        // Mostrar el modal
+                        document.getElementById('miModal').style.display = 'block';
+                    });
+            });
+        });
+    
+        
+        // Obtén el elemento con la clase 'close'
+        var close_carrito = document.querySelector('.close_carrito');
+
+        // Añade un controlador de eventos de clic
+        close_carrito.addEventListener('click', function() {
+            // Oculta el modal
+            document.getElementById('ModalCarrito').style.display = 'none';
+        });
+    
+        var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        // Cuando el usuario envía el formulario, envía los datos al endpoint
+        var formulario = document.getElementById('miFormulario');
+        formulario.addEventListener('submit', function(event) {
+            event.preventDefault();
+            var id_articulo = document.getElementById('id_articulo').value;
+            var cantidad = document.getElementById('cantidad').value;
+            var barras = document.getElementById('barras').value;
+            var tiene_cartel = document.getElementById('tiene_cartel').checked;
+            var cajon = document.getElementById('cajon').value;
+            fetch('/editar_item/'+ id_articulo + '/', {
+                method: 'POST',
+                body: JSON.stringify({id_articulo: id_articulo, cantidad: cantidad, barras: barras, tiene_cartel: tiene_cartel, cajon: cajon}),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                }
+            })
+            .catch(error => console.error('Error:', error))
+            .finally(() => {
+                document.getElementById('miModal').style.display = "none";  // Oculta el modal
+                // Muestra u oculta el botón de cartel según el valor de tiene_cartel
+                document.getElementById('cartel-' + id_articulo).style.display = tiene_cartel ? 'block' : 'none';
+            });
+        });
+        
+        
+        
+        
+        // Cuando el usuario hace clic en el botón de cierre del modal, cierra el modal
+        var span = document.getElementsByClassName("close")[0];
+        span.onclick = function() {
+            document.getElementById('ModalCarrito').style.display = "none";  // Oculta el modal
+        }
+        
+        var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        // Cuando el usuario envía el formulario, envía los datos al endpoint
+        var formulario = document.getElementById('miFormularioCarrito');
+        formulario.addEventListener('submit', function(event) {
+            event.preventDefault();
+            var id_articulo = document.getElementById('id_articulo').value;
+            var cantidad = document.getElementById('cantidad_agregar').value;
+            var usuario_caja = esDarkydiel ? Number(document.querySelector('input[name="usuario_caja"]:checked').value) + 1 : null;
+            console.log(usuario_caja)
+            fetch('/agregar_articulo_a_carrito/'+ id_articulo + '/', {
+                method: 'POST',
+                body: JSON.stringify({id_articulo: id_articulo, cantidad: cantidad, usuario_caja: usuario_caja}),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                }
+            })
+            .catch(error => console.error('Error:', error))
+            .finally(() => {
+                document.getElementById('ModalCarrito').style.display = "none";  // Oculta el modal
+            });
+        });
+        
+        
+    });
+
+
+    function agregarAlPedido(id_articulo) {
+        fetch('/agregar_articulo_a_pedido/'+ id_articulo + '/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken
+            }
+        })
+        .catch(error => console.error('Error:', error))
+        .finally(() => {
+            location.reload();
+        });
+    }
+    
+    
+</script>
