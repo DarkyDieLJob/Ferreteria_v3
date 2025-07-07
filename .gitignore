@@ -35,19 +35,32 @@ db.sqlite3-wal
 db.sqlite3-shm
 media/
 static/
+migrations/
+db.sqlite3
+settings.py
+core_config/settings.py
+core_config/settings_tests.py
+3D.csv
+Amaya.csv
+Bauen.csv
+bdd.csv
+Caramia.csv
+Cedica.csv
+SECRET_KEY.txt
 
-# Coverage reports
-htmlcov/
-.tox/
-.nox/
+# Archivos de cobertura de pruebas
+*.cover
 .coverage
-.coverage.*
+htmlcov/
+.pytest_cache/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
 .cache
 nosetests.xml
 coverage.xml
-*.cover
 .hypothesis/
-.pytest_cache/
 
 # IDE
 .idea/
