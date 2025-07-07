@@ -1,8 +1,23 @@
 # 🎯 Objetivos del Módulo de Pruebas
 
+> **Última actualización**: 06/07/2025
+
 ## Visión General
 
 El módulo `core_testing` es un sistema integral para la gestión, ejecución y monitoreo de pruebas en la aplicación de Ferretería. Proporciona herramientas para garantizar la calidad del código a través de pruebas automatizadas, reportes de cobertura y un dashboard interactivo para el seguimiento del estado de las pruebas.
+
+## 🚦 Estado Actual
+
+### ✅ Completado
+- Sistema básico de ejecución de pruebas
+- Dashboard de monitoreo en tiempo real
+- Reportes de cobertura de código
+- Integración con el flujo de desarrollo
+
+### 🚧 En Progreso
+- Mejora de la cobertura de pruebas
+- Optimización del rendimiento
+- Documentación detallada
 
 ## 🎯 Objetivos Principales
 

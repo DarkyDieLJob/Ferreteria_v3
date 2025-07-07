@@ -1,9 +1,31 @@
-# 🧪 Módulo de Testing - Ferretería
+# 🧪 Módulo de Pruebas - Core Testing
+
+> **Última actualización**: 06/07/2025  
+> **Versión estable**: 1.0.0
 
 ## 📝 Descripción
 Módulo integral de pruebas para la aplicación de Ferretería, diseñado para facilitar la ejecución, monitoreo y gestión de pruebas funcionales y de integración.
 
 ## 🚀 Características Principales
+
+- ✅ **Ejecución de Pruebas**
+  - Soporte para pruebas unitarias y de integración
+  - Ejecución en paralelo para mayor velocidad
+  - Filtrado por módulo o categoría
+
+- 📊 **Dashboard Interactivo**
+  - Monitoreo en tiempo real
+  - Visualización de tendencias
+  - Detalles de ejecuciones pasadas
+
+- 📈 **Cobertura de Código**
+  - Reportes detallados
+  - Identificación de código no cubierto
+  - Seguimiento histórico
+
+- 🔄 **Integración**
+  - Flujo de trabajo con ramas `develop` → `documentation` → `pre-release`
+  - Compatible con el sistema CI/CD existente
 
 - 🖥️ Dashboard interactivo para monitoreo de pruebas
 - 🔄 Ejecución de pruebas con un solo comando (`run_tests`)
@@ -56,25 +78,40 @@ Módulo integral de pruebas para la aplicación de Ferretería, diseñado para f
 
 ### run_tests
 
+El comando `run_tests` es la forma recomendada de ejecutar pruebas en el proyecto, ya que garantiza que los resultados se registren correctamente en el dashboard y se generen los reportes necesarios.
+
+#### Uso Básico
+
 ```bash
-# Ejecutar todas las pruebas
+# Ejecutar todas las pruebas con cobertura (comportamiento por defecto)
 python manage.py run_tests
 
-# Ejecutar con cobertura detallada
-python manage.py run_tests --coverage
+# Ejecutar sin generar informe de cobertura
+python manage.py run_tests --no-coverage
 
-# Ejecutar pruebas de una app específica
-python manage.py run_tests nombre_app
+# Ejecutar pruebas de un módulo o archivo específico
+python manage.py run_tests facturacion  # App completa
+python manage.py run_tests facturacion/tests/test_models.py  # Archivo específico
+python manage.py run_tests facturacion.tests.test_models  # Módulo Python
 
-# Ejecutar pruebas en paralelo
-python manage.py run_tests --parallel=4
+# Opciones de ejecución
+python manage.py run_tests --parallel=4  # Ejecutar en 4 procesos
+python manage.py run_tests --no-failfast  # Continuar después de fallos
+python manage.py run_tests --keepdb  # Mantener la base de datos de pruebas
+python manage.py run_tests -v 2  # Mayor verbosidad
 
-# No detenerse al primer fallo
-python manage.py run_tests --no-failfast
-
-# Mantener la base de datos de pruebas
-python manage.py run_tests --keepdb
+# Ver todas las opciones disponibles
+python manage.py run_tests --help
 ```
+
+#### Comportamiento por Defecto
+
+Por defecto, el comando:
+1. Busca pruebas en los directorios: `tests/`, `core_testing/`, `facturacion/`, `articulos/`
+2. Ejecuta las pruebas con cobertura de código
+3. Genera informes en formato XML y HTML
+4. Registra los resultados en la base de datos para el dashboard
+5. Muestra un resumen de los resultados en la consola
 
 ### update_coverage
 

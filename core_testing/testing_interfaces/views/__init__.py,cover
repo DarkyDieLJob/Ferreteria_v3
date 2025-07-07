@@ -1,0 +1,12 @@
+> """
+> Vistas para las interfaces de testing.
+> Este paquete contiene las vistas específicas para cada interfaz de testing.
+> """
+  # Importar las vistas de las interfaces de testing
+! from .example import ExampleInterfaceView
+! from .example_interface import ExampleInterfaceTestingView
+  
+! __all__ = [
+!     'ExampleInterfaceView',
+!     'ExampleInterfaceTestingView',
+! ]

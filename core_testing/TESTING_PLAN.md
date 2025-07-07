@@ -3,12 +3,17 @@
 ## Objetivo
 Mejorar la cobertura y calidad de las pruebas en el módulo core_testing, asegurando que las pruebas sean relevantes para la implementación actual del dashboard simplificado.
 
-## Estado Actual (05/07/2025)
-- ✅ Se han eliminado pruebas obsoletas relacionadas con interfaces antiguas
-- ✅ Se han actualizado las pruebas para reflejar la implementación actual del dashboard
-- ✅ Se ha corregido la configuración de URLs y vistas para las pruebas
-- ✅ Se ha mejorado la cobertura de pruebas para las vistas principales
-- ✅ Se han corregido errores en las plantillas y filtros personalizados
+## Estado Actual (07/07/2025)
+- ✅ Se ha implementado cobertura completa de pruebas para los modelos de facturación
+  - Cliente: 7 pruebas (creación, representación, métodos de responsabilidad y tipo de documento)
+  - ArticuloVendido: 6 pruebas (creación con/sin ítem, método get_item)
+  - MetodoPago: 4 pruebas (creación, valores por defecto, representación)
+  - Transaccion: 5 pruebas (creación, fechas automáticas, relaciones)
+  - CierreZ: 4 pruebas (creación, valores por defecto, zeta_numero)
+- ✅ Se ha corregido el comportamiento de zeta_numero en CierreZ
+- ✅ Se ha mejorado la estructura de pruebas con archivos separados por modelo
+- ✅ Se ha actualizado la documentación del plan de pruebas
+- ✅ Se ha asegurado la integración con el flujo de trabajo documentation → pre-release
 
 ## Fase 1: Limpieza de Pruebas Obsoletas (Completada ✅)
 
@@ -44,7 +49,34 @@ Mejorar la cobertura y calidad de las pruebas en el módulo core_testing, asegur
   - [x] Visualización de detalles de ejecución
   - [x] Manejo de test runs inexistentes
 
-## Fase 3: Pruebas de Integración (Próximos Pasos ⏭️)
+## Fase 3: Pruebas de Facturación (Completado ✅)
+
+### 3.1 Pruebas de Modelos de Facturación
+- [x] **Modelo Cliente**
+  - [x] Creación y validación de campos
+  - [x] Métodos de responsabilidad y tipo de documento
+  - [x] Representación en string
+
+- [x] **Modelo ArticuloVendido**
+  - [x] Creación con ítem registrado
+  - [x] Creación con artículo sin registrar
+  - [x] Método get_item()
+
+- [x] **Modelo MetodoPago**
+  - [x] Valores por defecto
+  - [x] Representación en string
+
+- [x] **Modelo Transaccion**
+  - [x] Creación con relaciones
+  - [x] Fechas automáticas
+  - [x] Método get_cliente_id()
+
+- [x] **Modelo CierreZ**
+  - [x] Comportamiento de zeta_numero
+  - [x] Valores por defecto
+  - [x] Fechas automáticas
+
+## Fase 4: Pruebas de Integración (Próximos Pasos ⏭️)
 
 ### 3.1 Integración con Modelos
 - [ ] Pruebas de consultas a `TestRun`

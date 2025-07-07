@@ -1,6 +1,9 @@
 /media/pendorchito.csv
 mp_access_token.txt
 token.json
+media/
+static/
+.coverage
 *.pyc
 *.xls
 *.ods
@@ -19,6 +22,7 @@ Sin.fis
 SECRET_KEY.txt
 migrations/
 db.sqlite3
+coverage.xml
 settings.py
 core_config/settings.py
 core_config/settings_tests.py
