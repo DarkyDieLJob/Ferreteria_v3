@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="facturacion_tests" errors="5" failures="0" skipped="0" tests="5" time="5.351" timestamp="2025-07-06T13:51:02.147422" hostname="fedora"><testcase classname="tests.facturacion.test_facturacion" name="test_creacion_cliente" time="0.000"><error message="failed on setup with &quot;RuntimeError: Database access not allowed, use the &quot;django_db&quot; mark, or the &quot;db&quot; or &quot;transactional_db&quot; fixtures to enable it.&quot;">../../../.local/lib/python3.12/site-packages/pytest_django/plugin.py:552: in _django_db_marker
+    request.getfixturevalue("_django_db_helper")
+tests/conftest.py:28: in django_db_setup
+    call_command('migrate', '--noinput')
+../../../.local/lib/python3.12/site-packages/django/core/management/__init__.py:194: in call_command
+    return command.execute(*args, **defaults)
+../../../.local/lib/python3.12/site-packages/django/core/management/base.py:460: in execute
+    output = self.handle(*args, **options)
+../../../.local/lib/python3.12/site-packages/django/core/management/base.py:107: in wrapper
+    res = handle_func(*args, **kwargs)
+../../../.local/lib/python3.12/site-packages/django/core/management/commands/migrate.py:114: in handle
+    executor = MigrationExecutor(connection, self.migration_progress_callback)
+../../../.local/lib/python3.12/site-packages/django/db/migrations/executor.py:18: in __init__
+    self.loader = MigrationLoader(self.connection)
+../../../.local/lib/python3.12/site-packages/django/db/migrations/loader.py:58: in __init__
+    self.build_graph()
+../../../.local/lib/python3.12/site-packages/django/db/migrations/loader.py:235: in build_graph
+    self.applied_migrations = recorder.applied_migrations()
+../../../.local/lib/python3.12/site-packages/django/db/migrations/recorder.py:89: in applied_migrations
+    if self.has_table():
+../../../.local/lib/python3.12/site-packages/django/db/migrations/recorder.py:63: in has_table
+    with self.connection.cursor() as cursor:
+../../../.local/lib/python3.12/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../../../.local/lib/python3.12/site-packages/django/db/backends/base/base.py:320: in cursor
+    return self._cursor()
+../../../.local/lib/python3.12/site-packages/django/db/backends/base/base.py:296: in _cursor
+    self.ensure_connection()
+E   RuntimeError: Database access not allowed, use the "django_db" mark, or the "db" or "transactional_db" fixtures to enable it.</error><system-out>--------------------------------- Captured Log ---------------------------------
+
+--------------------------------- Captured Out ---------------------------------
+
+</system-out><system-err>--------------------------------- Captured Err ---------------------------------
+
+</system-err></testcase><testcase classname="tests.facturacion.test_facturacion" name="test_cliente_fixture" time="0.000"><error message="failed on setup with &quot;RuntimeError: Database access not allowed, use the &quot;django_db&quot; mark, or the &quot;db&quot; or &quot;transactional_db&quot; fixtures to enable it.&quot;">../../../.local/lib/python3.12/site-packages/pytest_django/plugin.py:552: in _django_db_marker
+    request.getfixturevalue("_django_db_helper")
+../../../.local/lib/python3.12/site-packages/pytest_django/plugin.py:552: in _django_db_marker
+    request.getfixturevalue("_django_db_helper")
+tests/conftest.py:28: in django_db_setup
+    call_command('migrate', '--noinput')
+../../../.local/lib/python3.12/site-packages/django/core/management/__init__.py:194: in call_command
+    return command.execute(*args, **defaults)
+../../../.local/lib/python3.12/site-packages/django/core/management/base.py:460: in execute
+    output = self.handle(*args, **options)
+../../../.local/lib/python3.12/site-packages/django/core/management/base.py:107: in wrapper
+    res = handle_func(*args, **kwargs)
+../../../.local/lib/python3.12/site-packages/django/core/management/commands/migrate.py:114: in handle
+    executor = MigrationExecutor(connection, self.migration_progress_callback)
+../../../.local/lib/python3.12/site-packages/django/db/migrations/executor.py:18: in __init__
+    self.loader = MigrationLoader(self.connection)
+../../../.local/lib/python3.12/site-packages/django/db/migrations/loader.py:58: in __init__
+    self.build_graph()
+../../../.local/lib/python3.12/site-packages/django/db/migrations/loader.py:235: in build_graph
+    self.applied_migrations = recorder.applied_migrations()
+../../../.local/lib/python3.12/site-packages/django/db/migrations/recorder.py:89: in applied_migrations
+    if self.has_table():
+../../../.local/lib/python3.12/site-packages/django/db/migrations/recorder.py:63: in has_table
+    with self.connection.cursor() as cursor:
+../../../.local/lib/python3.12/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../../../.local/lib/python3.12/site-packages/django/db/backends/base/base.py:320: in cursor
+    return self._cursor()
+../../../.local/lib/python3.12/site-packages/django/db/backends/base/base.py:296: in _cursor
+    self.ensure_connection()
+E   RuntimeError: Database access not allowed, use the "django_db" mark, or the "db" or "transactional_db" fixtures to enable it.</error><system-out>--------------------------------- Captured Log ---------------------------------
+
+--------------------------------- Captured Out ---------------------------------
+
+</system-out><system-err>--------------------------------- Captured Err ---------------------------------
+
+</system-err></testcase><testcase classname="tests.facturacion.test_models.test_cliente.ClienteModelTest" name="test_campos_opcionales" time="0.000"><error message="failed on setup with &quot;RuntimeError: Database access not allowed, use the &quot;django_db&quot; mark, or the &quot;db&quot; or &quot;transactional_db&quot; fixtures to enable it.&quot;">../../../.local/lib/python3.12/site-packages/pytest_django/plugin.py:584: in _django_setup_unittest
+    request.getfixturevalue("django_db_setup")
+../../../.local/lib/python3.12/site-packages/pytest_django/plugin.py:552: in _django_db_marker
+    request.getfixturevalue("_django_db_helper")
+../../../.local/lib/python3.12/site-packages/pytest_django/plugin.py:552: in _django_db_marker
+    request.getfixturevalue("_django_db_helper")
+tests/conftest.py:28: in django_db_setup
+    call_command('migrate', '--noinput')
+../../../.local/lib/python3.12/site-packages/django/core/management/__init__.py:194: in call_command
+    return command.execute(*args, **defaults)
+../../../.local/lib/python3.12/site-packages/django/core/management/base.py:460: in execute
+    output = self.handle(*args, **options)
+../../../.local/lib/python3.12/site-packages/django/core/management/base.py:107: in wrapper
+    res = handle_func(*args, **kwargs)
+../../../.local/lib/python3.12/site-packages/django/core/management/commands/migrate.py:114: in handle
+    executor = MigrationExecutor(connection, self.migration_progress_callback)
+../../../.local/lib/python3.12/site-packages/django/db/migrations/executor.py:18: in __init__
+    self.loader = MigrationLoader(self.connection)
+../../../.local/lib/python3.12/site-packages/django/db/migrations/loader.py:58: in __init__
+    self.build_graph()
+../../../.local/lib/python3.12/site-packages/django/db/migrations/loader.py:235: in build_graph
+    self.applied_migrations = recorder.applied_migrations()
+../../../.local/lib/python3.12/site-packages/django/db/migrations/recorder.py:89: in applied_migrations
+    if self.has_table():
+../../../.local/lib/python3.12/site-packages/django/db/migrations/recorder.py:63: in has_table
+    with self.connection.cursor() as cursor:
+../../../.local/lib/python3.12/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../../../.local/lib/python3.12/site-packages/django/db/backends/base/base.py:320: in cursor
+    return self._cursor()
+../../../.local/lib/python3.12/site-packages/django/db/backends/base/base.py:296: in _cursor
+    self.ensure_connection()
+E   RuntimeError: Database access not allowed, use the "django_db" mark, or the "db" or "transactional_db" fixtures to enable it.</error><system-out>--------------------------------- Captured Log ---------------------------------
+
+--------------------------------- Captured Out ---------------------------------
+
+</system-out><system-err>--------------------------------- Captured Err ---------------------------------
+
+</system-err></testcase><testcase classname="tests.facturacion.test_models.test_cliente.ClienteModelTest" name="test_crear_cliente" time="0.000"><error message="failed on setup with &quot;RuntimeError: Database access not allowed, use the &quot;django_db&quot; mark, or the &quot;db&quot; or &quot;transactional_db&quot; fixtures to enable it.&quot;">../../../.local/lib/python3.12/site-packages/pytest_django/plugin.py:584: in _django_setup_unittest
+    request.getfixturevalue("django_db_setup")
+../../../.local/lib/python3.12/site-packages/pytest_django/plugin.py:552: in _django_db_marker
+    request.getfixturevalue("_django_db_helper")
+../../../.local/lib/python3.12/site-packages/pytest_django/plugin.py:552: in _django_db_marker
+    request.getfixturevalue("_django_db_helper")
+tests/conftest.py:28: in django_db_setup
+    call_command('migrate', '--noinput')
+../../../.local/lib/python3.12/site-packages/django/core/management/__init__.py:194: in call_command
+    return command.execute(*args, **defaults)
+../../../.local/lib/python3.12/site-packages/django/core/management/base.py:460: in execute
+    output = self.handle(*args, **options)
+../../../.local/lib/python3.12/site-packages/django/core/management/base.py:107: in wrapper
+    res = handle_func(*args, **kwargs)
+../../../.local/lib/python3.12/site-packages/django/core/management/commands/migrate.py:114: in handle
+    executor = MigrationExecutor(connection, self.migration_progress_callback)
+../../../.local/lib/python3.12/site-packages/django/db/migrations/executor.py:18: in __init__
+    self.loader = MigrationLoader(self.connection)
+../../../.local/lib/python3.12/site-packages/django/db/migrations/loader.py:58: in __init__
+    self.build_graph()
+../../../.local/lib/python3.12/site-packages/django/db/migrations/loader.py:235: in build_graph
+    self.applied_migrations = recorder.applied_migrations()
+../../../.local/lib/python3.12/site-packages/django/db/migrations/recorder.py:89: in applied_migrations
+    if self.has_table():
+../../../.local/lib/python3.12/site-packages/django/db/migrations/recorder.py:63: in has_table
+    with self.connection.cursor() as cursor:
+../../../.local/lib/python3.12/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../../../.local/lib/python3.12/site-packages/django/db/backends/base/base.py:320: in cursor
+    return self._cursor()
+../../../.local/lib/python3.12/site-packages/django/db/backends/base/base.py:296: in _cursor
+    self.ensure_connection()
+E   RuntimeError: Database access not allowed, use the "django_db" mark, or the "db" or "transactional_db" fixtures to enable it.</error><system-out>--------------------------------- Captured Log ---------------------------------
+
+--------------------------------- Captured Out ---------------------------------
+
+</system-out><system-err>--------------------------------- Captured Err ---------------------------------
+
+</system-err></testcase><testcase classname="tests.facturacion.test_models.test_cliente.ClienteModelTest" name="test_str_representation" time="0.000"><error message="failed on setup with &quot;RuntimeError: Database access not allowed, use the &quot;django_db&quot; mark, or the &quot;db&quot; or &quot;transactional_db&quot; fixtures to enable it.&quot;">../../../.local/lib/python3.12/site-packages/pytest_django/plugin.py:584: in _django_setup_unittest
+    request.getfixturevalue("django_db_setup")
+../../../.local/lib/python3.12/site-packages/pytest_django/plugin.py:552: in _django_db_marker
+    request.getfixturevalue("_django_db_helper")
+../../../.local/lib/python3.12/site-packages/pytest_django/plugin.py:552: in _django_db_marker
+    request.getfixturevalue("_django_db_helper")
+tests/conftest.py:28: in django_db_setup
+    call_command('migrate', '--noinput')
+../../../.local/lib/python3.12/site-packages/django/core/management/__init__.py:194: in call_command
+    return command.execute(*args, **defaults)
+../../../.local/lib/python3.12/site-packages/django/core/management/base.py:460: in execute
+    output = self.handle(*args, **options)
+../../../.local/lib/python3.12/site-packages/django/core/management/base.py:107: in wrapper
+    res = handle_func(*args, **kwargs)
+../../../.local/lib/python3.12/site-packages/django/core/management/commands/migrate.py:114: in handle
+    executor = MigrationExecutor(connection, self.migration_progress_callback)
+../../../.local/lib/python3.12/site-packages/django/db/migrations/executor.py:18: in __init__
+    self.loader = MigrationLoader(self.connection)
+../../../.local/lib/python3.12/site-packages/django/db/migrations/loader.py:58: in __init__
+    self.build_graph()
+../../../.local/lib/python3.12/site-packages/django/db/migrations/loader.py:235: in build_graph
+    self.applied_migrations = recorder.applied_migrations()
+../../../.local/lib/python3.12/site-packages/django/db/migrations/recorder.py:89: in applied_migrations
+    if self.has_table():
+../../../.local/lib/python3.12/site-packages/django/db/migrations/recorder.py:63: in has_table
+    with self.connection.cursor() as cursor:
+../../../.local/lib/python3.12/site-packages/django/utils/asyncio.py:26: in inner
+    return func(*args, **kwargs)
+../../../.local/lib/python3.12/site-packages/django/db/backends/base/base.py:320: in cursor
+    return self._cursor()
+../../../.local/lib/python3.12/site-packages/django/db/backends/base/base.py:296: in _cursor
+    self.ensure_connection()
+E   RuntimeError: Database access not allowed, use the "django_db" mark, or the "db" or "transactional_db" fixtures to enable it.</error><system-out>--------------------------------- Captured Log ---------------------------------
+
+--------------------------------- Captured Out ---------------------------------
+
+</system-out><system-err>--------------------------------- Captured Err ---------------------------------
+
+</system-err></testcase></testsuite></testsuites>

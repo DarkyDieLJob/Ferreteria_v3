@@ -1,0 +1,16 @@
+> """
+> AppConfig for core_testing application.
+> """
+> from django.apps import AppConfig
+  
+  
+> class CoreTestingConfig(AppConfig):
+>     """Configuration for core_testing application."""
+>     default_auto_field = 'django.db.models.BigAutoField'
+>     name = 'core_testing'
+>     verbose_name = 'Testing Dashboard'
+  
+>     def ready(self):
+>         """Run when the app is ready."""
+          # Import signals here to avoid AppRegistryNotReady exception
+>         import core_testing.signals  # noqa

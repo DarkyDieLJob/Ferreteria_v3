@@ -1,0 +1,121 @@
+> """
+> Script para crear datos de prueba para el módulo de testing.
+> """
+! import os
+! import sys
+! import random
+! from datetime import datetime, timedelta
+  
+  # Asegurarse de que el proyecto Django esté en el path
+! project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+! sys.path.append(project_root)
+  
+  # Configurar el entorno de Django
+! os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core_config.settings")
+! import django
+! django.setup()
+  
+  # Ahora importamos los modelos después de configurar Django
+! from django.contrib.auth import get_user_model
+! from django.utils import timezone
+! from core_testing.models import TestRun, TestCase
+  
+! def create_test_user():
+!     """Crea un usuario de prueba si no existe."""
+!     User = get_user_model()
+!     user, created = User.objects.get_or_create(
+!         username='tester',
+!         defaults={
+!             'email': 'tester@example.com',
+!             'is_staff': True,
+!             'is_active': True
+!         }
+!     )
+!     if created:
+!         user.set_password('testpass123')
+!         user.save()
+!     return user
+  
+! def create_test_run(user, status='passed', days_ago=0):
+!     """Crea una ejecución de prueba con estado aleatorio."""
+!     status_choices = ['passed', 'failed', 'error', 'running']
+!     status = status or random.choice(status_choices)
+      
+!     run = TestRun.objects.create(
+!         name=f'Test Run {TestRun.objects.count() + 1}',
+!         status=status,
+!         duration=random.uniform(1.5, 15.7),
+!         total_tests=random.randint(5, 50),
+!         tests_passed=random.randint(0, 50),
+!         tests_failed=random.randint(0, 5),
+!         tests_error=random.randint(0, 2),
+!         tests_skipped=random.randint(0, 3),
+!         coverage_percent=random.uniform(50.0, 100.0),
+!         branch='main',
+!         commit_hash='abc123def456',
+!         triggered_by=user,
+!         metadata={
+!             'environment': 'development',
+!             'python_version': '3.9.7',
+!             'django_version': '3.2.9',
+!         }
+!     )
+      
+      # Establecer una fecha de creación personalizada (para tener datos históricos)
+!     if days_ago > 0:
+!         run.created_at = timezone.now() - timedelta(days=days_ago)
+!         run.save()
+      
+!     return run
+  
+! def create_test_cases(test_run, count=10):
+!     """Crea casos de prueba para una ejecución."""
+!     test_cases = []
+!     status_choices = ['passed', 'failed', 'error', 'skipped', 'xfailed', 'xpassed']
+      
+!     for i in range(count):
+!         status = random.choice(status_choices)
+!         test_case = TestCase.objects.create(
+!             test_run=test_run,
+!             nodeid=f'test_module_{i}.py::test_case_{i}',
+!             name=f'test_case_{i}',
+!             file=f'/path/to/test_module_{i}.py',
+!             line=random.randint(10, 100),
+!             status=status,
+!             duration=random.uniform(0.01, 2.5),
+!             message='Test case executed successfully' if status == 'passed' else 'Test case failed',
+!             traceback='' if status == 'passed' else 'Traceback (most recent call last):\n  File "test.py", line 2, in <module>\n    assert False\nAssertionError',
+!             metadata={
+!                 'tags': ['smoke', 'regression'],
+!                 'importance': 'high',
+!                 'owner': 'qa-team'
+!             }
+!         )
+!         test_cases.append(test_case)
+      
+!     return test_cases
+  
+! def create_test_data():
+!     """Función principal para crear datos de prueba."""
+!     print("Creando datos de prueba...")
+      
+      # Crear usuario de prueba
+!     user = create_test_user()
+!     print(f"Usuario de prueba: {user.username} (ID: {user.id})")
+      
+      # Crear ejecuciones de prueba
+!     for i in range(10):
+!         run = create_test_run(user, days_ago=random.randint(0, 30))
+!         create_test_cases(run, count=random.randint(5, 20))
+!         print(f"Creada ejecución de prueba: {run.name} (ID: {run.id})")
+      
+!     print("¡Datos de prueba creados exitosamente!")
+  
+- if __name__ == "__main__":
+-     import os
+-     import django
+      
+-     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core_config.settings")
+-     django.setup()
+      
+-     create_test_data()

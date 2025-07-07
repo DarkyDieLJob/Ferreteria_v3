@@ -80,23 +80,73 @@ El comando `run_tests` es la forma recomendada de ejecutar pruebas en el proyect
 ### Uso Básico
 
 ```bash
-# Ejecutar todas las pruebas con reporte de cobertura
-python manage.py run_tests --coverage
+# Ejecutar todas las pruebas con cobertura (comportamiento por defecto)
+python manage.py run_tests
 
-# Ejecutar pruebas de un módulo específico
-python manage.py run_tests core_testing.tests.test_models
+# Ejecutar sin generar informe de cobertura
+python manage.py run_tests --no-coverage
 
-# Ejecutar pruebas en paralelo (acelera la ejecución)
-python manage.py run_tests --parallel=4
+# Ejecutar pruebas de un módulo o archivo específico
+python manage.py run_tests facturacion  # App completa
+python manage.py run_tests facturacion/tests/test_models.py  # Archivo específico
+python manage.py run_tests facturacion.tests.test_models  # Módulo Python
 
-# Ejecutar pruebas sin detenerse al primer fallo
-python manage.py run_tests --no-failfast
+# Opciones de ejecución
+python manage.py run_tests --parallel=4  # Ejecutar en 4 procesos
+python manage.py run_tests --no-failfast  # Continuar después de fallos
+python manage.py run_tests --keepdb  # Mantener la base de datos de pruebas
+python manage.py run_tests -v 2  # Mayor verbosidad
 
 # Ver todas las opciones disponibles
 python manage.py run_tests --help
 ```
 
-### Importante
+### Comportamiento por Defecto
+
+Por defecto, el comando `run_tests`:
+1. Busca pruebas en los directorios: `tests/`, `core_testing/`, `facturacion/`, `articulos/`
+2. Ejecuta las pruebas con cobertura de código
+3. Genera informes en formato XML y HTML en el directorio `htmlcov/`
+4. Registra los resultados en la base de datos para el dashboard
+5. Muestra un resumen de los resultados en la consola
+
+### Integración con el Dashboard
+
+Los resultados de las pruebas ejecutadas con `run_tests` se registran automáticamente en la base de datos y están disponibles en el dashboard de pruebas en:
+```
+http://localhost:8000/testing/dashboard/
+```
+
+### Opciones Avanzadas
+
+| Opción | Descripción |
+|--------|-------------|
+| `--no-coverage` | Desactiva la generación de informes de cobertura |
+| `--parallel=N` | Ejecuta pruebas en N procesos paralelos |
+| `--keepdb` | Preserva la base de datos de pruebas entre ejecuciones |
+| `--no-failfast` | Continúa la ejecución después de fallos |
+| `-v, --verbosity` | Controla la cantidad de salida (0-2) |
+| `--test-path=RUTA` | Especifica una ruta personalizada para buscar pruebas |
+
+### Ejemplos Prácticos
+
+```bash
+# Ejecutar solo pruebas de facturación con cobertura detallada
+python manage.py run_tests facturacion
+
+# Ejecutar pruebas en paralelo sin cobertura
+python manage.py run_tests --parallel=4 --no-coverage
+
+# Ejecutar una prueba específica con salida detallada
+python manage.py run_tests facturacion.tests.test_models.ClienteModelTest -v 2
+```
+
+### Notas Importantes
+
+1. **No usar pytest directamente**: Siempre usa `python manage.py run_tests` en lugar de `pytest` para garantizar la integración con el dashboard.
+2. **Base de datos de pruebas**: Por defecto se usa SQLite en memoria. Usa `--keepdb` para acelerar ejecuciones posteriores.
+3. **Cobertura**: Los informes de cobertura se generan en `htmlcov/`. Usa `--no-coverage` para desactivar si no los necesitas.
+4. **Variables de entorno**: El comando respeta la configuración de Django, incluyendo `DJANGO_SETTINGS_MODULE`.
 
 ❌ **No uses `pytest` directamente**, ya que:
 - No registrará los resultados en el dashboard
