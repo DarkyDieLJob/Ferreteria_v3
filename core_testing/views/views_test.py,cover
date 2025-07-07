@@ -1,0 +1,100 @@
+> """
+> Vistas de prueba para el módulo de testing.
+> Estas vistas son temporales y se utilizarán para probar la funcionalidad básica.
+> """
+> from django.http import HttpRequest, HttpResponse
+> from django.views import View
+> from django.shortcuts import render
+> from core_testing.testing_interfaces.base import TestingInterface
+  
+  
+> def list_testing_interfaces(request: HttpRequest) -> HttpResponse:
+>     """
+>     Vista que lista todas las interfaces de testing disponibles.
+>     """
+!     from importlib import import_module
+!     from pathlib import Path
+      
+!     interfaces_dir = Path(__file__).parent / 'testing_interfaces'
+!     interfaces = []
+      
+      # Buscar módulos en el directorio de interfaces
+!     for module_file in interfaces_dir.glob('*.py'):
+!         if module_file.stem == '__init__' or module_file.stem == 'base':
+!             continue
+              
+!         try:
+!             module_name = f"core_testing.testing_interfaces.{module_file.stem}"
+!             module = import_module(module_name)
+              
+              # Buscar clases que hereden de TestingInterface
+!             for name, obj in module.__dict__.items():
+!                 if (isinstance(obj, type) and 
+!                     issubclass(obj, TestingInterface) and 
+!                     obj != TestingInterface):
+!                     interface = obj()
+!                     interfaces.append({
+!                         'name': interface.name,
+!                         'description': interface.description,
+!                         'version': interface.version,
+!                         'module': module_file.stem,
+!                         'tests': interface.get_available_tests()
+!                     })
+!         except Exception as e:
+!             print(f"Error cargando módulo {module_file.stem}: {e}")
+      
+!     return render(request, 'core_testing/test_interfaces_list.html', {
+!         'interfaces': interfaces
+!     })
+  
+  
+- class TestInterfaceView(View):
+-     """
+-     Vista para probar una interfaz de testing específica.
+-     """
+-     def get(self, request: HttpRequest, interface_name: str) -> HttpResponse:
+-         """Muestra la interfaz de testing."""
+-         try:
+-             module = __import__(
+-                 f'core_testing.testing_interfaces.{interface_name}', 
+-                 fromlist=[interface_name]
+-             )
+              
+              # Buscar la clase de la interfaz
+-             interface_class = None
+-             for name, obj in module.__dict__.items():
+-                 if (isinstance(obj, type) and 
+-                     issubclass(obj, TestingInterface) and 
+-                     obj != TestingInterface):
+-                     interface_class = obj
+-                     break
+              
+-             if not interface_class:
+-                 return HttpResponse(
+-                     f"No se encontró una clase de interfaz válida en {interface_name}",
+-                     status=404
+-                 )
+              
+-             interface = interface_class()
+-             tests = interface.get_available_tests()
+              
+-             return render(request, 'core_testing/test_interface_detail.html', {
+-                 'interface': {
+-                     'name': interface.name,
+-                     'description': interface.description,
+-                     'version': interface.version,
+-                     'module': interface_name
+-                 },
+-                 'tests': tests
+-             })
+              
+-         except ImportError as e:
+-             return HttpResponse(
+-                 f"No se pudo cargar el módulo {interface_name}: {e}",
+-                 status=404
+-             )
+-         except Exception as e:
+-             return HttpResponse(
+-                 f"Error al cargar la interfaz: {str(e)}",
+-                 status=500
+-             )

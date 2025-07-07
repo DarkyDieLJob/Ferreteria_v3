@@ -77,12 +77,32 @@ class Command(BaseCommand):
         self.logger = setup_logging()
     
     def add_arguments(self, parser):
-        """Define los argumentos del comando."""
+        """Define los argumentos del comando.
+        
+        Args:
+            test_target: Ruta al directorio o archivo de pruebas (opcional)
+            --user: Usuario que ejecuta las pruebas (opcional)
+            --no-coverage: Desactivar generación de informe de cobertura
+        """
+        parser.add_argument(
+            'test_target',
+            nargs='?',
+            type=str,
+            help='Ruta al directorio o archivo de pruebas (opcional)',
+            default=None
+        )
         parser.add_argument(
             '--user',
             type=str,
             help='Usuario que ejecuta las pruebas (opcional)',
             default=None
+        )
+        parser.add_argument(
+            '--no-coverage',
+            action='store_false',
+            dest='coverage',
+            help='Desactivar generación de informe de cobertura',
+            default=True
         )
     
     def handle(self, *args, **options):
@@ -96,10 +116,10 @@ class Command(BaseCommand):
             # Crear registro de ejecución
             test_run = self._create_test_run(user)
             
-            # Ejecutar pruebas con cobertura para todas las apps
+            # Ejecutar pruebas con o sin cobertura según la opción
             test_results = self._run_pytest(
-                test_path=None,  # None para todas las apps
-                use_coverage=True,  # Siempre con cobertura
+                test_path=options['test_target'],  # Puede ser None para todas las apps
+                use_coverage=options['coverage'],  # Usar la opción de cobertura
                 run_id=test_run.id
             )
             
@@ -155,21 +175,93 @@ class Command(BaseCommand):
             xml_report_path = xml_file.name
         
         try:
-            # Construir comando pytest con cobertura para todas las apps
+            # Construir comando base de pytest
             cmd = [
-                'pytest',
+                'python',
+                '-m', 'pytest',
                 '-v',
                 f'--junit-xml={xml_report_path}',
                 '--no-header',
-                '--no-summary',
-                '--cov=.',  # Cubrir todo el proyecto
-                '--cov-report=xml',
-                '--cov-config=.coveragerc'
+                '--no-summary'
             ]
             
-            # Agregar ruta específica si se especificó
+            # Agregar opciones de cobertura si está habilitada
+            if use_coverage:
+                cmd.extend([
+                    '--cov=.',  # Cubrir todo el proyecto
+                    '--cov-report=xml',
+                    '--cov-config=.coveragerc',
+                    '--cov-branch'  # Incluir cobertura de ramas
+                ])
+            
+            # Mapeo de nombres de aplicaciones a sus rutas de prueba
+            app_paths = {
+                'facturacion': 'tests/facturacion',
+                'articulos': 'tests/articulos',
+                'core_testing': 'core_testing/tests',
+                'pedido': 'tests/pedido',
+                'boletas': 'tests/boletas',
+                'bdd': 'tests/bdd',
+                'x_cartel': 'tests/x_cartel'
+            }
+            
+            # Directorios base donde buscar pruebas (orden de búsqueda)
+            base_dirs = [
+                'tests',  # Directorio raíz de pruebas
+                'core_testing/tests',  # Pruebas de core_testing
+                'tests/facturacion',  # Pruebas de facturación
+                'tests/articulos',  # Pruebas de artículos
+                'tests/pedido',  # Pruebas de pedidos
+                'tests/boletas',  # Pruebas de boletas
+                'tests/bdd',  # Pruebas de la base de datos
+                'tests/x_cartel'  # Pruebas de carteles
+            ]
+            
+            # Si se especifica una ruta, verificar si es un nombre de aplicación conocido
             if test_path:
+                # Si es un nombre de aplicación conocido, usar la ruta mapeada
+                if test_path in app_paths and os.path.exists(app_paths[test_path]):
+                    test_path = app_paths[test_path]
+                    self.logger.info(f'Usando ruta mapeada para {test_path}: {test_path}')
+                # Si no es un nombre de aplicación conocido, verificar si la ruta existe
+                elif not os.path.exists(test_path):
+                    # Intentar encontrar la ruta en los directorios base
+                    found = False
+                    for base_dir in base_dirs:
+                        full_path = os.path.join(base_dir, test_path)
+                        if os.path.exists(full_path):
+                            test_path = full_path
+                            found = True
+                            self.logger.info(f'Ruta encontrada en: {test_path}')
+                            break
+                    
+                    if not found:
+                        raise CommandError(f'No se encontró la ruta de pruebas: {test_path}')
+            
+            # Si no se especifica ruta o se encontró una ruta válida
+            if not test_path or not os.path.exists(test_path):
+                # Buscar en todos los directorios de pruebas relevantes
+                test_dirs = [d for d in base_dirs if os.path.exists(d)]
+                
+                if not test_dirs:
+                    raise CommandError('No se encontraron directorios de prueba')
+                
+                # Usar el patrón de búsqueda de pytest para encontrar pruebas
+                cmd.extend([
+                    '--rootdir=.',  # Directorio raíz del proyecto
+                    '--pyargs',     # Buscar en paquetes Python
+                    '--import-mode=importlib'  # Mejor manejo de imports
+                ])
+                
+                # Agregar cada directorio como un argumento separado
+                for d in test_dirs:
+                    cmd.append(d)
+                
+                self.logger.info(f'Buscando pruebas en directorios: {test_dirs}')
+            else:
+                # Usar la ruta especificada
                 cmd.append(test_path)
+                self.logger.info(f'Buscando pruebas en: {test_path}')
             
             self.logger.info(f'Comando: {" ".join(cmd)}')
             

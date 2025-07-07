@@ -1,0 +1,350 @@
+> """
+> Modelos para el módulo de dashboard de pruebas.
+> """
+> import json
+> from django.db import models
+> from django.conf import settings
+> from django.utils import timezone
+> from django.utils.translation import gettext_lazy as _
+> from django.contrib.auth import get_user_model
+  
+- class TestRun(models.Model):
+-     """Almacena información sobre una ejecución de pruebas."""
+      
+-     class Status(models.TextChoices):
+-         RUNNING = 'running', _('En ejecución')
+-         PASSED = 'passed', _('Pasó')
+-         FAILED = 'failed', _('Falló')
+-         ERROR = 'error', _('Error')
+      
+      # Metadatos
+-     name = models.CharField(
+-         max_length=255,
+-         blank=True,
+-         null=True,
+-         verbose_name=_('nombre')
+-     )
+-     created_at = models.DateTimeField(
+-         auto_now_add=True,
+-         verbose_name=_('fecha de creación')
+-     )
+-     updated_at = models.DateTimeField(
+-         auto_now=True,
+-         verbose_name=_('fecha de actualización')
+-     )
+-     started_at = models.DateTimeField(
+-         verbose_name=_('iniciada el')
+-     )
+-     finished_at = models.DateTimeField(
+-         null=True,
+-         blank=True,
+-         verbose_name=_('finalizada el')
+-     )
+      
+      # Información de la ejecución
+-     status = models.CharField(
+-         max_length=10,
+-         choices=Status.choices,
+-         default=Status.RUNNING,
+-         verbose_name=_('estado')
+-     )
+-     duration = models.FloatField(
+-         null=True,
+-         blank=True,
+-         verbose_name=_('duración (segundos)')
+-     )
+      
+      # Resultados
+-     total_tests = models.PositiveIntegerField(
+-         default=0,
+-         verbose_name=_('total de pruebas')
+-     )
+-     tests_passed = models.PositiveIntegerField(
+-         default=0,
+-         verbose_name=_('pruebas exitosas')
+-     )
+-     tests_failed = models.PositiveIntegerField(
+-         default=0,
+-         verbose_name=_('pruebas fallidas')
+-     )
+-     tests_error = models.PositiveIntegerField(
+-         default=0,
+-         verbose_name=_('errores')
+-     )
+-     tests_skipped = models.PositiveIntegerField(
+-         default=0,
+-         verbose_name=_('pruebas omitidas')
+-     )
+      
+      # Cobertura
+-     coverage_percent = models.FloatField(
+-         null=True,
+-         blank=True,
+-         verbose_name=_('cobertura de código (%)')
+-     )
+      
+      # Relaciones
+-     triggered_by = models.ForeignKey(
+-         settings.AUTH_USER_MODEL,
+-         on_delete=models.SET_NULL,
+-         null=True,
+-         blank=True,
+-         verbose_name=_('ejecutado por')
+-     )
+      
+-     class Meta:
+-         ordering = ['-started_at']
+-         verbose_name = _('ejecución de pruebas')
+-         verbose_name_plural = _('ejecuciones de pruebas')
+      
+-     branch = models.CharField(max_length=100, blank=True, default='')
+-     commit_hash = models.CharField(max_length=40, blank=True, default='')
+      
+      # Additional Data
+-     metadata = models.JSONField(default=dict, blank=True)
+      
+-     def __str__(self):
+-         if self.started_at:
+-             return f"Ejecución {self.id} - {self.get_status_display()} - {self.started_at.strftime('%Y-%m-%d %H:%M')}"
+-         return f"Ejecución {self.id} - {self.get_status_display()} - No iniciada"
+      
+-     @property
+-     def is_completed(self):
+-         """Check if the test run has completed."""
+-         return self.status in ['passed', 'failed', 'error']
+      
+-     @property
+-     def passed_percentage(self):
+-         """Return the percentage of passed tests."""
+-         if self.total_tests == 0:
+-             return 0.0
+-         return (self.tests_passed / self.total_tests) * 100
+      
+-     @property
+-     def failed_percentage(self):
+-         """Return the percentage of failed tests."""
+-         if self.total_tests == 0:
+-             return 0.0
+-         return (self.tests_failed / self.total_tests) * 100
+      
+-     @property
+-     def error_percentage(self):
+-         """Return the percentage of error tests."""
+-         if self.total_tests == 0:
+-             return 0.0
+-         return (self.tests_error / self.total_tests) * 100
+      
+-     @property
+-     def skipped_percentage(self):
+-         """Return the percentage of skipped tests."""
+-         if self.total_tests == 0:
+-             return 0.0
+-         return (self.tests_skipped / self.total_tests) * 100
+      
+-     def update_from_pytest_json(self, json_data):
+-         """Update test run data from pytest-json report."""
+-         if not isinstance(json_data, dict):
+-             json_data = json.loads(json_data)
+          
+          # Update basic test results
+-         self.total_tests = json_data.get('summary', {}).get('total', 0)
+-         self.tests_passed = json_data.get('summary', {}).get('passed', 0)
+-         self.tests_failed = json_data.get('summary', {}).get('failed', 0)
+-         self.tests_skipped = json_data.get('summary', {}).get('skipped', 0)
+-         self.tests_error = json_data.get('summary', {}).get('error', 0)
+          
+          # Update status based on results
+-         if self.tests_failed > 0 or self.tests_error > 0:
+-             self.status = 'failed'
+>         else:
+-             self.status = 'passed'
+          
+          # Update duration if available
+-         duration = json_data.get('duration', 0)
+-         if duration:
+-             self.duration = duration
+          
+-         self.save()
+-         return self
+  
+  
+- class TestCase(models.Model):
+-     """Almacena información sobre un caso de prueba individual."""
+      
+-     class Status(models.TextChoices):
+-         PASSED = 'passed', _('Pasó')
+-         FAILED = 'failed', _('Falló')
+-         ERROR = 'error', _('Error')
+-         SKIPPED = 'skipped', _('Omitido')
+-         XFAILED = 'xfailed', _('Fallo esperado')
+-         XPASSED = 'xpassed', _('Pasó inesperadamente')
+      
+      # Relaciones
+-     test_run = models.ForeignKey(
+-         TestRun,
+-         on_delete=models.CASCADE,
+-         related_name='test_cases',
+-         verbose_name=_('ejecución')
+-     )
+      
+      # Identificación
+-     nodeid = models.CharField(
+-         max_length=1024,
+-         verbose_name=_('ID del nodo')
+-     )
+-     name = models.CharField(
+-         max_length=255,
+-         verbose_name=_('nombre')
+-     )
+-     file = models.CharField(
+-         max_length=512,
+-         verbose_name=_('archivo')
+-     )
+-     line = models.PositiveIntegerField(
+-         verbose_name=_('línea')
+-     )
+      
+      # Resultados
+-     status = models.CharField(
+-         max_length=10,
+-         choices=Status.choices,
+-         verbose_name=_('estado')
+-     )
+-     duration = models.FloatField(
+-         verbose_name=_('duración (segundos)')
+-     )
+-     message = models.TextField(
+-         blank=True,
+-         verbose_name=_('mensaje')
+-     )
+-     traceback = models.TextField(
+-         blank=True,
+-         verbose_name=_('traza de error')
+-     )
+      
+      # Metadatos
+-     metadata = models.JSONField(
+-         default=dict,
+-         blank=True,
+-         verbose_name=_('metadatos')
+-     )
+-     created_at = models.DateTimeField(
+-         auto_now_add=True,
+-         verbose_name=_('fecha de creación')
+-     )
+      
+-     class Meta:
+-         ordering = ['file', 'name']
+-         verbose_name = _('caso de prueba')
+-         verbose_name_plural = _('casos de prueba')
+      
+-     def __str__(self):
+-         return f"{self.name} ({self.get_status_display()})"
+  
+  
+> class ModuleCoverage(models.Model):
+>     """Almacena información de cobertura de código por módulo."""
+      
+      # Información del módulo
+>     module_name = models.CharField(
+>         max_length=255,
+>         db_index=True,
+>         verbose_name=_('nombre del módulo')
+>     )
+      
+      # Métricas de cobertura
+>     coverage_percent = models.FloatField(
+>         verbose_name=_('porcentaje de cobertura')
+>     )
+>     lines_covered = models.PositiveIntegerField(
+>         verbose_name=_('líneas cubiertas')
+>     )
+>     lines_missing = models.PositiveIntegerField(
+>         verbose_name=_('líneas sin cubrir')
+>     )
+>     total_lines = models.PositiveIntegerField(
+>         verbose_name=_('total de líneas')
+>     )
+      
+      # Tendencias
+>     last_updated = models.DateTimeField(
+>         auto_now=True,
+>         verbose_name=_('última actualización')
+>     )
+      
+      # Datos detallados (opcional, para análisis avanzado)
+>     file_coverage = models.JSONField(
+>         default=dict,
+>         blank=True,
+>         verbose_name=_('cobertura por archivo')
+>     )
+      
+      # Relación con TestRun (opcional)
+>     test_run = models.ForeignKey(
+>         'TestRun',
+>         on_delete=models.SET_NULL,
+>         null=True,
+>         blank=True,
+>         related_name='module_coverages',
+>         verbose_name=_('ejecución de pruebas')
+>     )
+      
+>     class Meta:
+>         verbose_name = _('cobertura por módulo')
+>         verbose_name_plural = _('cobertura por módulos')
+>         ordering = ['module_name']
+      
+>     def __str__(self):
+!         return f"{self.module_name} - {self.coverage_percent:.1f}%"
+      
+>     def update_from_coverage_data(self, coverage_data):
+>         """
+>         Actualiza los datos de cobertura a partir de un informe de coverage.py.
+          
+>         Args:
+>             coverage_data (dict): Datos JSON de coverage.py
+>         """
+!         self.coverage_percent = coverage_data.get('totals', {}).get('percent_covered', 0)
+!         self.lines_covered = coverage_data.get('totals', {}).get('covered_lines', 0)
+!         self.lines_missing = coverage_data.get('totals', {}).get('missing_lines', 0)
+!         self.total_lines = self.lines_covered + self.lines_missing
+!         self.file_coverage = coverage_data.get('files', {})
+!         self.save()
+          
+          # Actualizar también la cobertura en la ejecución de pruebas relacionada
+!         if self.test_run:
+!             self.test_run.coverage_percent = self.coverage_percent
+!             self.test_run.save()
+      
+>     @classmethod
+>     def update_or_create_from_coverage_data(cls, module_name, coverage_data, test_run=None):
+>         """
+>         Crea o actualiza un registro de cobertura a partir de datos de coverage.py.
+          
+>         Args:
+>             module_name (str): Nombre del módulo
+>             coverage_data (dict): Datos de cobertura
+>             test_run (TestRun, opcional): Ejecución de pruebas relacionada
+              
+>         Returns:
+>             ModuleCoverage: Instancia creada o actualizada
+>         """
+!         coverage, created = cls.objects.update_or_create(
+!             module_name=module_name,
+!             defaults={
+!                 'coverage_percent': coverage_data.get('totals', {}).get('percent_covered', 0),
+!                 'lines_covered': coverage_data.get('totals', {}).get('covered_lines', 0),
+!                 'lines_missing': coverage_data.get('totals', {}).get('missing_lines', 0),
+!                 'file_coverage': coverage_data.get('files', {})
+!             }
+!         )
+          
+!         if test_run:
+!             coverage.test_run = test_run
+!             coverage.save()
+              
+              # Actualizar la cobertura en la ejecución de pruebas
+!             test_run.coverage_percent = coverage.coverage_percent
+!             test_run.save()
+          
+!         return coverage

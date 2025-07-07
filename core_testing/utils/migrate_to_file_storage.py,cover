@@ -1,0 +1,86 @@
+> """
+> Script para migrar datos de pruebas de la base de datos al almacenamiento en archivos.
+> """
+! import os
+! import sys
+! import json
+! from datetime import datetime
+  
+  # Asegurarse de que el proyecto Django esté en el path
+! project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+! sys.path.append(project_root)
+  
+  # Configurar el entorno de Django
+! os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core_config.settings")
+! import django
+! django.setup()
+  
+  # Ahora importamos los modelos después de configurar Django
+! from django.conf import settings
+! from django.core.serializers.json import DjangoJSONEncoder
+! from core_testing.models import TestRun, TestCase
+! from core_testing.storage import TestResultStorage
+  
+! def migrate_test_runs():
+!     """
+!     Migra todos los TestRuns y sus TestCases asociados al almacenamiento en archivos.
+!     """
+!     print("Iniciando migración de datos de pruebas a almacenamiento en archivos...")
+      
+      # Obtener todos los TestRuns ordenados por fecha de creación
+!     test_runs = TestRun.objects.all().order_by('created_at')
+!     total_runs = test_runs.count()
+      
+!     print(f"Se encontraron {total_runs} ejecuciones de prueba para migrar.")
+      
+!     for i, run in enumerate(test_runs, 1):
+          # Obtener los casos de prueba asociados
+!         test_cases = list(TestCase.objects.filter(test_run=run).values(
+!             'nodeid', 'name', 'file', 'line', 'status', 'duration', 'message', 'traceback'
+!         ))
+          
+          # Preparar los datos en el formato esperado
+          # Convertir la duración a segundos (puede ser un timedelta o un float)
+!         duration_seconds = 0.0
+!         if run.duration:
+!             if hasattr(run.duration, 'total_seconds'):
+!                 duration_seconds = float(run.duration.total_seconds())
+!             else:
+                  # Si ya es un número, asumir que está en segundos
+!                 duration_seconds = float(run.duration)
+          
+!         run_data = {
+!             'id': str(run.id),
+!             'name': run.name or f"Test Run {run.id}",
+!             'status': 'passed' if run.status == 'completed' else 'failed',
+!             'created_at': run.created_at.isoformat(),
+!             'duration': duration_seconds,
+!             'total_tests': run.total_tests,
+!             'tests_passed': run.tests_passed,
+!             'tests_failed': run.tests_failed,
+!             'tests_error': run.tests_error,
+!             'tests_skipped': run.tests_skipped,
+!             'branch': run.branch or 'main',
+!             'commit_hash': run.commit_hash or '',
+!             'triggered_by': str(run.triggered_by.username) if run.triggered_by else 'system',
+!             'metadata': run.metadata or {},
+!             'test_cases': test_cases
+!         }
+          
+          # Guardar en el almacenamiento de archivos
+!         filename = TestResultStorage.save_test_run(run_data)
+!         print(f"[{i}/{total_runs}] Migrado TestRun {run.id} a {filename}")
+      
+!     print("Migración completada exitosamente.")
+!     print(f"Total de ejecuciones migradas: {total_runs}")
+  
+- if __name__ == "__main__":
+-     import django
+-     import os
+      
+      # Configurar el entorno de Django
+-     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core_config.settings")
+-     django.setup()
+      
+      # Ejecutar la migración
+-     migrate_test_runs()
