@@ -49,6 +49,65 @@ tests/
 
 ## 2. Estrategia de Pruebas
 
+### 2.1 Módulo de Facturación (Completado ✅)
+
+#### Modelos Probados
+- **Cliente**
+  - Creación y validación de campos
+  - Métodos de responsabilidad fiscal
+  - Tipos de documento
+  - Representación en string
+
+- **ArticuloVendido**
+  - Creación con ítem registrado
+  - Creación con artículo sin registrar
+  - Método get_item()
+  - Cálculos de importes
+
+- **MetodoPago**
+  - Valores por defecto
+  - Representación en string
+  - Integridad de datos
+
+- **Transaccion**
+  - Relaciones con otros modelos
+  - Fechas automáticas
+  - Métodos de utilidad
+
+- **CierreZ**
+  - Comportamiento de zeta_numero
+  - Valores por defecto
+  - Fechas automáticas
+
+#### Cobertura Actual
+- 100% de cobertura en `facturacion/models.py`
+- Pruebas unitarias para todos los métodos
+- Validación de restricciones de negocio
+
+#### Estructura de Pruebas
+```
+tests/
+  facturacion/
+    test_models/
+      test_cliente.py
+      test_articulo_vendido.py
+      test_metodo_pago.py
+      test_transaccion.py
+      test_cierre_z.py
+```
+
+#### Ejecución de Pruebas
+```bash
+# Ejecutar pruebas de facturación
+python manage.py test facturacion.tests.test_models
+
+# Ejecutar con cobertura
+coverage run --source='facturacion' manage.py test facturacion
+coverage report -m
+```
+
+### 2.2 Próximos Pasos
+
 ### 2.1 Pruebas Unitarias (Objetivo: 80%+ cobertura)
 - [ ] Modelos
 - [ ] Vistas
