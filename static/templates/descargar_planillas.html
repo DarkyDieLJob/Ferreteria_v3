@@ -1,0 +1,25 @@
+{% load custom_filters %}
+<!-- descargar_planillas.html -->
+<div class="overflow-auto h-100">
+    <table class="table table-striped w-auto">
+        <thead class="bg-secondary text-white sticky-top">
+            <tr>
+                <th>Fecha</th>
+                <th>Proveedor</th>
+                <th>Descargar xls</th>
+                <th>Descargar ods</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for sp in seleccion_descargar %}
+            <tr>
+                <td>{{ sp.fecha }}</td>
+                <td>{{ sp.proveedor }}</td>
+                <td><a href="/{{ sp.link_descarga }}">XLS</a></td>
+                <td><a href="/{{ sp.link_descarga_ods }}">ODS</a></td>
+            </tr>
+        {% endfor %}
+
+        </tbody>
+    </table>
+</div>

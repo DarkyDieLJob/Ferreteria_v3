@@ -1,0 +1,130 @@
+{% load custom_filters %}
+<!-- tabla_listado_carteles.html -->
+<style>
+    .child { display: none; }
+</style>
+
+<div class="overflow-auto h-100">
+<table class="table table-striped table-bordered w-100">
+    <thead class="bg-secondary text-white sticky-top">
+        <tr>
+                <th hidden>Id</th>
+                <th>Descripcion</th>
+        </tr>
+    </thead>
+
+    {% for dato in cajones %}
+        <tr class="parent {% if forloop.counter|divisibleby:2 %}parent-even{% else %}parent-odd{% endif %}" id="{{ dato.id }}">
+            <td hidden>{{ dato.id }}</td>
+            <td> <a href="/x_cartel/imprimir_cajon/{{ dato.id }}">{{ dato.codigo }}</a> </td>
+        </tr>
+        <tr class="child-{{ dato.id }} child">
+            <td colspan="5">
+                <table class="table table-hover table-bordered w-100">
+                    {% for item in dato.items %}
+                        <tr>
+                            <td hidden>{{ item.id }}</td>
+                            <td> <a href="/x_cartel/imprimir/{{ item.id }}">{{ item.descripcion }}</a> </td>
+                            <td>{{ item.final }}</td>
+                            <td>{{ item.final_efectivo }}</td>
+
+                            <td><input type="text" value="{{ item.cartelito.descripcion }}"></td>
+                            <td><input type="checkbox" {% if item.cartelito.habilitado %}checked{% endif %}></td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </td>
+        </tr>
+        <tr></tr>
+    {% endfor %}
+</table>
+<table class="table table-striped table-bordered w-100">
+    <thead class="bg-secondary text-white sticky-top">
+        <tr>
+                <th hidden>Id</th>
+                <th>Articulos Sin Cajón</th>
+        </tr>
+    </thead>
+    <tr>
+        <td colspan="5">
+            <table class="table table-hover table-bordered w-100">
+                {% for item in items_sin_cajon %}
+                    <tr>
+                        <td>{{ item.id }}</td>
+                        <td> <a href="/x_cartel/imprimir/{{ item.id }}">{{ item.descripcion }}</a> </td>
+                        <td>{{ item.final }}</td>
+                        <td>{{ item.final_efectivo }}</td>
+                        <!-- Agregamos las nuevas columnas aquí -->
+                        <td><input type="text" value="{{ item.cartelito.descripcion }}"></td>
+                        <td><input type="checkbox" {% if item.cartelito.habilitado %}checked{% endif %}></td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </td>
+    </tr>
+    
+    <tr></tr>
+
+</table>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+
+<script>
+    $(document).ready(function() {
+        $('.parent').click(function() {
+            var child = $('.child-' + this.id);
+            if (child.is(':visible')) {
+                child.hide();
+            } else {
+                child.show();
+            }
+        });
+
+        $('input[type="text"], input[type="checkbox"]').each(function() {
+            var input = this;
+            var item_id = $(this).closest('tr').find('td:first').text();
+            $.get('/x_cartel/cartelito/', {'item_id': item_id}, function(data) {
+                $(input).closest('tr').find('input[type="text"]').val(data.descripcion);
+                $(input).closest('tr').find('input[type="checkbox"]').prop('checked', data.habilitado);
+            });
+        });
+
+        $('input[type="text"]').keypress(function(e) {
+            if (e.which == 13) {  // 13 es el código de la tecla Enter
+                var input = this;
+                var item_id = $(this).closest('tr').find('td:first').text();
+                var descripcion = $(this).val();
+                $.ajax({
+                    url: '/x_cartel/cartelito/',
+                    type: 'post',
+                    data: {'item_id': item_id, 'descripcion': descripcion},
+                    headers: {'X-CSRFToken': '{{ csrf_token }}'},
+                    success: function(data) {
+                        $(input).val(data.descripcion);
+                    }
+                });
+                e.preventDefault();  // Evita que se envíe el formulario
+            }
+        });
+
+        $('input[type="checkbox"]').change(function() {
+            var checkbox = this;
+            var item_id = $(this).closest('tr').find('td:first').text();
+            $.ajax({
+                url: '/x_cartel/cartelito/',
+                type: 'post',
+                data: {'item_id': item_id},
+                headers: {'X-CSRFToken': '{{ csrf_token }}'},
+                success: function(data) {
+                    $(checkbox).closest('tr').find('input[type="text"]').val(data.descripcion);
+                    $(checkbox).prop('checked', data.habilitado);
+                }
+            });
+        });
+    });
+</script>
+
+
+
+
+

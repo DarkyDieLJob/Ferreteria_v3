@@ -1,0 +1,8 @@
+<!-- mp.html -->
+<ul>
+    {% for payment in object_list %}
+        <li {% if payment.status == 'waiting' %}style="color: red;"{% endif %}>
+            {{ payment.created }} - {{ payment.total }} - {{ payment.status }}
+        </li>
+    {% endfor %}
+</ul>

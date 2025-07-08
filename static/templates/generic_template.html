@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+{% load static %}
+<!-- generic_template.html -->
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible">
+        <meta name="viewport" content="width=device-width", initial-scale="1">
+        <meta name="index" content="width=device-width",initial-scale="1.0">
+        <link href="{% static 'bootstrap/css/bootstrap.css' %}" rel="stylesheet">
+        <title>{% block title %}  {% endblock%}</title>
+        <link rel="stylesheet" type="text/css" href="{% static 'admin/css/widgets.css' %}">
+        <link rel="shortcut icon" type="image/png" href="/media/imagenes/favicon.ico"/>
+        <script src="{% static 'jquery/jquery.js' %}"></script>
+
+        <style>
+            .card-row {
+                cursor: pointer;
+            }
+        </style>
+
+        <style>
+            #tablaCarrito {
+                position: fixed;
+                right: 0;
+                top: 0;
+                width: 50%;
+                height: 100%;
+                overflow: auto;
+                background-color: rgba(0,0,0,0.5);
+                z-index: 1100;  /* Aumenta este valor */
+                display: none;
+            }
+
+            .contenedor {
+                width: 50%;
+                display: flex;
+                flex-wrap: wrap;
+                padding: 12px;
+            }
+            .precio {
+                width: 50%;
+            }
+            /* Estilos para la vista móvil */
+            @media (max-width: 767px) {
+                .contenedor {
+                    width: 100%;
+                }
+                .precio {
+                    width: 50%;
+                }
+            }
+
+        </style>
+
+    </head>
+    <body data-usuario="{{ user.get_username }}">
+        <script src="{% static 'cookies/js-cookies3.min.js' %}"></script>
+        <script src="{% static 'bootstrap/js/bootstrap.bundle.js' %}"></script>
+        <script src="{% static 'quagga/quagga.js' %}"></script>
+
+        
+        {% load socialaccount %}
+
+        {% if ruta_actual != '/imprimir/tabla/' %}
+        <nav class="navbar navbar-expand-lg bg-info">
+          <div class="container-fluid">
+            <a class="navbar-brand" href="/">Ferreteria Paoli V-{{version}}</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+              <div class="navbar-nav">
+                {% for nav in barra_de_navegacion %}
+                {% if nav.text_display == 'Actualizar' and nuevas_planillas > 0 %}
+                    <a href="/actualizar/" class="btn btn-primary position-relative">
+                        <i class="fa fa-file"></i> Actualizar
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            {{ nuevas_planillas }}
+                            <span class="visually-hidden">nuevas planillas</span>
+                        </span>
+                    </a>
+                {% elif nav.text_display == 'Descargar Planillas' and nuevas_planillas_descarga  > 0 %}
+                    <a href="/descargar_planillas/" class="btn btn-primary position-relative">
+                        <i class="fa fa-file"></i> Descargar Planillas
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            {{ nuevas_planillas_descarga }}
+                            <span class="visually-hidden">nuevas planillas</span>
+                        </span>
+                    </a>
+                {% else %}
+                    <a class="nav-link btn" href="/{{ nav.url_inicial }}">{{ nav.text_display }}</a>
+                {% endif %}
+                {% endfor%}
+                {% if user.is_authenticated %}
+                  <a class="nav-link btn" href="{% url 'logout'%}?next={{request.path}}">{{ user.get_username }}: Cerrar Usuario</a>
+                {% else %}
+                  <a class="nav-link btn" href="{% url 'login'%}?next={{request.path}}">Ingresar</a>
+                {% endif %}
+                <a class="nav-link btn" href="/change_log">Registro de cambios {{version}}</a>
+              </div>
+            </div>
+          </div>
+        </nav>
+        
+        {% endif %}
+        {% if ruta_actual == '/imprimir/tabla/'%}
+            {% include muro %}
+        {% else %}
+
+            <div class="card">
+            <div class="card-body">
+                {% include "tabla_lateral_carritos.html" %}
+                {% if muro %}
+                    {% include muro %}
+                {% endif %}
+            </div>
+            </div>
+
+
+            <div class="card">
+            <div class="card-body">
+                {% block content %}
+                {% endblock %}
+                
+            </div>
+            </div>  
+        {% endif %}
+
+    <script>
+
+        // Verifica si hay nuevos pagos cuando se carga la página
+        window.addEventListener('load', function() {
+            // Obtiene la información de los pagos del contexto de la plantilla
+            var payments = {{ payments|safe }};
+
+            // Verifica si hay algún pago nuevo con estado "in_progress" o "approved"
+            payments.forEach(function(payment) {
+                if (payment.status === 'in_progress') {
+                    // Muestra una notificación para pagos en progreso
+                    showNotification('Pago en progreso', 'Hay un nuevo pago en progreso');
+                } else if (payment.status === 'approved') {
+                    // Muestra una notificación para pagos aprobados
+                    showNotification('Pago aprobado', 'Hay un nuevo pago aprobado');
+                }
+            });
+        });
+
+        function showNotification(title, message) {
+            // Muestra una notificación utilizando la API de Notificaciones del navegador
+            if (Notification.permission === 'granted') {
+                new Notification(title, { body: message });
+            } else if (Notification.permission !== 'denied') {
+                Notification.requestPermission().then(function(permission) {
+                    if (permission === 'granted') {
+                        new Notification(title, { body: message });
+                    }
+                });
+            }
+        }
+    </script>
+
+    
+    
+    </body>
+
+
+</html>

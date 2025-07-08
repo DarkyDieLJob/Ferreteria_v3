@@ -1,0 +1,26 @@
+<!-- farrafo.html -->
+<table class="table table-striped">
+    <thead>
+        <tr>
+            {% for titulo in titulos %}
+                <th>{{ titulo }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for dato in datos %}
+            <tr>
+                <td>{{ dato.fecha }}</td>
+                <td>{{ dato.nombre }}</td>
+                <td><a href="{{ dato.link }}" target="_blank"> Ver en Drive </a></td>
+                {% if dato.link_descargar == '-' %}
+                    <td> No disponible </td>
+                {% else %}
+                    <td><a href="{{ dato.link_descargar }}"> Descargar </a></td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+    </tbody>
+    
+</table>

@@ -1,0 +1,25 @@
+<!-- imprimir_tablas.html -->
+<table class="table table-striped w-auto">
+    <thead class="bg-secondary text-white sticky-top">
+        <tr>
+            {% for titulo in titulos %}
+            {% if titulo != 'actualizado'%}
+                <th>{{ titulo }}</th>
+            {% endif %}
+            {% endfor %}
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for dato in datos %}
+            <tr>
+            {% for clave, valor in dato.items %}
+                {% if clave != 'actualizado'%}
+                <td class="{{ dato.actualizado|yesno:',text-danger' }}">{{ valor }}</td>
+                {% endif %}
+            {% endfor %}
+            </tr>
+        {% endfor %}
+    </tbody>
+
+</table>

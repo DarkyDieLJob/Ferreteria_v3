@@ -1,0 +1,37 @@
+{% load custom_filters %}
+<!-- tabla_listado_carteles.html -->
+<div class="overflow-auto h-100">
+<table class="table table-striped w-auto">
+    <thead class="bg-secondary text-white sticky-top">
+        <tr>
+                <th>Id</th>
+                <th>Codigo</th>
+                <th>Descripcion</th>
+                <th>Efectivo</th>
+                <th>Precio de lista</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for dato in datos %}
+            <tr>
+                <td class="{{ dato.actualizado|yesno:',text-danger' }}">
+                            {{ dato.id }}
+                </td>
+                <td class="{{ dato.actualizado|yesno:',text-danger' }}">
+                            {{ dato.codigo }}
+                </td>
+                <td class="{{ dato.actualizado|yesno:',text-danger' }}">
+                    <a href="{{ dato.url }}">{{ dato.descripcion }}</a>
+                </td>
+                <td class="{{ dato.actualizado|yesno:',text-danger' }}">
+                            ${% load custom_filters %}{{ dato.final_efectivo|custom_price }}
+                </td>
+                <td class="{{ dato.actualizado|yesno:',text-danger' }}">
+                            ${% load custom_filters %}{{ dato.final|custom_price }}
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+
+</table>
