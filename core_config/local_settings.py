@@ -4,9 +4,11 @@ Este archivo debe ser ignorado por git.
 """
 from .settings import *
 
-# Agregar core_testing a INSTALLED_APPS
+# Aplicaciones adicionales para desarrollo
 INSTALLED_APPS += [
     'core_testing',
+    'django_extensions',  # Para generación de diagramas
+    'uml_visualizer',    # Nuestra aplicación de visualización UML
 ]
 
 # Configuración para testing
