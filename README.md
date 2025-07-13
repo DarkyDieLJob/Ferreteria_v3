@@ -31,6 +31,13 @@
     - La correccion de cambios graves debe saltarse el *test* es decir:
     aqui se deven gestionar la marcha atras, buckups o las correcciones puntuales.
 
+## Características Principales
+
+- 🖥️ **Visualización UML** - Herramienta para generar y visualizar diagramas de clases y relaciones del sistema (solo administradores)
+  - Generación automática de diagramas de clases
+  - Visualización de relaciones entre modelos
+  - Análisis de estructura del proyecto.
+
     - Antes de mergear de *pre-release* a *main*, debe ejecutarse el comando
     ''' npx standard-version ''', para generar el CHANGELOG.md correspondiente.
 

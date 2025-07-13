@@ -1,0 +1,54 @@
+{% extends "uml_visualizer/base.html" %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block content %}
+<div class="uml-diagram-view">
+    <h1>{{ title }}</h1>
+    
+    <div class="diagram-container">
+        <div class="diagram-actions">
+            <a href="{% if is_project_diagram %}{% url 'uml_visualizer:project_diagram' %}{% else %}{% url 'uml_visualizer:generate_diagram' app_name|lower %}{% endif %}" 
+               class="button" id="refresh-diagram">
+                Actualizar Diagrama
+            </a>
+            <a href="{% url 'uml_visualizer:uml_dashboard' %}" class="button">Volver al Panel</a>
+            <a href="{{ diagram_url }}" download class="button" id="download-diagram">
+                Descargar Imagen
+            </a>
+        </div>
+        
+        <div class="diagram-wrapper">
+            {% if diagram_url %}
+                <img src="{{ diagram_url }}" alt="Diagrama UML de {{ app_name }}" class="uml-diagram">
+            {% else %}
+                <p class="error">No se pudo generar el diagrama. Por favor, inténtalo de nuevo.</p>
+            {% endif %}
+        </div>
+        
+        <div class="diagram-info">
+            <h3>Información del Diagrama</h3>
+            <p><strong>Aplicación:</strong> {{ app_name }}</p>
+            <p><strong>Generado:</strong> {% now "DATETIME_FORMAT" %}</p>
+            <p class="note">Nota: Los diagramas se generan en tiempo real y reflejan el estado actual de los modelos.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Forzar recarga de la imagen al hacer clic en Actualizar
+    document.getElementById('refresh-diagram').addEventListener('click', function(e) {
+        e.preventDefault();
+        const img = document.querySelector('.uml-diagram');
+        if (img) {
+            const src = img.src;
+            img.src = '';
+            img.src = src + '?t=' + new Date().getTime();
+        }
+    });
+});
+</script>
+{% endblock %}

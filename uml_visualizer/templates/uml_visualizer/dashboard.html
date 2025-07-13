@@ -1,0 +1,39 @@
+{% extends "uml_visualizer/base.html" %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block content %}
+<div class="uml-dashboard">
+    <h1>Visualizador UML</h1>
+    
+    <div class="module">
+        <h2>Diagrama del Proyecto Completo</h2>
+        <div class="description">
+            <p>Genera un diagrama UML que incluye todos los modelos de todas las aplicaciones del proyecto.</p>
+            <a href="{% url 'uml_visualizer:project_diagram' %}" class="button">Generar Diagrama Completo</a>
+        </div>
+    </div>
+    
+    <div class="module">
+        <h2>Diagramas por Aplicación</h2>
+        <div class="app-grid">
+            {% for app in installed_apps %}
+            <div class="app-card">
+                <h3>{{ app.verbose_name }}</h3>
+                <p>{{ app.name }}</p>
+                <a href="{% url 'uml_visualizer:generate_diagram' app.label %}" class="button">Ver Diagrama</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="module instructions">
+        <h2>Instrucciones</h2>
+        <ul>
+            <li>Haz clic en "Generar Diagrama Completo" para ver todos los modelos del proyecto.</li>
+            <li>Selecciona una aplicación específica para ver solo sus modelos.</li>
+            <li>Los diagramas se generan en tiempo real y pueden tardar unos segundos.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
