@@ -1,0 +1,545 @@
+"""
+Comando personalizado para ejecutar pruebas y guardar resultados en la base de datos.
+"""
+import os
+import sys
+import json
+import logging
+import tempfile
+import subprocess
+import xml.etree.ElementTree as ET
+from pathlib import Path
+from datetime import datetime
+
+from django.core.management.base import BaseCommand, CommandError
+from django.utils import timezone
+from django.contrib.auth import get_user_model
+from django.conf import settings
+
+# Importar modelos
+from core_testing.models import TestRun, TestCase, ModuleCoverage
+
+User = get_user_model()
+
+
+def setup_logging():
+    """Configura el sistema de logging para el comando."""
+    logger = logging.getLogger('core_testing.tests')
+    logger.setLevel(logging.DEBUG)
+    
+    # Evitar propagación al logger raíz
+    logger.propagate = False
+    
+    # Si ya tiene handlers, limpiar para evitar duplicados
+    if logger.hasHandlers():
+        logger.handlers.clear()
+    
+    # Configurar formato
+    log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    formatter = logging.Formatter(log_format)
+    
+    try:
+        # Crear directorio de logs si no existe
+        log_dir = Path(settings.BASE_DIR) / 'logs'
+        log_dir.mkdir(exist_ok=True, mode=0o755)
+        
+        # Configurar handler de archivo
+        log_file = log_dir / 'test_runs.log'
+        file_handler = logging.FileHandler(log_file, encoding='utf-8')
+        file_handler.setLevel(logging.DEBUG)
+        file_handler.setFormatter(formatter)
+        
+        # Configurar handler de consola
+        console = logging.StreamHandler()
+        console.setLevel(logging.INFO)
+        console.setFormatter(formatter)
+        
+        # Agregar handlers al logger
+        logger.addHandler(file_handler)
+        logger.addHandler(console)
+        
+    except Exception as e:
+        # Si falla la configuración, usar configuración básica
+        logging.basicConfig(level=logging.INFO)
+        logger = logging.getLogger('core_testing.tests')
+        logger.error(f'Error configurando logging: {str(e)}')
+    
+    return logger
+
+
+class Command(BaseCommand):
+    """Comando para ejecutar pruebas y guardar resultados en la base de datos."""
+    
+    help = 'Ejecuta las pruebas del proyecto y guarda los resultados en la base de datos'
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.logger = setup_logging()
+    
+    def add_arguments(self, parser):
+        """Define los argumentos del comando.
+        
+        Args:
+            test_target: Ruta al directorio o archivo de pruebas (opcional)
+            --user: Usuario que ejecuta las pruebas (opcional)
+            --no-coverage: Desactivar generación de informe de cobertura
+        """
+        parser.add_argument(
+            'test_target',
+            nargs='?',
+            type=str,
+            help='Ruta al directorio o archivo de pruebas (opcional)',
+            default=None
+        )
+        parser.add_argument(
+            '--user',
+            type=str,
+            help='Usuario que ejecuta las pruebas (opcional)',
+            default=None
+        )
+        parser.add_argument(
+            '--no-coverage',
+            action='store_false',
+            dest='coverage',
+            help='Desactivar generación de informe de cobertura',
+            default=True
+        )
+    
+    def handle(self, *args, **options):
+        """Método principal que ejecuta el comando."""
+        self.logger.info('Iniciando ejecución de pruebas')
+        
+        try:
+            # Obtener usuario si se especificó
+            user = self._get_user(options['user']) if options['user'] else None
+            
+            # Crear registro de ejecución
+            test_run = self._create_test_run(user)
+            
+            # Ejecutar pruebas con o sin cobertura según la opción
+            test_results = self._run_pytest(
+                test_path=options['test_target'],  # Puede ser None para todas las apps
+                use_coverage=options['coverage'],  # Usar la opción de cobertura
+                run_id=test_run.id
+            )
+            
+            if test_results:
+                # Procesar resultados
+                self._process_test_results(test_run, test_results)
+                
+                # Procesar cobertura
+                coverage_data = self._get_coverage_data()
+                if coverage_data:
+                    self._process_coverage_data(test_run, coverage_data)
+                
+                # Actualizar estado final
+                self._update_test_run_status(test_run)
+                
+                self.logger.info('Ejecución de pruebas completada exitosamente')
+            else:
+                self.logger.error('No se obtuvieron resultados de las pruebas')
+                
+        except Exception as e:
+            self.logger.error(f'Error durante la ejecución de pruebas: {str(e)}', exc_info=True)
+            raise CommandError(f'Error al ejecutar las pruebas: {str(e)}')
+    
+    def _get_user(self, username):
+        """Obtiene el usuario por nombre de usuario."""
+        if not username:
+            return None
+            
+        try:
+            return User.objects.get(username=username)
+        except User.DoesNotExist:
+            self.logger.warning(f'Usuario {username} no encontrado')
+            return None
+    
+    def _create_test_run(self, user):
+        """Crea un nuevo registro de ejecución de pruebas."""
+        test_run = TestRun(
+            name=f'Test Run - {timezone.now().strftime("%Y-%m-%d %H:%M:%S")}',
+            started_at=timezone.now(),
+            status=TestRun.Status.RUNNING,
+            triggered_by=user
+        )
+        test_run.save()
+        self.logger.info(f'Creada ejecución de prueba con ID: {test_run.id}')
+        return test_run
+    
+    def _run_pytest(self, test_path=None, use_coverage=False, run_id=None):
+        """Ejecuta pytest y devuelve los resultados."""
+        self.logger.info('Iniciando ejecución de pytest')
+        
+        # Crear archivo temporal para el informe JUnit
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.xml') as xml_file:
+            xml_report_path = xml_file.name
+        
+        try:
+            # Construir comando base de pytest
+            cmd = [
+                'python',
+                '-m', 'pytest',
+                '-v',
+                f'--junit-xml={xml_report_path}',
+                '--no-header',
+                '--no-summary'
+            ]
+            
+            # Agregar opciones de cobertura si está habilitada
+            if use_coverage:
+                cmd.extend([
+                    '--cov=.',  # Cubrir todo el proyecto
+                    '--cov-report=xml',
+                    '--cov-config=.coveragerc',
+                    '--cov-branch'  # Incluir cobertura de ramas
+                ])
+            
+            # Mapeo de nombres de aplicaciones a sus rutas de prueba
+            app_paths = {
+                'facturacion': 'tests/facturacion',
+                'articulos': 'tests/articulos',
+                'core_testing': 'core_testing/tests',
+                'pedido': 'tests/pedido',
+                'boletas': 'tests/boletas',
+                'bdd': 'tests/bdd',
+                'x_cartel': 'tests/x_cartel'
+            }
+            
+            # Directorios base donde buscar pruebas (orden de búsqueda)
+            base_dirs = [
+                'tests',  # Directorio raíz de pruebas
+                'core_testing/tests',  # Pruebas de core_testing
+                'tests/facturacion',  # Pruebas de facturación
+                'tests/articulos',  # Pruebas de artículos
+                'tests/pedido',  # Pruebas de pedidos
+                'tests/boletas',  # Pruebas de boletas
+                'tests/bdd',  # Pruebas de la base de datos
+                'tests/x_cartel'  # Pruebas de carteles
+            ]
+            
+            # Si se especifica una ruta, verificar si es un nombre de aplicación conocido
+            if test_path:
+                # Si es un nombre de aplicación conocido, usar la ruta mapeada
+                if test_path in app_paths and os.path.exists(app_paths[test_path]):
+                    test_path = app_paths[test_path]
+                    self.logger.info(f'Usando ruta mapeada para {test_path}: {test_path}')
+                # Si no es un nombre de aplicación conocido, verificar si la ruta existe
+                elif not os.path.exists(test_path):
+                    # Intentar encontrar la ruta en los directorios base
+                    found = False
+                    for base_dir in base_dirs:
+                        full_path = os.path.join(base_dir, test_path)
+                        if os.path.exists(full_path):
+                            test_path = full_path
+                            found = True
+                            self.logger.info(f'Ruta encontrada en: {test_path}')
+                            break
+                    
+                    if not found:
+                        raise CommandError(f'No se encontró la ruta de pruebas: {test_path}')
+            
+            # Si no se especifica ruta o se encontró una ruta válida
+            if not test_path or not os.path.exists(test_path):
+                # Buscar en todos los directorios de pruebas relevantes
+                test_dirs = [d for d in base_dirs if os.path.exists(d)]
+                
+                if not test_dirs:
+                    raise CommandError('No se encontraron directorios de prueba')
+                
+                # Usar el patrón de búsqueda de pytest para encontrar pruebas
+                cmd.extend([
+                    '--rootdir=.',  # Directorio raíz del proyecto
+                    '--pyargs',     # Buscar en paquetes Python
+                    '--import-mode=importlib'  # Mejor manejo de imports
+                ])
+                
+                # Agregar cada directorio como un argumento separado
+                for d in test_dirs:
+                    cmd.append(d)
+                
+                self.logger.info(f'Buscando pruebas en directorios: {test_dirs}')
+            else:
+                # Usar la ruta especificada
+                cmd.append(test_path)
+                self.logger.info(f'Buscando pruebas en: {test_path}')
+            
+            self.logger.info(f'Comando: {" ".join(cmd)}')
+            
+            # Ejecutar pytest
+            result = subprocess.run(
+                cmd,
+                cwd=settings.BASE_DIR,
+                capture_output=True,
+                text=True
+            )
+            
+            # Procesar resultados
+            test_results = self._parse_test_results(xml_report_path, result)
+            return test_results
+            
+        except Exception as e:
+            self.logger.error(f'Error al ejecutar pytest: {str(e)}', exc_info=True)
+            return None
+            
+        finally:
+            # Limpiar archivo temporal
+            try:
+                os.unlink(xml_report_path)
+            except Exception as e:
+                self.logger.warning(f'No se pudo eliminar el archivo temporal: {str(e)}')
+    
+    def _parse_test_results(self, xml_path, process_result):
+        """Parsea los resultados de pytest desde el archivo XML."""
+        try:
+            tree = ET.parse(xml_path)
+            root = tree.getroot()
+            
+            results = {
+                'summary': {
+                    'tests': 0,
+                    'errors': 0,
+                    'failures': 0,
+                    'skipped': 0,
+                    'time': 0.0
+                },
+                'test_cases': []
+            }
+            
+            # Procesar cada testsuite
+            for testsuite in root.findall('testsuite'):
+                results['summary']['tests'] += int(testsuite.get('tests', 0))
+                results['summary']['errors'] += int(testsuite.get('errors', 0))
+                results['summary']['failures'] += int(testsuite.get('failures', 0))
+                results['summary']['skipped'] += int(testsuite.get('skipped', 0))
+                results['summary']['time'] += float(testsuite.get('time', 0))
+                
+                # Procesar cada testcase
+                for testcase in testsuite.findall('testcase'):
+                    test_case = {
+                        'nodeid': testcase.get('name', ''),
+                        'name': testcase.get('name', '').split('.')[-1],
+                        'file': testcase.get('file', ''),
+                        'line': int(testcase.get('line', 0)),
+                        'duration': float(testcase.get('time', 0)),
+                        'status': 'passed',
+                        'message': '',
+                        'traceback': ''
+                    }
+                    
+                    # Verificar si hay fallos o errores
+                    failure = testcase.find('failure')
+                    error = testcase.find('error')
+                    skipped = testcase.find('skipped')
+                    
+                    if failure is not None:
+                        test_case.update({
+                            'status': 'failed',
+                            'message': failure.get('message', ''),
+                            'traceback': failure.text or ''
+                        })
+                    elif error is not None:
+                        test_case.update({
+                            'status': 'error',
+                            'message': error.get('message', ''),
+                            'traceback': error.text or ''
+                        })
+                    elif skipped is not None:
+                        test_case.update({
+                            'status': 'skipped',
+                            'message': skipped.get('message', '')
+                        })
+                    
+                    results['test_cases'].append(test_case)
+            
+            self.logger.info(f'Procesados {len(results["test_cases"])} casos de prueba')
+            return results
+            
+        except Exception as e:
+            self.logger.error(f'Error al procesar resultados: {str(e)}', exc_info=True)
+            return None
+    
+    def _process_test_results(self, test_run, test_results):
+        """Procesa los resultados y los guarda en la base de datos."""
+        if not test_results or 'test_cases' not in test_results:
+            self.logger.error('No hay resultados de pruebas para procesar')
+            return
+        
+        summary = test_results.get('summary', {})
+        test_cases = test_results.get('test_cases', [])
+        
+        # Contar los diferentes estados de prueba
+        status_count = {
+            'passed': 0,
+            'failed': 0,
+            'error': 0,
+            'skipped': 0,
+            'xfailed': 0,
+            'xpassed': 0
+        }
+        
+        # Contar los estados
+        for case in test_cases:
+            status = case.get('status', 'unknown')
+            if status in status_count:
+                status_count[status] += 1
+        
+        # Actualizar resumen de la ejecución
+        test_run.total_tests = len(test_cases)
+        test_run.tests_passed = status_count['passed'] + status_count['xpassed']
+        test_run.tests_failed = status_count['failed'] + status_count['xfailed']
+        test_run.tests_error = status_count['error']
+        test_run.tests_skipped = status_count['skipped']
+        test_run.duration = summary.get('time', 0)
+        
+        # Guardar cambios en el test run
+        try:
+            test_run.save()
+            self.logger.info(f'Actualizado resumen de TestRun {test_run.id}')
+        except Exception as e:
+            self.logger.error(f'Error al guardar TestRun: {str(e)}', exc_info=True)
+            raise
+        
+        # Guardar casos de prueba individuales
+        saved_count = 0
+        for case in test_cases:
+            try:
+                status = case.get('status', 'unknown')
+                # Mapear estados desconocidos a un estado válido
+                if status not in dict(TestCase.Status.choices):
+                    if 'xfail' in str(case.get('message', '')).lower():
+                        status = 'xfailed'
+                    elif 'skip' in str(case.get('message', '')).lower():
+                        status = 'skipped'
+                    else:
+                        status = 'error'
+                
+                TestCase.objects.create(
+                    test_run=test_run,
+                    nodeid=case.get('nodeid', '')[:1024],  # Asegurar que no exceda el límite
+                    name=case.get('name', '')[:255],
+                    file=case.get('file', '')[:512],
+                    line=case.get('line', 0) or 0,  # Asegurar que sea un entero
+                    status=status,
+                    duration=float(case.get('duration', 0)),
+                    message=str(case.get('message', ''))[:255],
+                    traceback=str(case.get('traceback', ''))
+                )
+                saved_count += 1
+            except Exception as e:
+                self.logger.error(f'Error al guardar caso de prueba {case.get("nodeid", "desconocido")}: {str(e)}', exc_info=True)
+        
+        self.logger.info(f'Guardados {saved_count}/{len(test_cases)} casos de prueba correctamente')
+    
+    def _get_coverage_data(self):
+        """Obtiene los datos de cobertura del informe generado."""
+        coverage_file = os.path.join(settings.BASE_DIR, 'coverage.xml')
+        
+        if not os.path.exists(coverage_file):
+            self.logger.warning('No se encontró el archivo de cobertura')
+            return None
+        
+        try:
+            tree = ET.parse(coverage_file)
+            root = tree.getroot()
+            
+            coverage_data = {
+                'summary': {},
+                'files': []
+            }
+            
+            # Obtener cobertura total
+            coverage = root.find('.//coverage')
+            if coverage is not None:
+                coverage_data['summary'] = {
+                    'lines_covered': int(coverage.get('lines-covered', 0)),
+                    'lines_valid': int(coverage.get('lines-valid', 0)),
+                    'line_rate': float(coverage.get('line-rate', 0)),
+                    'branch_rate': float(coverage.get('branch-rate', 0)),
+                    'version': coverage.get('version', '')
+                }
+            
+            # Obtener cobertura por archivo
+            for package in root.findall('.//package'):
+                for class_elem in package.findall('.//class'):
+                    filename = class_elem.get('filename', '')
+                    if not filename:
+                        continue
+                    
+                    file_data = {
+                        'filename': filename,
+                        'line_rate': float(class_elem.get('line-rate', 0)),
+                        'branch_rate': float(class_elem.get('branch-rate', 0)),
+                        'lines': []
+                    }
+                    
+                    # Obtener cobertura por línea
+                    for line in class_elem.findall('.//line'):
+                        file_data['lines'].append({
+                            'number': int(line.get('number', 0)),
+                            'hits': int(line.get('hits', 0)),
+                            'branch': line.get('branch') == 'true'
+                        })
+                    
+                    coverage_data['files'].append(file_data)
+            
+            self.logger.info(f'Procesados {len(coverage_data["files"])} archivos en el informe de cobertura')
+            return coverage_data
+            
+        except Exception as e:
+            self.logger.error(f'Error al procesar el informe de cobertura: {str(e)}', exc_info=True)
+            return None
+    
+    def _process_coverage_data(self, test_run, coverage_data):
+        """Procesa y guarda los datos de cobertura."""
+        if not coverage_data or 'files' not in coverage_data:
+            self.logger.warning('No hay datos de cobertura para procesar')
+            return
+        
+        summary = coverage_data.get('summary', {})
+        files = coverage_data.get('files', [])
+        
+        # Actualizar cobertura total en el test run
+        test_run.coverage_percent = summary.get('line_rate', 0) * 100  # Convertir a porcentaje
+        test_run.save()
+        
+        # Guardar cobertura por módulo
+        for file_data in files:
+            ModuleCoverage.objects.create(
+                test_run=test_run,
+                module_name=file_data.get('filename', ''),
+                coverage_percent=file_data.get('line_rate', 0) * 100,  # Convertir a porcentaje
+                lines_covered=sum(1 for line in file_data.get('lines', []) if line.get('hits', 0) > 0),
+                lines_missing=sum(1 for line in file_data.get('lines', []) if line.get('hits', 0) == 0),
+                total_lines=len(file_data.get('lines', [])),
+                file_coverage=file_data
+            )
+        
+        self.logger.info(f'Guardada cobertura para {len(files)} archivos')
+    
+    def _update_test_run_status(self, test_run):
+        """Actualiza el estado final de la ejecución de pruebas."""
+        # Determinar estado final basado en los resultados
+        if test_run.tests_error > 0:
+            new_status = TestRun.Status.ERROR
+        elif test_run.tests_failed > 0:
+            new_status = TestRun.Status.FAILED
+        else:
+            new_status = TestRun.Status.PASSED
+        
+        self.logger.info(f'Actualizando estado de ejecución a: {new_status}')
+        self.logger.info(f'Resumen - Total: {test_run.total_tests}, ' 
+                        f'Pasaron: {test_run.tests_passed}, ' 
+                        f'Fallaron: {test_run.tests_failed}, ' 
+                        f'Errores: {test_run.tests_error}, ' 
+                        f'Omitidos: {test_run.tests_skipped}')
+        
+        # Actualizar el estado y marcar como finalizado
+        test_run.status = new_status
+        test_run.finished_at = timezone.now()
+        
+        try:
+            test_run.save(update_fields=['status', 'finished_at', 'updated_at'])
+            self.logger.info(f'TestRun {test_run.id} actualizado con estado: {test_run.get_status_display()}')
+        except Exception as e:
+            self.logger.error(f'Error al actualizar estado del TestRun: {str(e)}', exc_info=True)
+            raise

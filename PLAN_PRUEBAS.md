@@ -1,0 +1,168 @@
+# Plan de Pruebas - Ferretería Paoli v3
+
+> **Última actualización**: 06/07/2025  
+> **Estado**: En desarrollo  
+> **Rama objetivo**: `documentation`
+
+## Flujo de Trabajo de Pruebas
+
+1. **Desarrollo en `develop`**
+   - Todas las mejoras de pruebas se desarrollan en la rama `develop`
+   - Se crea un PR a la rama `documentation` para revisión
+   - Una vez aprobado, se mergea a `documentation`
+   - Finalmente, se crea un PR de `documentation` a `pre-release`
+
+2. **Ejecución de Pruebas**
+   ```bash
+   # Ejecutar todas las pruebas
+   python manage.py run_tests --coverage
+   
+   # Ejecutar pruebas específicas
+   python manage.py test core_testing.tests.test_basic
+   ```
+
+## 1. Configuración Inicial
+
+### 1.1 Verificar cobertura actual
+
+```bash
+# Ejecutar pruebas con cobertura
+python manage.py run_tests --coverage
+```
+
+### 1.2 Estructura de directorios propuesta
+
+```
+tests/
+  __init__.py
+  conftest.py           # Configuración común
+  factories.py          # Factory Boy para crear datos de prueba
+  unit/
+    test_models/        # Pruebas de modelos
+    test_views/         # Pruebas de vistas
+    test_forms/         # Pruebas de formularios
+    test_utils/         # Pruebas de utilidades
+  integration/
+    test_workflows/     # Flujos completos
+  e2e/                  # Pruebas de extremo a extremo
+```
+
+## 2. Estrategia de Pruebas
+
+### 2.1 Módulo de Facturación (Completado ✅)
+
+#### Modelos Probados
+- **Cliente**
+  - Creación y validación de campos
+  - Métodos de responsabilidad fiscal
+  - Tipos de documento
+  - Representación en string
+
+- **ArticuloVendido**
+  - Creación con ítem registrado
+  - Creación con artículo sin registrar
+  - Método get_item()
+  - Cálculos de importes
+
+- **MetodoPago**
+  - Valores por defecto
+  - Representación en string
+  - Integridad de datos
+
+- **Transaccion**
+  - Relaciones con otros modelos
+  - Fechas automáticas
+  - Métodos de utilidad
+
+- **CierreZ**
+  - Comportamiento de zeta_numero
+  - Valores por defecto
+  - Fechas automáticas
+
+#### Cobertura Actual
+- 100% de cobertura en `facturacion/models.py`
+- Pruebas unitarias para todos los métodos
+- Validación de restricciones de negocio
+
+#### Estructura de Pruebas
+```
+tests/
+  facturacion/
+    test_models/
+      test_cliente.py
+      test_articulo_vendido.py
+      test_metodo_pago.py
+      test_transaccion.py
+      test_cierre_z.py
+```
+
+#### Ejecución de Pruebas
+```bash
+# Ejecutar pruebas de facturación
+python manage.py test facturacion.tests.test_models
+
+# Ejecutar con cobertura
+coverage run --source='facturacion' manage.py test facturacion
+coverage report -m
+```
+
+### 2.2 Próximos Pasos
+
+### 2.1 Pruebas Unitarias (Objetivo: 80%+ cobertura)
+- [ ] Modelos
+- [ ] Vistas
+- [ ] Formularios
+- [ ] Utilidades
+
+### 2.2 Pruebas de Integración
+- [ ] Flujos completos
+- [ ] Integración con servicios externos
+
+### 2.3 Pruebas de Interfaz
+- [ ] Componentes de UI
+- [ ] Flujos de usuario críticos
+
+## 3. Herramientas
+
+- [x] pytest-django
+- [ ] factory-boy
+- [x] pytest-cov
+- [ ] pytest-mock
+
+## 4. Siguientes Pasos
+
+1. [x] Crear este documento de planificación
+2. [ ] Ejecutar pruebas iniciales para establecer línea base de cobertura
+3. [ ] Configurar `factories.py` para generar datos de prueba
+4. [ ] Implementar pruebas para modelos principales
+5. [ ] Implementar pruebas para vistas principales
+6. [ ] Implementar pruebas de integración
+7. [ ] Configurar CI/CD para ejecutar pruebas automáticamente
+
+## 5. Comandos Útiles
+
+```bash
+# Ejecutar todas las pruebas
+python manage.py run_tests --coverage
+
+# Ejecutar pruebas específicas
+python manage.py run_tests tests/unit/test_models/test_producto.py
+
+# Generar reporte de cobertura HTML
+coverage html
+# Abrir en navegador:
+xdg-open htmlcov/index.html
+```
+
+## 6. Notas
+
+- Usar `@pytest.mark.django_db` para pruebas que necesiten base de datos
+- Usar `factory-boy` para crear datos de prueba consistentes
+- Mantener las pruebas rápidas y aisladas
+- Documentar casos de prueba importantes
+
+## 7. Estado Actual
+
+- Fecha: 2025-07-05
+- Cobertura actual: Por determinar
+- Próximos pasos: Ejecutar pruebas iniciales para establecer línea base

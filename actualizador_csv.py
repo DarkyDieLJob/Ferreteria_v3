@@ -106,50 +106,42 @@ import sys
 import time
 from django.db import transaction
 
-def crear_o_actualizar_registros_en_lotes(rows, tamaño_lote):
-    for i in range(0, len(rows), tamaño_lote):
-        lote = rows[i:i+tamaño_lote]
-        items_para_actualizar = []
-        inicio = time.time()  # Inicio del temporizador
-        uso_memoria_inicial = sum(sys.getsizeof(i) for i in items_para_actualizar)
-        with transaction.atomic():
-            for row in lote:
-                # Si la fila contiene algún valor None o vacío, la saltamos
-                if any(value is None or value == '' or value == '           ' for key, value in row.items() if key not in ['sub_carpeta', 'sub_titulo']):
-                    continue
-                try:
-                    # Recuperar o crear una instancia de Sub_Carpeta
-                    sub_carpeta_nombre = row.pop('sub_carpeta')
-                    sub_carpeta, created = Sub_Carpeta.objects.get_or_create(nombre=sub_carpeta_nombre)
-                    row['sub_carpeta'] = sub_carpeta
-                    # Recuperar o crear una instancia de Sub_Titulo
-                    sub_titulo_nombre = row.pop('sub_titulo')
-                    sub_titulo, created = Sub_Titulo.objects.get_or_create(nombre=sub_titulo_nombre)
-                    row['sub_titulo'] = sub_titulo
-                    if row['final_efectivo'] <= 0:
-                        row['final_efectivo'] = row['final']
-                except:
-                    pass
-                try:
-                    item, created = Item.objects.get_or_create(codigo=row['codigo'], defaults=row)
-                    if not created:
-                        for key, value in row.items():
-                            setattr(item, key, value)
-                    if item.final_efectivo <= 0:
-                        item.final_efectivo = row['final']
-                    item.marcar_actualizado()  # Cambiar el campo 'actualizado' a 1
-                    item.descripcion = limpiar_texto(row['descripcion'])
-                    items_para_actualizar.append(item)
-                except Exception as e:
-                    print('Error al intentar guardar: ', row['codigo'], flush=True)
-                    print(e, flush=True)
-            # Asume que 'items_para_actualizar' es una lista de tus instancias de modelo
-            Item.objects.bulk_update(items_para_actualizar, [field.name for field in Item._meta.fields if field.name != Item._meta.pk.name])
+def crear_o_actualizar_registros_en_lotes(rows, tamaño_lote=1000):
+    inicio = time.time()  # Inicio del temporizador
+    uso_memoria_inicial = 0
+    items_para_actualizar = []
+    
+    # Campos específicos que queremos actualizar
+    campos_a_actualizar = ['precio_base', 'precio_final', 'precio_final_efectivo', 'descripcion', 'actualizado']
+    
+    for i, row in enumerate(rows):
+        try:
+            item = Item.objects.get(codigo=row['codigo'])
+            item.precio_base = float(row['precio_base'])
+            item.precio_final = float(row['final']) if validar_digitos_str(row['final']) else None
+            item.precio_final_efectivo = float(row['final_efectivo']) if validar_digitos_str(row['final_efectivo']) else None
+            item.descripcion = limpiar_texto(row['descripcion'])
+            item.actualizado = True  # Marcar como actualizado
+            items_para_actualizar.append(item)
+            
+            # Procesar en lotes más pequeños
+            if len(items_para_actualizar) >= tamaño_lote:
+                print(f"Procesando lote {i // tamaño_lote + 1}...")
+                Item.objects.bulk_update(items_para_actualizar, campos_a_actualizar)
+                items_para_actualizar = []
+                
+        except Exception as e:
+            print(f'Error al procesar item {row["codigo"]}: {str(e)}', flush=True)
+            
+    # Procesar el último lote si quedan items
+    if items_para_actualizar:
+        print("Procesando último lote...")
+        Item.objects.bulk_update(items_para_actualizar, campos_a_actualizar)
 
-        fin = time.time()  # Fin del temporizador
-        uso_memoria_final = sum(sys.getsizeof(i) for i in items_para_actualizar)
-        print(f"Tiempo de ejecución: {fin - inicio} segundos")
-        print(f"Uso de memoria: {uso_memoria_final - uso_memoria_inicial} bytes")
+    fin = time.time()  # Fin del temporizador
+    uso_memoria_final = sum(sys.getsizeof(i) for i in items_para_actualizar)
+    print(f"Tiempo total de ejecución: {fin - inicio} segundos")
+    print(f"Uso total de memoria: {uso_memoria_final - uso_memoria_inicial} bytes")
 
 def desactualizar_anteriores(filtro):
     Item.objects.filter(codigo__endswith=filtro).update(actualizado=False)

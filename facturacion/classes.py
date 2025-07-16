@@ -21,13 +21,22 @@ class FormasPago():
 
     def __init__(self, transaccion):
         self.tr = transaccion
+        self.ds = "Error"  # Valor por defecto
+        self.importe = 0.0  # Valor por defecto
+        
+        if transaccion is None:
+            logger.error("Error al inicializar FormasPago")
+            self.ds = "Error"
+            self.importe = 0.0
+            return
+            
         try:
             # Ensure related object exists before accessing attributes
             self.ds = self.tr.metodo_de_pago.display
             self.importe = self.tr.total
             logger.debug(f"FormasPago inicializado: ds='{self.ds}', importe={self.importe}")
         except AttributeError as e:
-            logger.error(f"Error al inicializar FormasPago para transacción {transaccion.id}: {e}", exc_info=True)
+            logger.error(f"Error al inicializar FormasPago: {e}", exc_info=True)
             # Set defaults or raise an error depending on desired behavior
             self.ds = "Error"
             self.importe = 0.0
@@ -44,94 +53,189 @@ class FormasPago():
 
     def get_formas_pago_json(self, cant=1):
         """Generates the JSON structure for payment methods, dividing amount if needed."""
-        if cant <= 0:
-            logger.warning(f"Cantidad inválida ({cant}) en get_formas_pago_json. Usando 1.")
+        # Validar y convertir cant a entero
+        try:
+            cant = int(cant) if cant is not None else 1
+            if cant <= 0:
+                logger.warning(f"Cantidad inválida ({cant}) en get_formas_pago_json. Usando 1.")
+                cant = 1
+        except (ValueError, TypeError) as e:
+            logger.warning(f"Cantidad inválida ({cant}) en get_formas_pago_json. Usando 1. Error: {e}")
             cant = 1
-        importe_dividido = round(self.get_importe() / cant, 2)
-        json_data = {
-            "formasPago": [
-                {
-                    "ds": self.ds,
-                    "importe": float(importe_dividido), # Ensure it's float for JSON
-                },
-            ]
-        }
+            
+        importe_total = self.get_importe()
+        
+        # Si no hay importe o la cantidad es 1, devolver un solo pago
+        if importe_total == 0 or cant == 1:
+            return {"formasPago": [{"ds": self.ds, "importe": float(importe_total)}]}
+            
+        # Calcular importes divididos
+        importe_dividido = round(importe_total / cant, 2)
+        
+        # Ajustar el último importe para evitar problemas de redondeo
+        importes = [importe_dividido] * cant
+        diferencia = round(importe_total - (importe_dividido * cant), 2)
+        if diferencia != 0:
+            importes[-1] = round(importes[-1] + diferencia, 2)
+        
+        # Construir la lista de formas de pago
+        formas_pago = [{
+            "ds": f"{self.ds} ({i+1}/{cant})" if cant > 1 else self.ds,
+            "importe": float(importe)
+        } for i, importe in enumerate(importes)]
+        
+        json_data = {"formasPago": formas_pago}
         logger.debug(f"FormasPago JSON generado: {json_data}")
         return json_data
 
     def get_efectivo(self):
-        """Checks if the payment method is considered 'Efectivo'."""
-        # Make comparison case-insensitive and handle potential None values
-        ds_lower = self.ds.lower() if self.ds else ""
-        efectivo = ds_lower in ["efectivo s/ticket", "efectivo con ticket"]
-        logger.debug(f"get_efectivo para '{self.ds}': {efectivo}")
-        return efectivo
+        """
+        Checks if the payment method is considered 'Efectivo'.
+        
+        Returns:
+            bool: True si el método de pago es efectivo (tiene 'efectivo' en el nombre Y ticket=True),
+                  False en caso contrario.
+        """
+        # Verificar si existe el atributo ds y si tiene valor
+        if not hasattr(self, 'ds') or not self.ds:
+            logger.debug("No se encontró descripción de método de pago. Asumiendo que no es efectivo.")
+            return False
+            
+        # Verificar si el método de pago tiene ticket=True
+        try:
+            # Si el método de pago no tiene ticket=True, no es efectivo
+            if not hasattr(self, 'tr') or not hasattr(self.tr, 'metodo_de_pago') or not self.tr.metodo_de_pago.ticket:
+                logger.debug(f"Método de pago no tiene ticket=True. No se considera efectivo: {self.ds}")
+                return False
+        except Exception as e:
+            logger.error(f"Error al verificar atributo ticket del método de pago: {e}")
+            return False
+            
+        # Verificar si el nombre del método de pago es exactamente "efectivo" o comienza con "efectivo "
+        ds_lower = self.ds.lower().strip()
+        
+        # Lista de variantes válidas de métodos de pago en efectivo
+        variantes_efectivo = [
+            "efectivo",  # Exacto
+            "efectivo ",  # Comienza con espacio
+            "efectivo s/ticket",  # Exacto
+            "efectivo con ticket"  # Exacto
+        ]
+        
+        # Verificar coincidencia exacta
+        if ds_lower in [v.strip() for v in variantes_efectivo]:
+            return True
+            
+        # Verificar si comienza con alguna variante seguida de un carácter que no sea alfanumérico o espacio
+        for variante in variantes_efectivo:
+            if ds_lower.startswith(variante):
+                # Verificar que el siguiente carácter (si existe) no sea alfanumérico
+                if len(ds_lower) > len(variante):
+                    next_char = ds_lower[len(variante)]
+                    if not (next_char.isalnum() or next_char in ['/', '-']):
+                        return True
+                else:
+                    return True
+                    
+        # Si no coincide con ninguna variante, no es efectivo
+        es_efectivo = False
+        
+        logger.debug(f"get_efectivo para '{self.ds}': {es_efectivo}")
+        return es_efectivo
 
 class TicketCabecera():
     """Represents the header information for a fiscal ticket based on client data."""
-    cliente = None # Initialize as None
-    tipo_cbte = "FB"
-    nro_doc = '0'
-    domicilio_cliente = ' '
-    tipo_doc = 'DNI'
-    nombre_cliente = 'M' # Default? Consider 'Consumidor Final'
-    tipo_responsable = 'CONSUMIDOR_FINAL'
-    cabezera_json = {}
-
     def __init__(self, cliente_id=None):
-        logger.debug(f"TicketCabecera.__init__ - Cliente ID recibido: {cliente_id}")
-        # Validate cliente_id format before querying
-        valid_id = False
-        if cliente_id is not None:
+        # Configuración por defecto para consumidor final
+        self.tipo_cbte = "FB"  # Factura B por defecto
+        self.tipo_doc = 'DNI'  # Documento por defecto
+        self.nro_doc = '0'     # Número de documento por defecto
+        self.domicilio_cliente = ' '  # Espacio en blanco por defecto
+        self.nombre_cliente = 'Consumidor Final'  # Nombre por defecto
+        self.tipo_responsable = 'CONSUMIDOR_FINAL'  # Tipo de responsable por defecto
+        self.cliente = None  # Asegurarse de que el atributo cliente existe
+        
+        # Debug: Imprimir el ID de cliente recibido
+        print(f"\n=== TicketCabecera.__init__ ===")
+        print(f"Cliente ID recibido: {cliente_id}")
+        
+        # Si se proporciona un ID de cliente, intentar cargar los datos del cliente
+        if cliente_id is not None and str(cliente_id).strip() != '':
             try:
+                from facturacion.models import Cliente
                 cliente_id_int = int(cliente_id)
-                valid_id = True
-            except (ValueError, TypeError):
-                logger.warning(f"TicketCabecera.__init__ - ID de cliente inválido: '{cliente_id}'. Usando consumidor final.")
-
-        if valid_id and cliente_id_int != 1: # Assuming ID 1 is Consumidor Final default
-            try:
+                print(f"ID de cliente válido: {cliente_id_int}")
+                
+                # Intentar obtener el cliente de la base de datos
+                print(f"Buscando cliente con ID: {cliente_id_int}...")
                 self.cliente = Cliente.objects.get(id=cliente_id_int)
-                logger.debug(f"TicketCabecera.__init__ - Cliente encontrado: {self.cliente}")
-
-                # Determine ticket type and client details based on fetched client
-                responsabilidad = self.cliente.get_responsabilidad() # Call method once
-                if responsabilidad == 'EXENTO':
-                    self.tipo_cbte = "FB"
-                elif responsabilidad == 'RESPONSABLE_INSCRIPTO': # Be explicit
-                    self.tipo_cbte = "FA"
-                else: # Other cases default to B?
-                    self.tipo_cbte = "FB"
-                    logger.debug(f"Cliente {cliente_id_int} con responsabilidad '{responsabilidad}', usando tipo_cbte FB.")
-
-                self.nro_doc = (self.cliente.cuit_dni or '').replace("-", "") # Handle potential None
-                self.domicilio_cliente = self.cliente.domicilio or ' '
-                self.tipo_doc = self.cliente.get_tipo_documento()
-                self.nombre_cliente = self.cliente.razon_social or ' '
-                self.tipo_responsable = responsabilidad
-
-                logger.debug(f"Cabecera configurada para cliente ID {cliente_id_int}: tipo_cbte={self.tipo_cbte}, tipo_resp={self.tipo_responsable}")
-
-            except Cliente.DoesNotExist:
-                logger.warning(f"TicketCabecera.__init__ - Cliente con ID {cliente_id_int} no encontrado. Usando consumidor final.")
-                # Reset to default consumer final values if client not found
+                print(f"Cliente encontrado: {self.cliente.id} - {self.cliente.razon_social}")
+                
+                # Si es el consumidor final (ID: 1), usar valores por defecto
+                if cliente_id_int == 1:
+                    print("Cliente es Consumidor Final, usando valores por defecto")
+                    self._set_consumidor_final_defaults()
+                else:
+                    # Obtener la responsabilidad del cliente para otros clientes
+                    print(f"Obteniendo responsabilidad del cliente...")
+                    responsabilidad = self.cliente.get_responsabilidad()
+                    print(f"Responsabilidad obtenida: {responsabilidad}")
+                    
+                    # Determinar el tipo de comprobante basado en la responsabilidad
+                    if responsabilidad == 'EXENTO':
+                        self.tipo_cbte = "FB"
+                    elif responsabilidad == 'RESPONSABLE_INSCRIPTO':
+                        self.tipo_cbte = "FA"  # Factura A para responsables inscriptos
+                    else:
+                        self.tipo_cbte = "FB"  # Factura B por defecto para otros casos
+                    
+                    # Configurar los datos del cliente
+                    print(f"Configurando datos del cliente...")
+                    self.nro_doc = (self.cliente.cuit_dni or '').replace("-", "")
+                    self.domicilio_cliente = self.cliente.domicilio or ' '
+                    self.tipo_doc = self.cliente.get_tipo_documento()
+                    self.nombre_cliente = self.cliente.razon_social or ' '
+                    self.tipo_responsable = responsabilidad
+                
+                logger.debug(f"TicketCabecera - Cliente cargado: {self.cliente.id} - {self.cliente.razon_social}")
+                logger.debug(f"TicketCabecera - Tipo CBTE: {self.tipo_cbte}, Tipo Doc: {self.tipo_doc}, Nro Doc: {self.nro_doc}")
+                
+            except Cliente.DoesNotExist as e:
+                logger.warning(f"No se encontró el cliente con ID {cliente_id}")
+                print(f"ERROR: No se encontró el cliente con ID {cliente_id}: {e}")
+                self._set_consumidor_final_defaults()
+            except (ValueError, TypeError) as e:
+                logger.warning(f"ID de cliente inválido: {cliente_id}")
+                print(f"ERROR: ID de cliente inválido: {cliente_id} - {e}")
                 self._set_consumidor_final_defaults()
             except Exception as e:
-                 logger.error(f"Error al obtener datos del cliente ID {cliente_id_int}: {e}", exc_info=True)
-                 self._set_consumidor_final_defaults()
+                logger.error(f"Error inesperado al cargar el cliente con ID {cliente_id}: {str(e)}")
+                print(f"ERROR inesperado al cargar el cliente: {e}")
+                import traceback
+                traceback.print_exc()
+                self._set_consumidor_final_defaults()
         else:
-            logger.debug("Usando datos de Consumidor Final por defecto.")
+            print("No se proporcionó un ID de cliente válido, usando consumidor final")
             self._set_consumidor_final_defaults()
+            
+        # Debug: Mostrar los valores finales
+        print("\n=== VALORES FINALES DE TICKET CABECERA ===")
+        print(f"tipo_cbte: {self.tipo_cbte}")
+        print(f"tipo_doc: {self.tipo_doc}")
+        print(f"nro_doc: {self.nro_doc}")
+        print(f"nombre_cliente: {self.nombre_cliente}")
+        print(f"tipo_responsable: {self.tipo_responsable}")
+        print("=== FIN TicketCabecera.__init__ ===\n")
 
     def _set_consumidor_final_defaults(self):
         """Resets attributes to default 'Consumidor Final' values."""
-        self.cliente = None # Or fetch the actual default client object if ID 1 exists and is needed elsewhere
+        self.cliente = None
         self.tipo_cbte = "FB"
-        self.nro_doc = '0'
-        self.domicilio_cliente = ' '
-        self.tipo_doc = 'DNI'
-        self.nombre_cliente = 'Consumidor Final' # More descriptive default
-        self.tipo_responsable = 'CONSUMIDOR_FINAL'
+        self.tipo_doc = 'DNI'  # Documento por defecto para consumidor final
+        self.nro_doc = '0'     # Número de documento por defecto
+        self.domicilio_cliente = ' '  # Espacio en blanco por defecto
+        self.nombre_cliente = 'Consumidor Final'  # Nombre por defecto
+        self.tipo_responsable = 'CONSUMIDOR_FINAL'  # Tipo de responsable por defecto
 
     def get_boleta_a(self):
         """Checks if the ticket type is 'FA'."""
@@ -233,12 +337,66 @@ class TicketFactura():
 
         self.transaccion = transaccion
         logger.info(f"Creando TicketFactura para Transacción ID: {self.transaccion.id}")
+        
+        # Enhanced debugging for transaction object - print directly to console
+        print("\n=== DEBUG - Transaction Object ===")
+        print(f"Transaction ID: {getattr(transaccion, 'id', 'N/A')}")
+        print(f"Transaction class: {transaccion.__class__.__name__}")
+        print(f"Transaction attributes: {', '.join([attr for attr in dir(transaccion) if not attr.startswith('_')])}")
+        print(f"Transaction cliente_id: {getattr(transaccion, 'cliente_id', 'No disponible')}")
+        print(f"Transaction cliente: {getattr(transaccion, 'cliente', 'No disponible')}")
+        if hasattr(transaccion, 'cliente'):
+            cliente = transaccion.cliente
+            if cliente is not None:
+                print(f"Cliente encontrado - ID: {cliente.id}, Nombre: {getattr(cliente, 'razon_social', 'No disponible')}")
+                print(f"Cliente attributes: {', '.join([attr for attr in dir(cliente) if not attr.startswith('_')])}")
+        print("=== END DEBUG ===\n")
 
         self.formas_pago = FormasPago(self.transaccion)
 
-        cliente_id = self.transaccion.get_cliente_id() # Get ID once
-        logger.debug(f"TicketFactura.__init__ - ID Cliente obtenido de transacción: {cliente_id}")
-        self.cabecera = TicketCabecera(cliente_id)
+        # Obtener el cliente de la transacción
+        cliente = None
+        
+        # 1. Intentar obtener el cliente directamente del objeto transacción
+        if hasattr(self.transaccion, 'cliente') and self.transaccion.cliente is not None:
+            cliente = self.transaccion.cliente
+            logger.debug(f"Obtenido cliente directamente desde transaccion.cliente: {cliente.id}")
+        # 2. Si no está disponible, intentar obtener el ID del cliente y luego el objeto
+        else:
+            cliente_id = None
+            
+            # Intentar obtener el ID del cliente directamente del campo cliente_id
+            if hasattr(self.transaccion, 'cliente_id') and self.transaccion.cliente_id is not None:
+                cliente_id = self.transaccion.cliente_id
+                logger.debug(f"Obtenido ID de cliente desde transaccion.cliente_id: {cliente_id}")
+            # Como último recurso, intentar obtener el ID del cliente usando get_cliente_id si está disponible
+            elif hasattr(self.transaccion, 'get_cliente_id'):
+                try:
+                    cliente_id = self.transaccion.get_cliente_id()
+                    logger.debug(f"Obtenido ID de cliente usando get_cliente_id(): {cliente_id}")
+                except Exception as e:
+                    logger.warning(f"Error al obtener ID de cliente con get_cliente_id(): {e}")
+            
+            # Si tenemos un ID de cliente, obtener el objeto Cliente
+            if cliente_id is not None:
+                try:
+                    from facturacion.models import Cliente
+                    cliente = Cliente.objects.get(id=cliente_id)
+                    logger.debug(f"Cliente obtenido desde la base de datos: {cliente.id}")
+                except Cliente.DoesNotExist:
+                    logger.warning(f"No se encontró el cliente con ID {cliente_id}")
+                    cliente = None
+                except (ValueError, TypeError) as e:
+                    logger.warning(f"ID de cliente inválido: {cliente_id}. Error: {e}")
+                    cliente = None
+        
+        # Crear la cabecera con el cliente o su ID
+        if cliente is not None:
+            logger.debug(f"Usando cliente: {cliente.id} - {cliente.razon_social}")
+            self.cabecera = TicketCabecera(cliente.id)
+        else:
+            logger.warning("No se pudo obtener el cliente de la transacción. Usando Consumidor Final")
+            self.cabecera = TicketCabecera()
 
         # Determine if splitting is needed (example limit)
         # Make the limit configurable (e.g., from settings)

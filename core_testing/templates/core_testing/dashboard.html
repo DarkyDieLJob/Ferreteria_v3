@@ -1,0 +1,502 @@
+{% extends "core_testing/base_testing.html" %}
+{% load static %}
+{% load testing_filters %}
+
+{% block title %}Dashboard de Pruebas{% endblock %}
+
+{% block page_title %}{% endblock %}
+
+{% block form_content %}
+<!-- Primera tarjeta: Resumen general -->
+<div class="row">
+    <div class="col-12">
+        <h4 class="mb-3">Resumen de Pruebas</h4>
+        <p class="lead">Vista general del estado de las pruebas automatizadas</p>
+        
+        {% if error_message %}
+        <div class="alert alert-danger" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            {{ error_message }}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Resumen del estado -->
+<div class="row mb-4">
+    <div class="col-md-3 col-6 mb-4">
+        <div class="card border-start border-3 border-primary h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="mr-3 text-primary">
+                        <i class="fas fa-tasks fa-2x"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small">Total de Pruebas</div>
+                        <div class="h4 mb-0">{{ test_stats.total|default:0 }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-6 mb-4">
+        <div class="card border-start border-3 border-success h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="mr-3 text-success">
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small">Pruebas Exitosas</div>
+                        <div class="h4 mb-0">{{ test_stats.passed|default:0 }} <small class="text-muted">({{ test_stats.success_rate|default:0|floatformat:2 }}%)</small></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-6 mb-4">
+        <div class="card border-start border-3 border-danger h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="mr-3 text-danger">
+                        <i class="fas fa-times-circle fa-2x"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small">Pruebas Fallidas</div>
+                        <div class="h4 mb-0">{{ test_stats.failed|default:0 }} <small class="text-muted">({{ test_stats.failed|default:0|percentage:test_stats.total|floatformat:2 }}%)</small></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-6 mb-4">
+        <div class="card border-start border-3 border-warning h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="mr-3 text-warning">
+                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small">Errores</div>
+                        <div class="h4 mb-0">{{ test_stats.error|default:0 }} <small class="text-muted">({{ test_stats.error|default:0|percentage:test_stats.total|floatformat:2 }}%)</small></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Última ejecución -->
+{% if last_run %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Última Ejecución</h5>
+                <span class="badge {% if last_run.status == 'passed' %}bg-success{% else %}bg-danger{% endif %}">
+                    {{ last_run.get_status_display }}
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Inicio:</strong> {{ last_run.started_at|date:"d/m/Y H:i:s" }}</p>
+                        <p><strong>Duración:</strong> {{ last_run.duration|default:"N/A"|floatformat:2 }} segundos</p>
+                        <p><strong>Total de pruebas:</strong> {{ last_run.total_tests }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Éxito:</strong> {{ last_run.tests_passed }} ({{ last_run.passed_percentage|floatformat:1 }}%)</p>
+                        <p><strong>Fallidas:</strong> {{ last_run.tests_failed }} ({{ last_run.failed_percentage|floatformat:1 }}%)</p>
+                        <p><strong>Errores:</strong> {{ last_run.tests_error }} ({{ last_run.error_percentage|floatformat:1 }}%)</p>
+                        <p><strong>Omitidas:</strong> {{ last_run.tests_skipped }} ({{ last_run.skipped_percentage|floatformat:1 }}%)</p>
+                    </div>
+                </div>
+                
+                <!-- Barra de progreso con anchos fijos -->
+                {% if last_run %}
+                    {% if last_run.total_tests > 0 %}
+                        <div class="progress mt-4 mb-2" style="height: 30px; background-color: #e9ecef;">
+                            {% if last_run.tests_passed > 0 %}
+                            <div class="progress-bar bg-success" 
+                                 style="width: {{ last_run.passed_percentage|floatformat:0 }}%; min-width: 40px; line-height: 30px;"
+                                 data-bs-toggle="tooltip" 
+                                 data-bs-placement="top"
+                                 title="{{ last_run.tests_passed }} exitosas ({{ last_run.passed_percentage|floatformat:1 }}%)">
+                                {{ last_run.passed_percentage|floatformat:0 }}%
+                            </div>
+                            {% endif %}
+                            
+                            {% if last_run.tests_failed > 0 %}
+                            <div class="progress-bar bg-danger" 
+                                 style="width: {{ last_run.failed_percentage|floatformat:0 }}%; min-width: 40px; line-height: 30px;"
+                                 data-bs-toggle="tooltip" 
+                                 data-bs-placement="top"
+                                 title="{{ last_run.tests_failed }} fallidas ({{ last_run.failed_percentage|floatformat:1 }}%)">
+                                {{ last_run.failed_percentage|floatformat:0 }}%
+                            </div>
+                            {% endif %}
+                            
+                            {% if last_run.tests_error > 0 %}
+                            <div class="progress-bar bg-warning text-dark" 
+                                 style="width: {{ last_run.error_percentage|floatformat:0 }}%; min-width: 40px; line-height: 30px;"
+                                 data-bs-toggle="tooltip" 
+                                 data-bs-placement="top"
+                                 title="{{ last_run.tests_error }} errores ({{ last_run.error_percentage|floatformat:1 }}%)">
+                                {{ last_run.error_percentage|floatformat:0 }}%
+                            </div>
+                            {% endif %}
+                            
+                            {% if last_run.tests_skipped > 0 %}
+                            <div class="progress-bar bg-info" 
+                                 style="width: {{ last_run.skipped_percentage|floatformat:0 }}%; min-width: 40px; line-height: 30px;"
+                                 data-bs-toggle="tooltip" 
+                                 data-bs-placement="top"
+                                 title="{{ last_run.tests_skipped }} omitidas ({{ last_run.skipped_percentage|floatformat:1 }}%)">
+                                {{ last_run.skipped_percentage|floatformat:0 }}%
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Leyenda simple -->
+                        <div class="d-flex justify-content-between small text-muted mb-3">
+                            <div>Éxito: {{ last_run.tests_passed }}</div>
+                            <div>Fallidas: {{ last_run.tests_failed }}</div>
+                            <div>Errores: {{ last_run.tests_error }}</div>
+                            <div>Omitidas: {{ last_run.tests_skipped }}</div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning mt-3">
+                            No hay pruebas ejecutadas en esta ejecución.
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<!-- Segunda tarjeta: Cobertura de código -->
+<div class="row">
+    <div class="col-12">
+        <h4 class="mb-4">Análisis de Cobertura</h4>
+
+<!-- Resumen del estado -->
+<div class="row mb-4">
+    <div class="col-md-3 col-6 mb-4">
+        <div class="card border-start border-3 border-primary h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="mr-3 text-primary">
+                        <i class="fas fa-tasks fa-2x"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small">Total de Pruebas</div>
+                        <div class="h4 mb-0">{{ test_stats.total|default:0 }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-6 mb-4">
+        <div class="card border-start border-3 border-success h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="mr-3 text-success">
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small">Pruebas Exitosas</div>
+                        <div class="h4 mb-0">{{ test_stats.passed|default:0 }} <small class="text-muted">({{ test_stats.xpassed|default:0 }} xpass)</small></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-6 mb-4">
+        <div class="card border-start border-3 border-danger h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="mr-3 text-danger">
+                        <i class="fas fa-times-circle fa-2x"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small">Pruebas Fallidas</div>
+                        <div class="h4 mb-0">{{ test_stats.failed|default:0 }} <small class="text-muted">({{ test_stats.xfailed|default:0 }} xfail)</small></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-6 mb-4">
+        <div class="card border-start border-3 border-warning h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="mr-3 text-warning">
+                        <i class="fas fa-pause-circle fa-2x"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small">Omitidas/Errores</div>
+                        <div class="h4 mb-0">{{ test_stats.skipped|default:0 }} / {{ test_stats.error|default:0 }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Última ejecución -->
+{% if last_run %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Última Ejecución</h5>
+                <span class="badge bg-{{ last_run.status|status_color }}">
+                    {{ last_run.get_status_display }}
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center mb-3 mb-md-0">
+                        <div class="h2 mb-1">{{ last_run.coverage_percent|default:0|floatformat:1 }}%</div>
+                        <div class="text-muted small">Cobertura</div>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="d-flex justify-content-between mb-2">
+                            <div class="text-muted">
+                                <i class="fas fa-check-circle text-success me-1"></i> 
+                                {{ last_run.tests_passed|default:0 }} pasaron
+                            </div>
+                            <div class="text-muted">
+                                <i class="fas fa-times-circle text-danger me-1"></i> 
+                                {{ last_run.tests_failed|default:0 }} fallaron
+                            </div>
+                            <div class="text-muted">
+                                <i class="fas fa-exclamation-circle text-warning me-1"></i> 
+                                {{ last_run.tests_error|default:0 }} con error
+                            </div>
+                            <div class="text-muted">
+                                <i class="fas fa-forward text-info me-1"></i> 
+                                {{ last_run.tests_skipped|default:0 }} omitidas
+                            </div>
+                        </div>
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar bg-success" style="width: {{ last_run.tests_passed|percentage:last_run.total_tests }}%"></div>
+                            <div class="progress-bar bg-danger" style="width: {{ last_run.tests_failed|percentage:last_run.total_tests }}%"></div>
+                            <div class="progress-bar bg-warning" style="width: {{ last_run.tests_error|percentage:last_run.total_tests }}%"></div>
+                            <div class="progress-bar bg-info" style="width: {{ last_run.tests_skipped|percentage:last_run.total_tests }}%"></div>
+                        </div>
+                        <div class="mt-2 text-end text-muted small">
+                            <i class="far fa-clock me-1"></i> 
+                            {{ last_run.created_at|timesince }} atrás
+                            <span class="mx-2">•</span>
+                            <i class="fas fa-stopwatch me-1"></i>
+                            {{ last_run.duration|default:0|floatformat:2 }}s
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Cobertura de Código -->
+<div class="row mb-4">
+    <div class="col-md-6 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0">Resumen de Cobertura</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <div class="h1 text-primary">{{ coverage_stats.avg|default:0|floatformat:1 }}%</div>
+                        <div class="text-muted">Cobertura Promedio</div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="h1">{{ coverage_stats.covered|default:0 }}/{{ coverage_stats.total|default:0 }}</div>
+                        <div class="text-muted">Módulos Cubiertos</div>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Rango de Cobertura</span>
+                        <span>{{ coverage_stats.min|default:0|floatformat:1 }}% - {{ coverage_stats.max|default:0|floatformat:1 }}%</span>
+                    </div>
+                    <div class="progress" style="height: 20px; position: relative;">
+                        <!-- Rangos de cobertura -->
+                        <div class="position-absolute w-100 d-flex">
+                            <div class="bg-danger" style="width: 30%; height: 20px; opacity: 0.2;"></div>
+                            <div class="bg-warning" style="width: 40%; height: 20px; opacity: 0.2;"></div>
+                            <div class="bg-success" style="width: 30%; height: 20px; opacity: 0.2;"></div>
+                        </div>
+                        
+                        <!-- Indicador de posición actual -->
+                        {% with position=coverage_stats.avg|default:0|floatformat:0 %}
+                        <div class="position-absolute d-flex align-items-center" style="left: {{ position }}%; margin-left: -10px; top: 0; bottom: 0;">
+                            <div class="bg-dark rounded-circle" style="width: 20px; height: 20px;"></div>
+                            <div class="position-absolute bg-dark text-white px-2 py-1 rounded" style="bottom: 100%; margin-bottom: 5px; white-space: nowrap; font-size: 0.8rem;">
+                                {{ coverage_stats.avg|default:0|floatformat:1 }}%
+                            </div>
+                        </div>
+                        {% endwith %}
+                        
+                        <!-- Líneas de referencia -->
+                        <div class="position-absolute w-100 d-flex justify-content-between" style="top: 0; bottom: 0; padding: 0 10px;">
+                            <div class="bg-dark" style="width: 2px; height: 100%;"></div>
+                            <div class="bg-dark" style="width: 2px; height: 100%;"></div>
+                            <div class="bg-dark" style="width: 2px; height: 100%;"></div>
+                            <div class="bg-dark" style="width: 2px; height: 100%;"></div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-1">
+                        <small class="text-muted">0%</small>
+                        <small class="text-muted">30%</small>
+                        <small class="text-muted">70%</small>
+                        <small class="text-muted">100%</small>
+                    </div>
+                    <div class="d-flex justify-content-between mt-1">
+                        <small class="text-muted">Baja</small>
+                        <small class="text-muted">Media</small>
+                        <small class="text-muted">Alta</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card shadow h-100">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0">Distribución de Cobertura</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12">
+                        <h6 class="mb-3">A Mejorar</h6>
+                        {% if worst_apps %}
+                            {% for app, data in worst_apps.items %}
+                            <div class="card mb-2">
+                                <div class="card-header bg-light py-2" data-bs-toggle="collapse" href="#collapse-{{ forloop.counter }}" role="button" style="cursor: pointer;">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-folder me-2"></i>{{ app }}
+                                            <small class="text-muted">({{ data.module_details|length }} archivos)</small>
+                                        </h6>
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge bg-{{ data.coverage_percent|default:0|coverage_color }} me-2">
+                                                {{ data.coverage_percent|default:0|floatformat:1 }}% cobertura
+                                            </span>
+                                            <i class="fas fa-chevron-down"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="collapse" id="collapse-{{ forloop.counter }}">
+                                    <div class="card-body p-3">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Archivo</th>
+                                                        <th class="text-end">Cobertura</th>
+                                                        <th class="text-end">Líneas</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for module in data.module_details %}
+                                                    <tr>
+                                                        <td>
+                                                            <div class="d-flex justify-content-between align-items-center">
+                                                                <code class="small">{{ module.path|basename }}</code>
+                                                                {% if module.file_tests %}
+                                                                <button class="btn btn-sm btn-link p-0 ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#tests-{{ forloop.parentloop.counter }}-{{ forloop.counter }}" aria-expanded="false" aria-controls="tests-{{ forloop.parentloop.counter }}-{{ forloop.counter }}">
+                                                                    <i class="fas fa-list"></i> {{ module.file_tests|length }} archivo(s) de prueba
+                                                                </button>
+                                                                {% endif %}
+                                                            </div>
+                                                            {% if module.file_tests %}
+                                                            <div class="collapse mt-2" id="tests-{{ forloop.parentloop.counter }}-{{ forloop.counter }}">
+                                                                <div class="card card-body p-2 small">
+                                                                    <table class="table table-sm table-hover mb-0">
+                                                                        <thead>
+                                                                            <tr>
+                                                                                <th>Archivo de Prueba</th>
+                                                                                <th class="text-end">Pruebas</th>
+                                                                                <th class="text-end">Éxito</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            {% for file_test in module.file_tests %}
+                                                                            <tr>
+                                                                                <td>
+                                                                                    <code class="small">{{ file_test.path|basename }}</code>
+                                                                                </td>
+                                                                                <td class="text-end">
+                                                                                    <span class="badge bg-primary">{{ file_test.test_count }}</span>
+                                                                                </td>
+                                                                                <td class="text-end">
+                                                                                    {% if file_test.stats.failed > 0 or file_test.stats.error > 0 %}
+                                                                                    <span class="badge bg-danger">{{ file_test.stats.passed|default:0 }}/{{ file_test.test_count }}</span>
+                                                                                    {% else %}
+                                                                                    <span class="badge bg-success">{{ file_test.stats.passed|default:0 }}/{{ file_test.test_count }}</span>
+                                                                                    {% endif %}
+                                                                                </td>
+                                                                            </tr>
+                                                                            {% endfor %}
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                            {% endif %}
+                                                        </td>
+                                                        <td class="text-end">
+                                                            {% if module.coverage is None %}
+                                                            <span class="badge bg-secondary text-white">
+                                                                Sin cobertura
+                                                            </span>
+                                                            {% else %}
+                                                            <span class="badge bg-{{ module.coverage|default:0|coverage_color }} text-white">
+                                                                {{ module.coverage|floatformat:1 }}%
+                                                            </span>
+                                                            {% endif %}
+                                                        </td>
+                                                        <td class="text-end">
+                                                            {% if module.total_lines == 0 and module.lines_covered == 0 %}
+                                                            <span class="text-muted small">Vacío</span>
+                                                            {% else %}
+                                                            <span class="small">{{ module.lines_covered|default:0 }}/{{ module.total_lines|default:0 }}</span>
+                                                            {% endif %}
+                                                        </td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                        <div class="alert alert-success mb-0">
+                            <i class="fas fa-check-circle me-2"></i>
+                            ¡Excelente! No hay módulos con cobertura baja.
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

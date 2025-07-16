@@ -12,6 +12,8 @@ class GenericaLista(models.Model):
     def __str__(self):
         text = "{}".format(self.nombre,)
         return text
+
+# Ejemplos de clases que heredan de GenericaLista (comentados)
 '''
 class MetodoPago(GenericaLista):
     pass
@@ -20,7 +22,8 @@ class Ticket(GenericaLista):
     abreviatura = models.CharField(max_length=1)
 
 class Tipo(GenericaLista):
-    abreviatura = models.CharField(max_length=2)'''
+    abreviatura = models.CharField(max_length=2)
+'''
 
 class ListaProveedores(GenericaLista):
     abreviatura = models.CharField(max_length=5)

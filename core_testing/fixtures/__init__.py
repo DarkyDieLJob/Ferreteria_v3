@@ -1,0 +1,23 @@
+"""
+Fixtures para pruebas unitarias.
+
+Este módulo contiene fixtures que pueden ser utilizadas en las pruebas unitarias de la aplicación.
+"""
+
+import pytest
+from django.contrib.auth import get_user_model
+from model_bakery import baker
+
+User = get_user_model()
+
+@pytest.fixture
+def user():
+    """Fixture que devuelve un usuario de prueba."""
+    return baker.make(User, username='testuser', is_active=True)
+
+@pytest.fixture
+def admin_user():
+    """Fixture que devuelve un usuario administrador de prueba."""
+    return baker.make(User, username='admin', is_staff=True, is_superuser=True, is_active=True)
+
+# Agrega aquí más fixtures según sea necesario

@@ -1,0 +1,1059 @@
+"""
+Vistas para el módulo de testing.
+Proporciona las vistas necesarias para interactuar con las interfaces de testing.
+"""
+import importlib
+import json
+import logging
+from django.db.models import Avg, Q, Count, Sum, Max, Min
+import inspect
+import os
+import pkgutil
+from typing import Type, Dict, List, Any, Optional
+
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.http import HttpRequest, HttpResponse, JsonResponse, Http404
+from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse_lazy
+from django.utils import timezone
+from django.utils.module_loading import import_string
+from django.conf import settings
+from django.views.generic import (
+    TemplateView, ListView, DetailView, CreateView, UpdateView, DeleteView, View
+)
+
+from django.views import View
+from core_testing.models import TestRun, TestCase, ModuleCoverage
+from core_testing.testing_interfaces.base import TestingInterface, TestingView
+from core_testing.storage import TestResultStorage
+
+logger = logging.getLogger(__name__)
+
+
+class InterfaceTestingView(LoginRequiredMixin, View):
+    """Vista para interactuar con una interfaz de testing específica."""
+    template_name = 'core_testing/interface.html'
+    interface_class = None  # Debe ser sobreescrito por las clases hijas
+    
+    def get(self, request: HttpRequest, interface_name: str) -> HttpResponse:
+        """
+        Muestra la interfaz de testing específica.
+        
+        Args:
+            request: Objeto HttpRequest
+            interface_name: Nombre de la interfaz de testing a cargar
+            
+        Returns:
+            HttpResponse con la interfaz de testing renderizada
+        """
+        interface_class = self.get_interface_class()
+        if not interface_class:
+            return render(
+                request, 
+                'core_testing/interface.html', 
+                {'error': f'Interfaz {interface_name} no encontrada'}, 
+                status=404
+            )
+            
+        interface = self.get_interface()
+        tests = interface.get_available_tests()
+        
+        context = self.get_context_data()
+        context.update({
+            'interface_name': interface_name,
+            'tests': tests,
+            'interface': interface,
+        })
+        return render(request, self.template_name, context)
+    
+    def get_interface_class(self):
+        """
+        Obtiene la clase de la interfaz de testing.
+        
+        Returns:
+            Clase de la interfaz de testing
+            
+        Raises:
+            Http404: Si la interfaz no existe o no se puede cargar
+        """
+        if hasattr(self, 'interface_class') and self.interface_class is not None:
+            return self.interface_class
+            
+        if not hasattr(self, 'kwargs') or 'interface_name' not in self.kwargs:
+            raise Http404("No se especificó la interfaz de testing")
+            
+        interface_name = self.kwargs['interface_name']
+        module_path = f'core_testing.testing_interfaces.{interface_name}'
+        
+        try:
+            module = importlib.import_module(module_path)
+            for name, obj in inspect.getmembers(module, inspect.isclass):
+                if (issubclass(obj, TestingInterface) and 
+                    obj != TestingInterface and 
+                    obj.__module__ == module_path):
+                    return obj
+        except (ImportError, AttributeError) as e:
+            logger.error(f"Error al cargar la interfaz {interface_name}: {e}")
+            
+        raise Http404(f"Interfaz de testing no encontrada: {interface_name}")
+    
+    def get_interface(self):
+        """
+        Obtiene una instancia de la interfaz de testing.
+        
+        Returns:
+            Instancia de la interfaz de testing
+            
+        Raises:
+            Http404: Si la interfaz no existe o no se puede cargar
+        """
+        interface_class = self.get_interface_class()
+        return interface_class()
+    
+    def get_context_data(self, **kwargs):
+        """
+        Retorna el contexto para la plantilla.
+        
+        Returns:
+            dict: Contexto para la plantilla
+        """
+        context = {}
+        context.update(kwargs)
+        return context
+
+
+class TestRunDetailView(LoginRequiredMixin, View):
+    """Vista para mostrar los detalles de una ejecución de pruebas."""
+    template_name = 'core_testing/testrun_detail.html'
+    
+    def get(self, request: HttpRequest, pk: int) -> HttpResponse:
+        """Muestra los detalles de una ejecución de pruebas.
+        
+        Args:
+            request: Objeto HttpRequest
+            pk: ID de la ejecución de pruebas
+            
+        Returns:
+            HttpResponse con los detalles de la ejecución
+        """
+        test_run = get_object_or_404(TestRun, id=pk)
+        test_cases = test_run.test_cases.all()
+        
+        # Obtener la cobertura del módulo principal (si existe)
+        coverage = ModuleCoverage.objects.filter(test_run=test_run).first()
+        
+        # Estadísticas de los casos de prueba
+        test_stats = test_cases.aggregate(
+            total=Count('id'),
+            passed=Count('id', filter=Q(status='passed')),
+            failed=Count('id', filter=Q(status='failed')),
+            error=Count('id', filter=Q(status='error')),
+            skipped=Count('id', filter=Q(status='skipped')),
+        )
+        
+        context = {
+            'test_run': test_run,
+            'test_cases': test_cases,
+            'coverage': coverage,
+            'test_stats': test_stats,
+        }
+        
+        return render(request, self.template_name, context)
+
+
+def discover_testing_interfaces() -> Dict[str, Type[TestingInterface]]:
+    """
+    Descubre automáticamente todas las interfaces de testing disponibles.
+    
+    Returns:
+        Dict[str, Type[TestingInterface]]: Diccionario con las interfaces encontradas
+    """
+    interfaces = {}
+    logger = logging.getLogger(__name__)
+    logger.info("=" * 80)
+    logger.info("INICIANDO BÚSQUEDA DE INTERFACES DE TESTING")
+    logger.info("=" * 80)
+    
+    try:
+        # Obtener la ruta del directorio de interfaces
+        import os
+        from django.conf import settings
+        
+        # Ruta al directorio de interfaces
+        interfaces_dir = os.path.join(settings.BASE_DIR, 'core_testing', 'testing_interfaces')
+        logger.info(f"Buscando interfaces en: {interfaces_dir}")
+        
+        # Verificar si el directorio existe
+        if not os.path.exists(interfaces_dir):
+            logger.error(f"ERROR: El directorio de interfaces no existe: {interfaces_dir}")
+            return {}
+        
+        # Verificar permisos del directorio
+        logger.info(f"Permisos del directorio: {oct(os.stat(interfaces_dir).st_mode)[-3:]}")
+        logger.info(f"Contenido del directorio: {os.listdir(interfaces_dir)}")
+            
+        # Listar archivos en el directorio
+        for filename in os.listdir(interfaces_dir):
+            logger.info(f"Procesando archivo: {filename}")
+            
+            # Ignorar archivos que no son módulos de Python
+            if not filename.endswith('.py'):
+                logger.info(f"  - Ignorando (no es .py): {filename}")
+                continue
+                
+            if filename in ['__init__.py', 'base.py', '__pycache__']:
+                logger.info(f"  - Ignorando (archivo especial): {filename}")
+                continue
+                
+            # Obtener el nombre del módulo sin la extensión
+            module_name = filename[:-3]
+            full_module_name = f'core_testing.testing_interfaces.{module_name}'
+            
+            logger.info(f"  - Intentando cargar módulo: {full_module_name}")
+            
+            try:
+                # Importar el módulo dinámicamente
+                module = importlib.import_module(full_module_name)
+                logger.info(f"  - Módulo importado correctamente: {module.__name__}")
+                
+                # Buscar clases que hereden de TestingInterface
+                for name, obj in inspect.getmembers(module, inspect.isclass):
+                    logger.info(f"  - Examinando clase: {name} (módulo: {getattr(obj, '__module__', 'desconocido')})")
+                    
+                    # Verificar si es una clase de interfaz de prueba válida
+                    try:
+                        is_testing_interface = (
+                            inspect.isclass(obj) and 
+                            issubclass(obj, TestingInterface) and 
+                            obj != TestingInterface and
+                            obj.__module__ == module.__name__
+                        )
+                        
+                        if is_testing_interface:
+                            logger.info(f"  - CLASE VÁLIDA ENCONTRADA: {name} en {module_name}")
+                            logger.info(f"     - Módulo: {obj.__module__}")
+                            logger.info(f"     - Base classes: {[b.__name__ for b in obj.__bases__]}")
+                            logger.info(f"     - Atributos: {dir(obj)}")
+                            logger.info(f"     - Ruta del archivo: {{ module.path|basename }}")
+                            # Usar el nombre de la interfaz o el nombre de la clase como clave
+                            interface_name = getattr(obj, 'name', name)
+                            logger.info(f"  - Registrando interfaz: {interface_name} (clase: {obj.__name__})")
+                            
+                            # Asegurarse de que el nombre sea único
+                            if interface_name in interfaces:
+                                logger.warning(f"  - ATENCIÓN: Nombre de interfaz duplicado: {interface_name}")
+                                interface_name = f"{interface_name}_{module_name}"
+                                
+                            interfaces[interface_name] = obj
+                            logger.info(f"  - Interfaz registrada: {interface_name}")
+                        else:
+                            logger.info(f"  - Clase ignorada (no es una interfaz de testing válida): {name}")
+                            
+                    except Exception as e:
+                        logger.error(f"  - ERROR al procesar la clase {name}: {str(e)}", exc_info=True)
+                        
+            except ImportError as e:
+                logger.error(f"  - ERROR al importar el módulo {full_module_name}: {str(e)}", exc_info=True)
+            except Exception as e:
+                logger.error(f"  - ERROR inesperado al procesar {full_module_name}: {str(e)}", exc_info=True)
+        
+        logger.info("=" * 80)
+        logger.info(f"BÚSQUEDA COMPLETADA. Interfaces encontradas: {list(interfaces.keys())}")
+        logger.info("=" * 80)
+        
+    except Exception as e:
+        logger.error("=" * 80)
+        logger.error(f"ERROR CRÍTICO en discover_testing_interfaces: {str(e)}", exc_info=True)
+        logger.error("=" * 80)
+    
+    return interfaces
+
+
+class TestingDashboardView(LoginRequiredMixin, TemplateView):
+    """
+    Vista principal del dashboard de testing.
+    Muestra un resumen de las pruebas y la cobertura de código agrupado por aplicación.
+    """
+    template_name = 'core_testing/dashboard.html'
+    
+    def get_app_name(self, module_name):
+        """Obtiene el nombre de la aplicación a partir del nombre del módulo o ruta."""
+        if not module_name:
+            return 'other'
+            
+        # Si es una ruta de archivo, tomar el primer directorio
+        if '/' in module_name:
+            # Eliminar cualquier ruta absoluta o relativa
+            path_parts = module_name.split('/')
+            # Tomar el primer directorio que no esté vacío y no sea un punto
+            for part in path_parts:
+                if part and part != '.':
+                    return part
+            return 'other'
+        
+        # Si es un nombre de módulo con puntos, tomar la primera parte
+        if '.' in module_name:
+            return module_name.split('.')[0]
+            
+        # Si no hay ni barras ni puntos, devolver el nombre tal cual
+        return module_name or 'other'
+    
+    def get_context_data(self, **kwargs):
+        """Obtiene el contexto para la plantilla del dashboard."""
+        context = super().get_context_data(**kwargs)
+        
+        # Obtener la última ejecución
+        last_run = TestRun.objects.order_by('-started_at').first()
+        
+        # Inicializar estadísticas vacías
+        coverage_stats = {
+            'avg_coverage': 0,
+            'max_coverage': 0,
+            'min_coverage': 0
+        }
+        
+        test_stats = {
+            'total': 0,
+            'passed': 0,
+            'failed': 0,
+            'error': 0,
+            'skipped': 0,
+            'xfailed': 0,
+            'xpassed': 0,
+            'total_runs': 0,
+            'passed_runs': 0,
+            'failed_runs': 0,
+            'error_runs': 0,
+            'avg_duration': 0,
+        }
+        
+        if last_run:
+            # Obtener estadísticas de cobertura de la última ejecución
+            coverage_stats = ModuleCoverage.objects.filter(
+                test_run=last_run
+            ).aggregate(
+                avg_coverage=Avg('coverage_percent'),
+                max_coverage=Max('coverage_percent'),
+                min_coverage=Min('coverage_percent')
+            )
+            
+            # Obtener estadísticas de pruebas de la última ejecución
+            test_cases = TestCase.objects.filter(test_run=last_run)
+            
+            test_stats = {
+                'total': last_run.total_tests,
+                'passed': last_run.tests_passed,
+                'failed': last_run.tests_failed,
+                'error': last_run.tests_error,
+                'skipped': last_run.tests_skipped,
+                'xfailed': test_cases.filter(status='xfailed').count(),
+                'xpassed': test_cases.filter(status='xpassed').count(),
+                'total_runs': 1,
+                'passed_runs': 1 if last_run.status == 'passed' else 0,
+                'failed_runs': 1 if last_run.status == 'failed' else 0,
+                'error_runs': 1 if last_run.status == 'error' else 0,
+                'avg_duration': last_run.duration or 0,
+            }
+        
+        # Calcular porcentaje de éxito
+        if test_stats['total'] > 0:
+            test_stats['success_rate'] = ((test_stats['passed'] + test_stats['xpassed']) / test_stats['total']) * 100
+        else:
+            test_stats['success_rate'] = 0
+        
+        # Inicializar diccionario para cobertura por aplicación
+        app_coverage = {}
+        
+        # Obtener módulos de la última ejecución, excluyendo migraciones
+        all_modules = []
+        if last_run:
+            all_modules = [
+                m for m in ModuleCoverage.objects.filter(test_run=last_run) 
+                if 'migrations' not in m.module_name
+            ]
+        
+        # Agrupar por aplicación
+        for module in all_modules:
+            app_name = self.get_app_name(module.module_name)
+            module_path = module.module_name.split('.')
+            # Mostrar el módulo padre de forma más descriptiva
+            if len(module_path) > 1:
+                # Si es un paquete, mostrar el módulo padre
+                parent_module = f"{module_path[-2]}.{module_path[-1]}"
+                # Si es un __init__.py, mostrar el paquete padre
+                if module_path[-1] == '__init__':
+                    parent_module = f"{module_path[-2] if len(module_path) > 1 else ''}.__init__"
+            else:
+                parent_module = module_path[0] if module_path else 'root'
+            
+            if app_name not in app_coverage:
+                app_coverage[app_name] = {
+                    'modules': [],
+                    'module_paths': set(),  # Almacenar rutas de módulos únicos
+                    'module_details': [],   # Almacenar detalles completos de módulos
+                    'total_lines': 0,
+                    'lines_covered': 0,
+                    'coverage_percent': 0,
+                    'test_stats': {
+                        'total': 0,
+                        'passed': 0,
+                        'failed': 0,
+                        'error': 0,
+                        'skipped': 0,
+                    }
+                }
+            
+            app_coverage[app_name]['modules'].append(module)
+            # Agregar el módulo padre a los paths
+            if parent_module not in [m['path'] for m in app_coverage[app_name].get('module_details', [])]:
+                app_coverage[app_name]['module_details'].append({
+                    'path': parent_module,
+                    'coverage': module.coverage_percent,
+                    'lines_covered': module.lines_covered,
+                    'total_lines': module.total_lines
+                })
+            app_coverage[app_name]['total_lines'] += module.total_lines
+            app_coverage[app_name]['lines_covered'] += module.lines_covered
+            
+            # Calcular cobertura ponderada
+            if module.total_lines > 0:
+                total_weight = sum(m.total_lines for m in all_modules if m.total_lines > 0)
+                if total_weight > 0:
+                    weight = module.total_lines / total_weight
+                    app_coverage[app_name]['coverage_percent'] += module.coverage_percent * weight
+        
+        # Inicializar diccionario para pruebas por archivo
+        file_tests = {}
+        
+        if last_run:
+            # Obtener estadísticas de pruebas de la última ejecución
+            test_cases = TestCase.objects.filter(test_run=last_run).values('status', 'file')
+            
+            for test in test_cases:
+                file_path = test.get('file', '')
+                app_name = self.get_app_name(file_path)
+                status = test.get('status', '').lower()
+                
+                # Actualizar estadísticas por aplicación
+                if app_name in app_coverage:
+                    app_coverage[app_name]['test_stats']['total'] += 1
+                    if status in app_coverage[app_name]['test_stats']:
+                        app_coverage[app_name]['test_stats'][status] += 1
+                
+                # Agrupar tests por archivo
+                if file_path not in file_tests:
+                    file_tests[file_path] = {
+                        'total': 0,
+                        'passed': 0,
+                        'failed': 0,
+                        'error': 0,
+                        'skipped': 0,
+                        'xfailed': 0,
+                        'xpassed': 0
+                    }
+                
+                file_tests[file_path]['total'] += 1
+                if status in file_tests[file_path]:
+                    file_tests[file_path][status] += 1
+        
+        # Asignar tests a los módulos correspondientes
+        for module in all_modules:
+            module_path = module.module_name.replace('.', '/') + '.py'
+            module_dict = module.__dict__.copy()
+            module_dict['file_tests'] = []
+            
+            # Buscar archivos que coincidan con este módulo
+            for file_path, stats in file_tests.items():
+                if file_path.endswith(module_path):
+                    module_dict['file_tests'].append({
+                        'path': file_path,
+                        'stats': stats,
+                        'test_count': stats['total']
+                    })
+            
+            # Actualizar la aplicación correspondiente
+            app_name = self.get_app_name(module.module_name)
+            if app_name in app_coverage:
+                # Encontrar el módulo en la lista de módulos de la aplicación
+                for mod in app_coverage[app_name]['module_details']:
+                    if mod.get('path') == module_path:
+                        mod['file_tests'] = module_dict['file_tests']
+                        break
+        
+        # Ordenar aplicaciones por cobertura (peores primero)
+        for app_data in app_coverage.values():
+            # Ordenar archivos por número de pruebas (más pruebas primero)
+            for module in app_data['module_details']:
+                if 'file_tests' in module and module['file_tests']:
+                    module['file_tests'].sort(key=lambda x: x['test_count'], reverse=True)
+            # Ordenar módulos por cobertura (peores primero)
+            # Considerar módulos con 0/0 líneas como si tuvieran 0% de cobertura para el ordenamiento
+            app_data['module_details'].sort(key=lambda x: float('inf') if x['total_lines'] == 0 and x['lines_covered'] == 0 else x['coverage'])
+            
+            # Actualizar el porcentaje de cobertura para módulos con 0/0 líneas
+            for module in app_data['module_details']:
+                if module['total_lines'] == 0 and module['lines_covered'] == 0:
+                    module['coverage'] = None  # Marcamos como None para mostrarlo como 'Sin cobertura'
+        
+        # Crear diccionario de peores aplicaciones (cobertura < 90%)
+        worst_apps = {k: v for k, v in sorted(
+            app_coverage.items(),
+            key=lambda x: x[1]['coverage_percent']
+        ) if v['coverage_percent'] < 90}  # Mostrar solo módulos con cobertura < 90%
+        
+        # Ordenar todas las aplicaciones por cobertura (mejores primero) para otras vistas
+        sorted_apps = sorted(
+            app_coverage.items(),
+            key=lambda x: x[1]['coverage_percent'],
+            reverse=True
+        )
+        
+        # Obtener la última ejecución de pruebas
+        last_run = TestRun.objects.order_by('-created_at').first()
+        
+        # Agregar datos al contexto
+        context.update({
+            'last_run': last_run,
+            'coverage_stats': {
+                'avg': round(coverage_stats['avg_coverage'] or 0, 2),
+                'min': round(coverage_stats['min_coverage'] or 0, 2),
+                'max': round(coverage_stats['max_coverage'] or 0, 2),
+                'total': len(all_modules),
+                'covered': len([m for m in all_modules if m.coverage_percent > 0]),
+            },
+            'test_stats': test_stats,
+            'app_coverage': dict(sorted_apps),
+            'top_apps': dict(list(sorted_apps)[:3]),  # Top 3 aplicaciones
+            'worst_apps': worst_apps,  # Aplicaciones con cobertura < 90%
+        })
+        
+        return context
+
+
+class InterfaceTestingView(TestingView):
+    """
+    Vista para interactuar con una interfaz de testing específica.
+    Esta vista se encarga de cargar dinámicamente la interfaz solicitada.
+    
+    Nota: Ya incluye LoginRequiredMixin a través de TestingView.
+    """
+    template_name = 'core_testing/interface.html'
+    
+    def get_interface_class(self) -> Type[TestingInterface]:
+        """
+        Obtiene la clase de la interfaz de testing solicitada.
+        
+        Returns:
+            Type[TestingInterface]: Clase de la interfaz de testing
+            
+        Raises:
+            Http404: Si la interfaz no se encuentra
+        """
+        # Si la clase ya está definida como atributo, usarla
+        if hasattr(self, 'interface_class') and self.interface_class is not None:
+            return self.interface_class
+            
+        # Si no, intentar cargarla dinámicamente
+        interface_name = self.kwargs.get('interface_name')
+        if not interface_name:
+            raise Http404("No se especificó una interfaz de testing")
+            
+        interfaces = discover_testing_interfaces()
+        
+        # Buscar la interfaz por nombre de módulo
+        for name, interface in interfaces.items():
+            if hasattr(interface, 'module_name') and interface.module_name == interface_name:
+                return interface
+        
+        # Si no se encuentra por module_name, intentar por el nombre de la clase
+        for name, interface in interfaces.items():
+            if name.lower() == interface_name.lower():
+                return interface
+        
+        raise Http404(f"Interfaz de testing no encontrada: {interface_name}")
+    
+    def get_context_data(self, **kwargs):
+        """Agrega información adicional al contexto."""
+        context = super().get_context_data(**kwargs)
+        context['interface_name'] = self.kwargs.get('interface_name')
+        return context
+
+
+def get_test_form(request: HttpRequest, interface_name: str) -> JsonResponse:
+    """
+    Vista que devuelve el formulario HTML para un test específico.
+    
+    Args:
+        request: Objeto HttpRequest
+        interface_name: Nombre de la interfaz de testing
+        
+    Returns:
+        JsonResponse con el formulario HTML o un mensaje de error
+    """
+    interfaces = discover_testing_interfaces()
+    
+    if interface_name not in interfaces:
+        return JsonResponse(
+            {'error': f'Interfaz de testing no encontrada: {interface_name}'}, 
+            status=404
+        )
+    
+    test_id = request.GET.get('test_id')
+    if not test_id:
+        return JsonResponse(
+            {'error': 'Se requiere el parámetro test_id'}, 
+            status=400
+        )
+    
+    interface = interfaces[interface_name]()
+    form_html = interface.get_test_form(test_id, request)
+    
+    return JsonResponse({'form': form_html})
+
+
+def run_test_api(request: HttpRequest, interface_name: str) -> JsonResponse:
+    """
+    API para ejecutar un test y devolver los resultados en formato JSON.
+    
+    Args:
+        request: Objeto HttpRequest
+        interface_name: Nombre de la interfaz de testing
+        
+    Returns:
+        JsonResponse con los resultados del test
+    """
+    if not request.user.is_authenticated:
+        return JsonResponse(
+            {'error': 'Se requiere autenticación'}, 
+            status=403
+        )
+    
+    interfaces = discover_testing_interfaces()
+    
+    if interface_name not in interfaces:
+        return JsonResponse(
+            {'error': f'Interfaz de testing no encontrada: {interface_name}'}, 
+            status=404
+        )
+    
+    test_id = request.POST.get('test_id')
+    if not test_id:
+        return JsonResponse(
+            {'error': 'Se requiere el parámetro test_id'}, 
+            status=400
+        )
+    
+    # Crear un nuevo registro de ejecución
+    test_run = TestRun.objects.create(
+        name=f"{interface_name} - {test_id}",
+        started_by=request.user,
+        status='running'
+    )
+    
+    try:
+        interface = interfaces[interface_name]()
+        
+        # Ejecutar el test con los parámetros del formulario
+        result = interface.run_test(test_id, request=request)
+        
+        # Actualizar el estado de la ejecución
+        test_run.status = 'completed' if result.get('success') else 'failed'
+        test_run.save()
+        
+        # Registrar el caso de prueba
+        test_case = TestCase.objects.create(
+            test_run=test_run,
+            name=result.get('test_name', test_id),
+            description=result.get('message', ''),
+            status='passed' if result.get('success') else 'failed',
+            execution_time=result.get('duration', 0),
+            metadata={
+                'test_id': test_id,
+                'interface': interface_name,
+                'result': result
+            }
+        )
+        
+        # Si hay datos de cobertura, guardarlos
+        if 'coverage' in result:
+            TestCoverage.objects.create(
+                test_run=test_run,
+                percent_covered=result['coverage'].get('percent_covered', 0),
+                total_statements=result['coverage'].get('total_statements', 0),
+                missing_statements=result['coverage'].get('missing_statements', 0),
+                excluded_statements=result['coverage'].get('excluded_statements', 0),
+                coverage_data=result['coverage'].get('coverage_data', {})
+            )
+        
+        return JsonResponse(result)
+        
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        
+        # Registrar el error
+        test_run.status = 'error'
+        test_run.save()
+        
+        TestCase.objects.create(
+            test_run=test_run,
+            name=f"{interface_name} - {test_id}",
+            description=f"Error al ejecutar el test: {str(e)}",
+            status='error',
+            execution_time=0,
+            metadata={
+                'test_id': test_id,
+                'interface': interface_name,
+                'error': str(e),
+                'traceback': error_trace
+            }
+        )
+        
+        return JsonResponse(
+            {
+                'success': False,
+                'message': f'Error al ejecutar el test: {str(e)}',
+                'traceback': error_trace if settings.DEBUG else None
+            },
+            status=500
+        )
+
+
+
+
+
+class CoverageReportView(LoginRequiredMixin, TemplateView):
+    """
+    Vista simple para mostrar el informe de cobertura de pruebas.
+    
+    Muestra un listado de módulos con su porcentaje de cobertura,
+    ordenados de mayor a menor cobertura.
+    """
+    template_name = 'core_testing/coverage_report.html'
+    
+    def get_context_data(self, **kwargs):
+        """Obtiene los datos de cobertura para la plantilla."""
+        context = super().get_context_data(**kwargs)
+        
+        # Obtener cobertura por módulo, ordenada de mayor a menor
+        modules = ModuleCoverage.objects.all()\
+            .order_by('-coverage_percent', 'module_name')
+            
+        # Calcular métricas básicas
+        context.update({
+            'modules': modules,
+            'total_modules': modules.count(),
+            'avg_coverage': modules.aggregate(avg=Avg('coverage_percent'))['avg'] or 0,
+            'last_updated': modules.first().last_updated if modules.exists() else None,
+            'coverage_data': [
+                {
+                    'module': m.module_name,
+                    'coverage': m.coverage_percent,
+                    'last_updated': m.last_updated
+                } 
+                for m in modules
+            ]
+        })
+        
+        return context
+
+
+class TestRunListView(LoginRequiredMixin, ListView):
+    """
+    Vista para mostrar una lista de ejecuciones de pruebas.
+    """
+    model = TestRun
+    template_name = 'core_testing/testrun_list.html'
+    context_object_name = 'test_runs'
+    paginate_by = 20
+    ordering = ['-created_at']
+    
+    def get_queryset(self):
+        """
+        Filtra las ejecuciones de pruebas según los parámetros de búsqueda.
+        """
+        queryset = super().get_queryset()
+        
+        # Filtros
+        status = self.request.GET.get('status')
+        if status:
+            queryset = queryset.filter(status=status)
+            
+        # Búsqueda por nombre o ID
+        search = self.request.GET.get('q')
+        if search:
+            queryset = queryset.filter(
+                Q(name__icontains=search) |
+                Q(id__icontains=search)
+            )
+            
+        return queryset.prefetch_related('test_cases').select_related('triggered_by')
+    
+    def get_context_data(self, **kwargs):
+        """
+        Agrega conteos de pruebas por estado al contexto.
+        """
+        context = super().get_context_data(**kwargs)
+        
+        # Si estamos en una página de resultados
+        if 'page_obj' in context:
+            # Pre-cargar los conteos para todas las ejecuciones en la página
+            test_runs = context['page_obj'].object_list
+            for run in test_runs:
+                run.passed_count = run.test_cases.filter(status='passed').count()
+                run.failed_count = run.test_cases.filter(status='failed').count()
+                run.error_count = run.test_cases.filter(status='error').count()
+                run.skipped_count = run.test_cases.filter(status='skipped').count()
+        
+        return context
+
+
+class ModuleCoverageDetailView(LoginRequiredMixin, DetailView):
+    """
+    Vista para mostrar detalles de cobertura de un módulo específico.
+    """
+    model = ModuleCoverage
+    template_name = 'core_testing/module_coverage_detail.html'
+    context_object_name = 'coverage'
+    slug_field = 'module_name'
+    slug_url_kwarg = 'module'
+    
+    def get_context_data(self, **kwargs):
+        """
+        Agrega datos adicionales al contexto.
+        """
+        context = super().get_context_data(**kwargs)
+        module_name = self.kwargs.get('module')
+        
+        # Obtener el historial de cobertura para este módulo
+        coverage_history = ModuleCoverage.objects.filter(
+            module_name=module_name
+        ).order_by('-last_updated')[:30]  # Últimos 30 registros
+        
+        context.update({
+            'coverage_history': coverage_history,
+            'files': self.object.file_coverage.items() if self.object.file_coverage else []
+        })
+        return context
+
+
+class TestHistoryView(LoginRequiredMixin, TemplateView):
+    """
+    Vista para mostrar el historial de ejecuciones de pruebas.
+    """
+    template_name = 'core_testing/test_history.html'
+    
+    def get_context_data(self, **kwargs):
+        """
+        Obtiene los datos para mostrar el historial de pruebas.
+        """
+        context = super().get_context_data(**kwargs)
+        
+        # Obtener las últimas ejecuciones
+        test_runs = TestRun.objects.all().order_by('-created_at')[:50]
+        
+        # Estadísticas generales
+        total_runs = test_runs.count()
+        success_rate = 0
+        if total_runs > 0:
+            success_rate = round((test_runs.filter(status='passed').count() / total_runs) * 100, 2)
+        
+        context.update({
+            'test_runs': test_runs,
+            'total_runs': total_runs,
+            'success_rate': success_rate,
+        })
+        return context
+
+class AppDetailView(LoginRequiredMixin, TemplateView):
+    """Vista para mostrar detalles de una aplicación específica.
+    
+    Muestra estadísticas de cobertura y pruebas para una aplicación Django específica,
+    incluyendo módulos que la componen, tendencias de cobertura y pruebas recientes.
+    """
+    template_name = 'core_testing/app_detail.html'
+    
+    def get_app_name(self, module_name):
+        """Obtiene el nombre de la aplicación a partir del nombre del módulo."""
+        parts = module_name.split('.')
+        return parts[0] if parts else 'other'
+    
+    def get_context_data(self, **kwargs):
+        """Obtiene el contexto para la plantilla de detalle de la aplicación."""
+        context = super().get_context_data(**kwargs)
+        app_name = self.kwargs.get('app_name')
+        
+        # Obtener todos los módulos de la aplicación
+        modules = ModuleCoverage.objects.filter(
+            module_name__startswith=f"{app_name}."
+        ).order_by('module_name')
+        
+        # Calcular estadísticas agregadas
+        total_lines = modules.aggregate(Sum('total_lines'))['total_lines__sum'] or 0
+        lines_covered = modules.aggregate(Sum('lines_covered'))['lines_covered__sum'] or 0
+        coverage_percent = (lines_covered / total_lines * 100) if total_lines > 0 else 0
+        
+        # Obtener estadísticas de pruebas para la aplicación
+        test_stats = {
+            'total': 0,
+            'passed': 0,
+            'failed': 0,
+            'error': 0,
+            'skipped': 0,
+        }
+        
+        # Contar pruebas por estado para esta aplicación
+        test_cases = TestCase.objects.filter(
+            file__startswith=f"{app_name}/"
+        ).values('status').annotate(count=Count('id'))
+        
+        for test in test_cases:
+            status = test['status'].lower()
+            if status in test_stats:
+                test_stats[status] = test['count']
+                test_stats['total'] += test['count']
+        
+        # Obtener las últimas ejecuciones que incluyen esta aplicación
+        recent_runs = TestRun.objects.filter(
+            testcase__file__startswith=f"{app_name}/"
+        ).distinct().order_by('-started_at')[:10]
+        
+        # Obtener tendencias de cobertura (últimos 30 días)
+        from django.utils import timezone
+        from django.db.models.functions import TruncDay
+        
+        trends = ModuleCoverage.objects.filter(
+            module_name__startswith=f"{app_name}.",
+            created_at__gte=timezone.now() - timezone.timedelta(days=30)
+        ).annotate(
+            day=TruncDay('created_at')
+        ).values('day').annotate(
+            avg_coverage=Avg('coverage_percent')
+        ).order_by('day')
+        
+        # Preparar datos para el gráfico de tendencias
+        coverage_trends = [
+            {'date': trend['day'].strftime('%Y-%m-%d'), 'coverage': float(trend['avg_coverage'])}
+            for trend in trends
+        ]
+        
+        context.update({
+            'app_name': app_name,
+            'modules': modules,
+            'total_lines': total_lines,
+            'lines_covered': lines_covered,
+            'coverage_percent': coverage_percent,
+            'test_stats': test_stats,
+            'recent_runs': recent_runs,
+            'coverage_trends': coverage_trends,
+        })
+        
+        return context
+
+
+# Vistas de API para actualizaciones en tiempo real
+@login_required
+def api_test_status(request):
+    """
+    API para obtener el estado actual de las pruebas.
+    """
+    from django.core import serializers
+    from django.http import JsonResponse
+    
+    # Obtener la última ejecución
+    last_run = TestRun.objects.order_by('-created_at').first()
+    
+    if not last_run:
+        return JsonResponse({'status': 'no_data'})
+    
+    # Obtener estadísticas de la última ejecución
+    data = {
+        'id': last_run.id,
+        'status': last_run.status,
+        'created_at': last_run.created_at.isoformat(),
+        'duration': last_run.duration,
+        'total_tests': last_run.total_tests,
+        'tests_passed': last_run.tests_passed,
+        'tests_failed': last_run.tests_failed,
+        'tests_error': last_run.tests_error,
+        'tests_skipped': last_run.tests_skipped,
+        'coverage_percent': last_run.coverage_percent,
+    }
+    
+    return JsonResponse(data)
+
+
+@login_required
+def api_coverage_data(request):
+    """
+    API para obtener datos de cobertura actualizados.
+    """
+    from django.db.models import Avg, Max
+    from django.http import JsonResponse
+    
+    # Obtener datos de cobertura por módulo
+    modules = ModuleCoverage.objects.values('module_name').annotate(
+        coverage=Avg('coverage_percent'),
+        last_updated=Max('last_updated')
+    ).order_by('module_name')
+    
+    # Calcular cobertura general
+    overall_coverage = ModuleCoverage.objects.aggregate(
+        avg_coverage=Avg('coverage_percent')
+    )['avg_coverage'] or 0
+    
+    data = {
+        'overall_coverage': round(overall_coverage, 2),
+        'modules': list(modules),
+    }
+    
+    return JsonResponse(data)
+def list_testing_interfaces(request: HttpRequest) -> HttpResponse:
+    """
+    Vista que lista todas las interfaces de testing disponibles.
+    
+    Args:
+        request: Objeto HttpRequest
+        
+    Returns:
+        HttpResponse con la lista de interfaces renderizada
+    """
+    from pathlib import Path
+    import logging
+    from importlib import import_module
+    from django.shortcuts import render
+    from core_testing.testing_interfaces.base import TestingInterface
+    
+    logger = logging.getLogger(__name__)
+    interfaces_dir = Path(__file__).parent.parent / 'testing_interfaces'
+    interfaces = []
+    
+    # Buscar módulos en el directorio de interfaces
+    for module_file in interfaces_dir.glob('*.py'):
+        if module_file.stem in ('__init__', 'base'):
+            continue
+            
+        try:
+            module_name = f"core_testing.testing_interfaces.{module_file.stem}"
+            module = import_module(module_name)
+            
+            # Buscar clases que hereden de TestingInterface
+            for name, obj in module.__dict__.items():
+                if (isinstance(obj, type) and 
+                    issubclass(obj, TestingInterface) and 
+                    obj != TestingInterface):
+                    interface = obj()
+                    interfaces.append({
+                        'name': interface.name,
+                        'description': interface.description,
+                        'version': interface.version,
+                        'module': module_file.stem,
+                        'tests': interface.get_available_tests()
+                    })
+        except Exception as e:
+            logger.error(f"Error cargando módulo {module_file.stem}: {e}")
+    
+    return render(request, 'core_testing/test_interfaces_list.html', {
+        'interfaces': interfaces
+    })
