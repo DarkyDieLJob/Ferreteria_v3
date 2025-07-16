@@ -84,5 +84,13 @@ media/pedidos/Sumar.xlsx
 media/pedidos/Suprabond.xlsx
 media/pedidos/Violini.xlsx
 media/pedidos/YAYI.xlsx
-db.sqlite3-wal
+Violini.csv
+Cedica.csv
+Herrametal.csv
+FerriPlast.csv
+Crimaral.csv
 db.sqlite3-shm
+db.sqlite3-wal
+.coverage
+*.log
+logs/
