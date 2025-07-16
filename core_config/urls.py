@@ -54,11 +54,7 @@ urlpatterns = [
     
     # API v4 (nueva con DRF) - Solo a partir de v4 usamos prefijo de versión
     path('api/v4/', include_with_namespace('v4', 'core_config.api.v4.urls')),
-    
-    # URLs de UI (mantener compatibilidad)
-    path('uml/', include('uml_visualizer.urls')),
-    
-    # Redirección por defecto
+    path('uml/', include('uml_visualizer.urls', namespace='uml_visualizer')),
     path('', RedirectView.as_view(url='/bienvenida/'), name='index'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
