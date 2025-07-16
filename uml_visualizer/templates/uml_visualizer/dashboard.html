@@ -4,7 +4,6 @@
 
 {% block content %}
 <div class="uml-dashboard">
-<<<<<<< HEAD
     <div class="row mb-4">
         <div class="col-md-8">
             <h1 class="mb-0">Visualizador UML</h1>
@@ -180,38 +179,168 @@
         padding: 1rem 1.25rem;
     }
 </style>
-=======
-    <h1>Visualizador UML</h1>
-    
-    <div class="module">
-        <h2>Diagrama del Proyecto Completo</h2>
-        <div class="description">
-            <p>Genera un diagrama UML que incluye todos los modelos de todas las aplicaciones del proyecto.</p>
-            <a href="{% url 'uml_visualizer:project_diagram' %}" class="button">Generar Diagrama Completo</a>
         </div>
     </div>
     
-    <div class="module">
-        <h2>Diagramas por Aplicación</h2>
-        <div class="app-grid">
-            {% for app in installed_apps %}
-            <div class="app-card">
-                <h3>{{ app.verbose_name }}</h3>
-                <p>{{ app.name }}</p>
-                <a href="{% url 'uml_visualizer:generate_diagram' app.label %}" class="button">Ver Diagrama</a>
+    <!-- Estadísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card h-100 border-primary">
+                <div class="card-body text-center">
+                    <h2 class="display-4 text-primary">{{ total_apps }}</h2>
+                    <p class="card-text">Aplicaciones</p>
+                </div>
             </div>
-            {% endfor %}
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card h-100 border-success">
+                <div class="card-body text-center">
+                    <h2 class="display-4 text-success">{{ total_models }}</h2>
+                    <p class="card-text">Modelos</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card h-100 border-info">
+                <div class="card-body text-center">
+                    <h2 class="display-4 text-info">{{ total_views }}</h2>
+                    <p class="card-text">Vistas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card h-100 border-warning">
+                <div class="card-body text-center">
+                    <h2 class="display-4 text-warning">{{ total_forms }}</h2>
+                    <p class="card-text">Formularios</p>
+                </div>
+            </div>
         </div>
     </div>
     
-    <div class="module instructions">
-        <h2>Instrucciones</h2>
-        <ul>
-            <li>Haz clic en "Generar Diagrama Completo" para ver todos los modelos del proyecto.</li>
-            <li>Selecciona una aplicación específica para ver solo sus modelos.</li>
-            <li>Los diagramas se generan en tiempo real y pueden tardar unos segundos.</li>
-        </ul>
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0"><i class="fas fa-boxes"></i> Aplicaciones Disponibles</h4>
+            <span class="badge bg-light text-dark">{{ installed_apps|length }} aplicaciones</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="row row-cols-1 row-cols-md-2 g-4 p-3">
+                {% for app in installed_apps %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="fas fa-cube me-2"></i>{{ app.name }}
+                                <small class="text-muted">{{ app.label }}</small>
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-primary rounded-pill me-2">
+                                        <i class="fas fa-database me-1"></i> {{ app.model_count }}
+                                    </span>
+                                    <span class="badge bg-success rounded-pill me-2">
+                                        <i class="fas fa-eye me-1"></i> {{ app.view_count }}
+                                    </span>
+                                    <span class="badge bg-warning text-dark rounded-pill">
+                                        <i class="fas fa-edit me-1"></i> {{ app.form_count }}
+                                    </span>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" 
+                                            id="dropdownMenuButton{{ forloop.counter }}" data-bs-toggle="dropdown" 
+                                            aria-expanded="false">
+                                        <i class="fas fa-cog"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton{{ forloop.counter }}">
+                                        <li>
+                                            <a class="dropdown-item" 
+                                               href="{% url 'uml_visualizer:app_diagram' app.label %}">
+                                                <i class="fas fa-eye me-2"></i> Ver Diagrama
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" 
+                                               href="{% url 'uml_visualizer:app_diagram' app.label %}?generate=true">
+                                                <i class="fas fa-sync-alt me-2"></i> Regenerar
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <a class="dropdown-item" 
+                                               href="{% url 'uml_visualizer:download_diagram' app.label %}">
+                                                <i class="fas fa-download me-2"></i> Descargar
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            {% if app.models %}
+                            <div class="mt-2">
+                                <p class="mb-1 small text-muted">
+                                    <i class="fas fa-table me-1"></i> Modelos:
+                                </p>
+                                <div class="d-flex flex-wrap gap-1">
+                                    {% for model in app.models|slice:":5" %}
+                                    <span class="badge bg-light text-dark border">
+                                        {{ model.name }}
+                                    </span>
+                                    {% endfor %}
+                                    {% if app.models|length > 5 %}
+                                    <span class="badge bg-light text-muted border">
+                                        +{{ app.models|length|add:"-5" }} más
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <a href="{% url 'uml_visualizer:app_diagram' app.label %}" 
+                               class="btn btn-sm btn-primary w-100">
+                                <i class="fas fa-project-diagram me-1"></i> Ver Diagrama
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="list-group-item">
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-exclamation-circle fa-3x mb-3"></i>
+                        <h5>No se encontraron aplicaciones</h5>
+                        <p class="mb-0">No hay aplicaciones disponibles para generar diagramas.</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="mt-4 text-muted small">
+        <p class="mb-0">
+            <i class="fas fa-info-circle"></i> 
+            Haz clic en "Ver" para visualizar el diagrama o en el ícono de descarga para guardarlo.
+        </p>
     </div>
 </div>
->>>>>>> 5a1db33 (feat(uml_visualizer): Agrega herramienta de visualización UML)
+
+<style>
+    .list-group-item {
+        transition: all 0.2s ease;
+    }
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+    }
+    .card {
+        border: none;
+        border-radius: 0.5rem;
+        overflow: hidden;
+    }
+    .card-header {
+        border-bottom: none;
+        padding: 1rem 1.25rem;
+    }
+</style>
 {% endblock %}
