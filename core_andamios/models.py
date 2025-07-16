@@ -30,4 +30,4 @@ class Nav_Bar(ModeloBase):
     url = models.OneToOneField(Url, on_delete=models.CASCADE)
 
 class Contexto(models.Model):
-    json = models.JSONField(default={})
+    json = models.JSONField(default=dict)
