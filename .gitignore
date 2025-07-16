@@ -89,3 +89,6 @@ Cedica.csv
 Herrametal.csv
 FerriPlast.csv
 Crimaral.csv
+db.sqlite3-shm
+db.sqlite3-wal
+.coverage
