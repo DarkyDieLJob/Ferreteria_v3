@@ -399,9 +399,9 @@ class Armador(models.Model):
     busqueda = models.BooleanField(default=False)
     formulario = models.CharField(max_length=30)
     formulario_boton = models.CharField(max_length=30, default='')
-    formulario_campos = models.ManyToManyField(Formulario_Campos, blank=True, null=True)
-    formulario_campos_contiene = models.ManyToManyField(Formulario_Campos_Contiene, blank=True, null=True)
-    formulario_campos_empieza_con = models.ManyToManyField(Formulario_Campos_Empieza_Con, blank=True, null=True)
+    formulario_campos = models.ManyToManyField(Formulario_Campos, blank=True)
+    formulario_campos_contiene = models.ManyToManyField(Formulario_Campos_Contiene, blank=True)
+    formulario_campos_empieza_con = models.ManyToManyField(Formulario_Campos_Empieza_Con, blank=True,)
 
     def __str__(self):
         text = "{}".format(self.nav_bar,)

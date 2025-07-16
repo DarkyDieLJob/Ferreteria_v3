@@ -1,0 +1,28 @@
+
+  // Formularios
+  subgraph cluster_forms {
+    label = "Formularios";
+    node [shape=ellipse, style=filled, color=lightgreen, fontname=Arial];
+    core_andamios_MyForm [label="MyForm
+(core_andamios.forms)"];
+    x_articulos_ArticuloForm [label="ArticuloForm
+(x_articulos.forms)"];
+    x_articulos_ArticuloForm -> "Articulo" [style=dashed, color=green, arrowhead=vee];
+    x_articulos_ArticuloForm -> "Item" [style=dashed, color=green, arrowhead=vee];
+    x_articulos_Item_Form [label="Item_Form
+(x_articulos.forms)"];
+    x_articulos_Item_Form -> "Articulo" [style=dashed, color=green, arrowhead=vee];
+    x_articulos_Item_Form -> "Item" [style=dashed, color=green, arrowhead=vee];
+    bdd_BaseForm [label="BaseForm
+(bdd.forms)"];
+    bdd_BaseForm -> "Planilla" [style=dashed, color=green, arrowhead=vee];
+    carga_archivo_UploadFileForm [label="UploadFileForm
+(carga_archivo.forms)"];
+    carga_archivo_UploadFileForm -> "Document" [style=dashed, color=green, arrowhead=vee];
+    facturacion_ClienteForm [label="ClienteForm
+(facturacion.forms)"];
+    facturacion_ClienteForm -> "Cliente" [style=dashed, color=green, arrowhead=vee];
+    pedido_ArticuloPedidoForm [label="ArticuloPedidoForm
+(pedido.forms)"];
+    pedido_ArticuloPedidoForm -> "ArticuloPedido" [style=dashed, color=green, arrowhead=vee];
+  }

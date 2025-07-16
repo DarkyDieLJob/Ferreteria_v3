@@ -1,0 +1,203 @@
+digraph model_graph {
+	graph [bb="0,0,380,258.25",
+		fontname=Roboto,
+		fontsize=8,
+		rankdir=TB,
+		splines=true
+	];
+	node [fontname=Roboto,
+		fontsize=8,
+		label="\N",
+		shape=plaintext
+	];
+	edge [fontname=Roboto,
+		fontsize=8
+	];
+	subgraph cluster_boletas {
+		graph [bb="8,8,372,250.25",
+			color=olivedrab4,
+			label=<
+          <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0">
+          <TR><TD COLSPAN="2" CELLPADDING="4" ALIGN="CENTER">
+          <FONT FACE="Roboto" COLOR="Black" POINT-SIZE="10">
+          <B>boletas</B>
+          </FONT>
+          </TD></TR>
+          </TABLE>
+          >,
+			lheight=0.31,
+			lp="190,235.12",
+			lwidth=1.89,
+			style=rounded
+		];
+		boletas_models_Comando	[height=0.91667,
+			label=<
+      <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+      <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+      <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+      comando
+      </B></FONT></TD></TR>
+    
+    
+      <TR><TD ALIGN="LEFT" BORDER="0">
+      <FONT FACE="Roboto"><B>ID</B></FONT>
+      </TD><TD ALIGN="LEFT">
+      <FONT FACE="Roboto"><B>BigAutoField</B></FONT>
+      </TD></TR>
+    
+    
+    
+      <TR><TD ALIGN="LEFT" BORDER="0">
+      <FONT FACE="Roboto">Comando</FONT>
+      </TD><TD ALIGN="LEFT">
+      <FONT FACE="Roboto">CharField</FONT>
+      </TD></TR>
+    
+    
+      </TABLE>
+      >,
+			pos="100,57",
+			width=2.3194];
+		boletas_models_Boleta	[height=1.1389,
+			label=<
+      <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+      <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+      <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+      boleta
+      </B></FONT></TD></TR>
+    
+    
+      <TR><TD ALIGN="LEFT" BORDER="0">
+      <FONT FACE="Roboto"><B>ID</B></FONT>
+      </TD><TD ALIGN="LEFT">
+      <FONT FACE="Roboto"><B>BigAutoField</B></FONT>
+      </TD></TR>
+    
+    
+    
+      <TR><TD ALIGN="LEFT" BORDER="0">
+      <FONT FACE="Roboto">Tipo</FONT>
+      </TD><TD ALIGN="LEFT">
+      <FONT FACE="Roboto">CharField</FONT>
+      </TD></TR>
+    
+    
+    
+      <TR><TD ALIGN="LEFT" BORDER="0">
+      <FONT FACE="Roboto">Impreso</FONT>
+      </TD><TD ALIGN="LEFT">
+      <FONT FACE="Roboto">BooleanField</FONT>
+      </TD></TR>
+    
+    
+      </TABLE>
+      >,
+			pos="283,57",
+			width=2.25];
+		boletas_models_OrdenComando	[height=0.91667,
+			label=<
+      <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+      <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+      <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+      orden comando
+      </B></FONT></TD></TR>
+    
+    
+      <TR><TD ALIGN="LEFT" BORDER="0">
+      <FONT FACE="Roboto"><B>ID</B></FONT>
+      </TD><TD ALIGN="LEFT">
+      <FONT FACE="Roboto"><B>BigAutoField</B></FONT>
+      </TD></TR>
+    
+    
+    
+      <TR><TD ALIGN="LEFT" BORDER="0">
+      <FONT FACE="Roboto">Orden</FONT>
+      </TD><TD ALIGN="LEFT">
+      <FONT FACE="Roboto">PositiveIntegerField</FONT>
+      </TD></TR>
+    
+    
+      </TABLE>
+      >,
+			pos="167,179",
+			width=2.4861];
+		boletas_models_OrdenComando -> boletas_models_Comando	[arrowhead=none,
+			arrowtail=normal,
+			dir=both,
+			label=" Comando (Ordencomando)",
+			lp="186.5,122",
+			pos="s,145.06,146.11 139.02,136.5 137.28,133.65 135.59,130.8 134,128 127.05,115.79 120.13,101.95 114.37,89.816"];
+		boletas_models_OrdenComando -> boletas_models_Boleta	[arrowhead=none,
+			arrowtail=normal,
+			dir=both,
+			label=" Boleta (Ordencomando)",
+			lp="295.12,122",
+			pos="s,218.27,146.28 227.09,139.17 231.29,135.59 235.32,131.86 239,128 247.53,119.07 255.29,108.24 261.84,97.799"];
+	}
+
+  // Secciones agregadas por el visualizador UML
+
+
+  // Vistas
+  subgraph cluster_views {
+    label = "Vistas";
+    node [shape=box, style=filled, color=lightblue, fontname=Arial];
+    core_andamios_ContextoAndamio [label="ContextoAndamio
+(core_andamios.views)"];
+    core_elementos_Crud [label="Crud
+(core_elementos.views)"];
+    x_articulos_Crud [label="Crud
+(x_articulos.views)"];
+    x_cartel_Cartelito [label="Cartelito
+(x_cartel.views)"];
+    x_cartel_Cartel [label="Cartel
+(x_cartel.views)"];
+    x_cartel_PruebaEdicion [label="PruebaEdicion
+(x_cartel.views)"];
+    x_cartel_CrearCartelitoView [label="CrearCartelitoView
+(x_cartel.views)"];
+    boletas_BoletasView [label="BoletasView
+(boletas.views)"];
+    facturacion_FacturacionMensual [label="FacturacionMensual
+(facturacion.views)"];
+    facturacion_Facturacion [label="Facturacion
+(facturacion.views)"];
+    facturacion_CierreZVieW [label="CierreZVieW
+(facturacion.views)"];
+    facturacion_Clientes [label="Clientes
+(facturacion.views)"];
+    actualizador_ActualizarAhora [label="ActualizarAhora
+(actualizador.views)"];
+    actualizador_Reckup [label="Reckup
+(actualizador.views)"];
+  }
+
+  // Formularios
+  subgraph cluster_forms {
+    label = "Formularios";
+    node [shape=ellipse, style=filled, color=lightgreen, fontname=Arial];
+    core_andamios_MyForm [label="MyForm
+(core_andamios.forms)"];
+    x_articulos_ArticuloForm [label="ArticuloForm
+(x_articulos.forms)"];
+    x_articulos_ArticuloForm -> "Articulo" [style=dashed, color=green, arrowhead=vee];
+    x_articulos_ArticuloForm -> "Item" [style=dashed, color=green, arrowhead=vee];
+    x_articulos_Item_Form [label="Item_Form
+(x_articulos.forms)"];
+    x_articulos_Item_Form -> "Articulo" [style=dashed, color=green, arrowhead=vee];
+    x_articulos_Item_Form -> "Item" [style=dashed, color=green, arrowhead=vee];
+    bdd_BaseForm [label="BaseForm
+(bdd.forms)"];
+    bdd_BaseForm -> "Planilla" [style=dashed, color=green, arrowhead=vee];
+    carga_archivo_UploadFileForm [label="UploadFileForm
+(carga_archivo.forms)"];
+    carga_archivo_UploadFileForm -> "Document" [style=dashed, color=green, arrowhead=vee];
+    facturacion_ClienteForm [label="ClienteForm
+(facturacion.forms)"];
+    facturacion_ClienteForm -> "Cliente" [style=dashed, color=green, arrowhead=vee];
+    pedido_ArticuloPedidoForm [label="ArticuloPedidoForm
+(pedido.forms)"];
+    pedido_ArticuloPedidoForm -> "ArticuloPedido" [style=dashed, color=green, arrowhead=vee];
+  }
+}

@@ -35,7 +35,7 @@ urlpatterns = [
     path('', include('core_index.urls')),
     path('', include('actualizador.urls')),
     path('uml/', include('uml_visualizer.urls', namespace='uml_visualizer')),
-    path('testing/', include('core_testing.urls', namespace='core_testing')),
+    #path('testing/', include('core_testing.urls', namespace='core_testing')),
     path('', RedirectView.as_view(url='/bienvenida/'), name='index'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 

@@ -9,7 +9,12 @@ INSTALLED_APPS += [
     'core_testing',
     'django_extensions',  # Para generación de diagramas
     'uml_visualizer',    # Nuestra aplicación de visualización UML
+    'django.contrib.humanize',  # Para filtros de plantilla como intcomma
 ]
+
+# Configuración de zona horaria
+TIME_ZONE = 'America/Argentina/Buenos_Aires'
+USE_TZ = True
 
 # Configuración para testing
 TESTING = True
