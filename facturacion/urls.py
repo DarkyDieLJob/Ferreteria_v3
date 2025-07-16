@@ -4,6 +4,8 @@ from facturacion.views import eliminar_articulo, eliminar_articulo_sin_registro,
 from facturacion.views import actualizar_cantidad_articulo_sin_registro
 from facturacion.views import Facturacion, CierreZVieW, Clientes, FacturacionMensual, consulta_impresora_fiscal_generica
 
+app_name = 'facturacion'
+
 urlpatterns = [
     path('obtener_metodos_pago/', obtener_metodos_pago, name='obtener_metodos_pago'),
     path('obtener_cliente/', obtener_cliente, name='obtener_cliente'),

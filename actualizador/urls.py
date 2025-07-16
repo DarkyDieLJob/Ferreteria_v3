@@ -1,6 +1,7 @@
 from django.urls import path
-
 from .views import Actualizar, Reckup, ActualizarAhora
+
+app_name = 'actualizador'
 
 urlpatterns = [
     path('actualizar/', Actualizar.as_view(), name='actualizar'),

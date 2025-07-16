@@ -6,6 +6,8 @@ from .views_old import seleccionar_proveedor, cambiar_cantidad_pedido, editar_it
 from .views_old import carrito, eliminar_articulo_pedido, ListarCarteles, descargar_archivo
 from .views_old import reportar_item, enviar_reporte
 
+app_name = 'bdd'
+
 
 from .models import NavBar, Armador
 from django.utils.module_loading import import_string

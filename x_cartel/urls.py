@@ -1,6 +1,8 @@
 from django.urls import path
 from x_cartel.views import Cartel, Cartelito, CrearCartelitoView, PruebaEdicion, precios_articulos, precios_articulos_cajon
 
+app_name = 'x_cartel'
+
 urlpatterns = [
     path('x_cartel/', Cartel.as_view(), name='cartel'),
     #path('x_cartel/imprimir/<int:item_id>', PruebaEdicion.as_view(), name='PruebaEdicion'),
