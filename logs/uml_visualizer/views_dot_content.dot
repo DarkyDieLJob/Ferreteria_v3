@@ -1,0 +1,34 @@
+
+  // Vistas
+  subgraph cluster_views {
+    label = "Vistas";
+    node [shape=box, style=filled, color=lightblue, fontname=Arial];
+    core_andamios_ContextoAndamio [label="ContextoAndamio
+(core_andamios.views)"];
+    core_elementos_Crud [label="Crud
+(core_elementos.views)"];
+    x_articulos_Crud [label="Crud
+(x_articulos.views)"];
+    x_cartel_Cartelito [label="Cartelito
+(x_cartel.views)"];
+    x_cartel_Cartel [label="Cartel
+(x_cartel.views)"];
+    x_cartel_PruebaEdicion [label="PruebaEdicion
+(x_cartel.views)"];
+    x_cartel_CrearCartelitoView [label="CrearCartelitoView
+(x_cartel.views)"];
+    boletas_BoletasView [label="BoletasView
+(boletas.views)"];
+    facturacion_FacturacionMensual [label="FacturacionMensual
+(facturacion.views)"];
+    facturacion_Facturacion [label="Facturacion
+(facturacion.views)"];
+    facturacion_CierreZVieW [label="CierreZVieW
+(facturacion.views)"];
+    facturacion_Clientes [label="Clientes
+(facturacion.views)"];
+    actualizador_ActualizarAhora [label="ActualizarAhora
+(actualizador.views)"];
+    actualizador_Reckup [label="Reckup
+(actualizador.views)"];
+  }
