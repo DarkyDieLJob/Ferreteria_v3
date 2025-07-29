@@ -37,22 +37,15 @@
   - `script_seteado_false_lista_faltantes.py`
     - **Funciones:**
       - `setear_false_lista_faltantes()`: Sin documentación
-  - `actualizador_csv.py`
+  - `generate_diagram.py`
     - **Funciones:**
-      - `apply_custom_round(batch_size=10000)`: Sin documentación
-      - `asociar_proveedores()`: Sin documentación
-      - `buscar_modificar_registros(csv_file, filtro)`: Sin documentación
-      - `buscar_modificar_registros_lotes(csv_file, filtro)`: Sin documentación
-      - `crear_o_actualizar_registro(row)`: Sin documentación
-      - `crear_o_actualizar_registros_en_lotes(rows, tamaño_lote)`: Sin documentación
-      - `custom_round(price)`: Sin documentación
-      - `desactualizar_anteriores(filtro)`: Sin documentación
-      - `filtrar_trabajados()`: Sin documentación
-      - `limpiar_texto(texto)`: Limpia un texto convirtiendo caracteres no ASCII a su equivalente ASCII.
-      - `mostrara_boletas(bool)`: Sin documentación
-      - `principal_csv()`: Sin documentación
-      - `reset(username, contraseña)`: Sin documentación
-      - `validar_digitos_str(cadena)`: Sin documentación
+      - `generate_diagram()`: Sin documentación
+      - `main()`: Sin documentación
+  - `generate_project_structure.py`
+    - **Funciones:**
+      - `analyze_module(module, indent='')`: Analiza un módulo y devuelve sus clases y funciones.
+      - `get_project_structure()`: Genera la estructura del proyecto en formato Markdown.
+      - `main()`: Función principal.
   - `generate_uml.py`
     - **Funciones:**
       - `configure_django()`: Configura Django para poder usar sus utilidades.
@@ -70,15 +63,25 @@ Args:
   - `test_graph_models.py`
     - **Funciones:**
       - `test_graph_models()`: Sin documentación
-  - `generate_diagram.py`
+  - `actualizador_csv.py`
     - **Funciones:**
-      - `generate_diagram()`: Sin documentación
-      - `main()`: Sin documentación
-  - `generate_project_structure.py`
+      - `apply_custom_round(batch_size=10000)`: Sin documentación
+      - `asociar_proveedores()`: Sin documentación
+      - `buscar_modificar_registros(csv_file, filtro)`: Sin documentación
+      - `buscar_modificar_registros_lotes(csv_file, filtro)`: Sin documentación
+      - `crear_o_actualizar_registro(row)`: Sin documentación
+      - `crear_o_actualizar_registros_en_lotes(rows, tamaño_lote=1000)`: Sin documentación
+      - `custom_round(price)`: Sin documentación
+      - `desactualizar_anteriores(filtro)`: Sin documentación
+      - `filtrar_trabajados()`: Sin documentación
+      - `limpiar_texto(texto)`: Limpia un texto convirtiendo caracteres no ASCII a su equivalente ASCII.
+      - `mostrara_boletas(bool)`: Sin documentación
+      - `principal_csv()`: Sin documentación
+      - `reset(username, contraseña)`: Sin documentación
+      - `validar_digitos_str(cadena)`: Sin documentación
+  - `conftest.py`
     - **Funciones:**
-      - `analyze_module(module, indent='')`: Analiza un módulo y devuelve sus clases y funciones.
-      - `get_project_structure()`: Genera la estructura del proyecto en formato Markdown.
-      - `main()`: Función principal.
+      - `pytest_configure()`: Configuración de pytest.
   - **articulos/**
     - `admin.py`
     - `apps.py`
@@ -120,12 +123,12 @@ Args:
         - `OrdenComando`: OrdenComando(id, boleta, comando, orden)
           - *Métodos:* `__init__()`, `adelete()`, `arefresh_from_db()`, `asave()`, `clean()`, `clean_fields()`, `date_error_message()`, `delete()`, `full_clean()`, `get_constraints()`, `get_deferred_fields()`, `prepare_database_save()`, `refresh_from_db()`, `save()`, `save_base()`, `serializable_value()`, `unique_error_message()`, `validate_constraints()`, `validate_unique()`
     - `tests.py`
-    - `urls.py`
     - `views.py`
       - **Clases:**
         - `BoletasView`: Intentionally simple parent class for all views. Only implements
 dispatch-by-method and simple sanity checking.
           - *Métodos:* `__init__()`, `dispatch()`, `get()`, `http_method_not_allowed()`, `options()`, `post()`, `setup()`
+    - `urls.py`
   - **cajas/**
     - `admin.py`
     - `apps.py`
@@ -153,10 +156,10 @@ class.
         - `Document`: Document(id, uploaded_file)
           - *Métodos:* `__init__()`, `adelete()`, `arefresh_from_db()`, `asave()`, `clean()`, `clean_fields()`, `date_error_message()`, `delete()`, `full_clean()`, `get_constraints()`, `get_deferred_fields()`, `prepare_database_save()`, `refresh_from_db()`, `save()`, `save_base()`, `serializable_value()`, `unique_error_message()`, `validate_constraints()`, `validate_unique()`
     - `tests.py`
-    - `urls.py`
     - `views.py`
       - **Funciones:**
         - `upload_file(request)`: Sin documentación
+    - `urls.py`
   - **core_andamios/**
     - `admin.py`
       - **Clases:**
@@ -202,22 +205,6 @@ Métodos:
         - `TimeInput`: Widget personalizado para campos de tiempo.
 Establece el tipo de entrada a 'time'.
           - *Métodos:* `__init__()`, `build_attrs()`, `format_value()`, `get_context()`, `id_for_label()`, `render()`, `subwidgets()`, `use_required_attribute()`, `value_from_datadict()`, `value_omitted_from_data()`
-    - `models.py`
-      - **Clases:**
-        - `Contenedor`: Contenedor(id, nombre, text_display, html)
-          - *Métodos:* `__init__()`, `adelete()`, `arefresh_from_db()`, `asave()`, `clean()`, `clean_fields()`, `date_error_message()`, `delete()`, `full_clean()`, `get_constraints()`, `get_deferred_fields()`, `prepare_database_save()`, `refresh_from_db()`, `save()`, `save_base()`, `serializable_value()`, `unique_error_message()`, `validate_constraints()`, `validate_unique()`
-        - `Contexto`: Contexto(id, json)
-          - *Métodos:* `__init__()`, `adelete()`, `arefresh_from_db()`, `asave()`, `clean()`, `clean_fields()`, `date_error_message()`, `delete()`, `full_clean()`, `get_constraints()`, `get_deferred_fields()`, `prepare_database_save()`, `refresh_from_db()`, `save()`, `save_base()`, `serializable_value()`, `unique_error_message()`, `validate_constraints()`, `validate_unique()`
-        - `ModeloBase`: Make subclasses preserve the alters_data attribute on overridden methods.
-          - *Métodos:* `__init__()`, `adelete()`, `arefresh_from_db()`, `asave()`, `clean()`, `clean_fields()`, `date_error_message()`, `delete()`, `full_clean()`, `get_constraints()`, `get_deferred_fields()`, `prepare_database_save()`, `refresh_from_db()`, `save()`, `save_base()`, `serializable_value()`, `unique_error_message()`, `validate_constraints()`, `validate_unique()`
-        - `Nav_Bar`: Nav_Bar(id, nombre, text_display, url)
-          - *Métodos:* `__init__()`, `adelete()`, `arefresh_from_db()`, `asave()`, `clean()`, `clean_fields()`, `date_error_message()`, `delete()`, `full_clean()`, `get_constraints()`, `get_deferred_fields()`, `prepare_database_save()`, `refresh_from_db()`, `save()`, `save_base()`, `serializable_value()`, `unique_error_message()`, `validate_constraints()`, `validate_unique()`
-        - `Pie`: Pie(id, nombre, text_display, html)
-          - *Métodos:* `__init__()`, `adelete()`, `arefresh_from_db()`, `asave()`, `clean()`, `clean_fields()`, `date_error_message()`, `delete()`, `full_clean()`, `get_constraints()`, `get_deferred_fields()`, `prepare_database_save()`, `refresh_from_db()`, `save()`, `save_base()`, `serializable_value()`, `unique_error_message()`, `validate_constraints()`, `validate_unique()`
-        - `Script`: Script(id, nombre, text_display, html)
-          - *Métodos:* `__init__()`, `adelete()`, `arefresh_from_db()`, `asave()`, `clean()`, `clean_fields()`, `date_error_message()`, `delete()`, `full_clean()`, `get_constraints()`, `get_deferred_fields()`, `prepare_database_save()`, `refresh_from_db()`, `save()`, `save_base()`, `serializable_value()`, `unique_error_message()`, `validate_constraints()`, `validate_unique()`
-        - `Url`: Url(id, nombre, text_display, ruta, contenedor, script, pie)
-          - *Métodos:* `__init__()`, `adelete()`, `arefresh_from_db()`, `asave()`, `clean()`, `clean_fields()`, `date_error_message()`, `delete()`, `full_clean()`, `get_constraints()`, `get_deferred_fields()`, `prepare_database_save()`, `refresh_from_db()`, `save()`, `save_base()`, `serializable_value()`, `unique_error_message()`, `validate_constraints()`, `validate_unique()`
     - `views.py`
       - **Clases:**
         - `ContextoAndamio`: Render a template. Pass keyword arguments from the URLconf to the context.
@@ -235,6 +222,22 @@ behavior).
 On database backends with no transaction support, TestCase behaves as
 TransactionTestCase.
           - *Métodos:* `__init__()`, `addCleanup()`, `addTypeEqualityFunc()`, `assertAlmostEqual()`, `assertAlmostEquals()`, `assertContains()`, `assertCountEqual()`, `assertDictContainsSubset()`, `assertDictEqual()`, `assertEqual()`, `assertEquals()`, `assertFalse()`, `assertFieldOutput()`, `assertFormError()`, `assertFormSetError()`, `assertGreater()`, `assertGreaterEqual()`, `assertHTMLEqual()`, `assertHTMLNotEqual()`, `assertIn()`, `assertInHTML()`, `assertIs()`, `assertIsInstance()`, `assertIsNone()`, `assertIsNot()`, `assertIsNotNone()`, `assertJSONEqual()`, `assertJSONNotEqual()`, `assertLess()`, `assertLessEqual()`, `assertListEqual()`, `assertLogs()`, `assertMultiLineEqual()`, `assertNoLogs()`, `assertNotAlmostEqual()`, `assertNotAlmostEquals()`, `assertNotContains()`, `assertNotEqual()`, `assertNotEquals()`, `assertNotIn()`, `assertNotInHTML()`, `assertNotIsInstance()`, `assertNotRegex()`, `assertNotRegexpMatches()`, `assertNumQueries()`, `assertQuerySetEqual()`, `assertRaises()`, `assertRaisesMessage()`, `assertRaisesRegex()`, `assertRaisesRegexp()`, `assertRedirects()`, `assertRegex()`, `assertRegexpMatches()`, `assertSequenceEqual()`, `assertSetEqual()`, `assertTemplateNotUsed()`, `assertTemplateUsed()`, `assertTrue()`, `assertTupleEqual()`, `assertURLEqual()`, `assertWarns()`, `assertWarnsMessage()`, `assertWarnsRegex()`, `assertXMLEqual()`, `assertXMLNotEqual()`, `assert_()`, `countTestCases()`, `debug()`, `defaultTestResult()`, `doCleanups()`, `fail()`, `failIf()`, `failIfAlmostEqual()`, `failIfEqual()`, `failUnless()`, `failUnlessAlmostEqual()`, `failUnlessEqual()`, `failUnlessRaises()`, `id()`, `modify_settings()`, `run()`, `setUp()`, `settings()`, `shortDescription()`, `skipTest()`, `subTest()`, `tearDown()`, `test_modelo_contenedor()`, `test_modelo_nav_bar()`, `test_modelo_pie()`, `test_modelo_script()`, `test_modelo_url()`
+    - `models.py`
+      - **Clases:**
+        - `Contenedor`: Contenedor(id, nombre, text_display, html)
+          - *Métodos:* `__init__()`, `adelete()`, `arefresh_from_db()`, `asave()`, `clean()`, `clean_fields()`, `date_error_message()`, `delete()`, `full_clean()`, `get_constraints()`, `get_deferred_fields()`, `prepare_database_save()`, `refresh_from_db()`, `save()`, `save_base()`, `serializable_value()`, `unique_error_message()`, `validate_constraints()`, `validate_unique()`
+        - `Contexto`: Contexto(id, json)
+          - *Métodos:* `__init__()`, `adelete()`, `arefresh_from_db()`, `asave()`, `clean()`, `clean_fields()`, `date_error_message()`, `delete()`, `full_clean()`, `get_constraints()`, `get_deferred_fields()`, `prepare_database_save()`, `refresh_from_db()`, `save()`, `save_base()`, `serializable_value()`, `unique_error_message()`, `validate_constraints()`, `validate_unique()`
+        - `ModeloBase`: Make subclasses preserve the alters_data attribute on overridden methods.
+          - *Métodos:* `__init__()`, `adelete()`, `arefresh_from_db()`, `asave()`, `clean()`, `clean_fields()`, `date_error_message()`, `delete()`, `full_clean()`, `get_constraints()`, `get_deferred_fields()`, `prepare_database_save()`, `refresh_from_db()`, `save()`, `save_base()`, `serializable_value()`, `unique_error_message()`, `validate_constraints()`, `validate_unique()`
+        - `Nav_Bar`: Nav_Bar(id, nombre, text_display, url)
+          - *Métodos:* `__init__()`, `adelete()`, `arefresh_from_db()`, `asave()`, `clean()`, `clean_fields()`, `date_error_message()`, `delete()`, `full_clean()`, `get_constraints()`, `get_deferred_fields()`, `prepare_database_save()`, `refresh_from_db()`, `save()`, `save_base()`, `serializable_value()`, `unique_error_message()`, `validate_constraints()`, `validate_unique()`
+        - `Pie`: Pie(id, nombre, text_display, html)
+          - *Métodos:* `__init__()`, `adelete()`, `arefresh_from_db()`, `asave()`, `clean()`, `clean_fields()`, `date_error_message()`, `delete()`, `full_clean()`, `get_constraints()`, `get_deferred_fields()`, `prepare_database_save()`, `refresh_from_db()`, `save()`, `save_base()`, `serializable_value()`, `unique_error_message()`, `validate_constraints()`, `validate_unique()`
+        - `Script`: Script(id, nombre, text_display, html)
+          - *Métodos:* `__init__()`, `adelete()`, `arefresh_from_db()`, `asave()`, `clean()`, `clean_fields()`, `date_error_message()`, `delete()`, `full_clean()`, `get_constraints()`, `get_deferred_fields()`, `prepare_database_save()`, `refresh_from_db()`, `save()`, `save_base()`, `serializable_value()`, `unique_error_message()`, `validate_constraints()`, `validate_unique()`
+        - `Url`: Url(id, nombre, text_display, ruta, contenedor, script, pie)
+          - *Métodos:* `__init__()`, `adelete()`, `arefresh_from_db()`, `asave()`, `clean()`, `clean_fields()`, `date_error_message()`, `delete()`, `full_clean()`, `get_constraints()`, `get_deferred_fields()`, `prepare_database_save()`, `refresh_from_db()`, `save()`, `save_base()`, `serializable_value()`, `unique_error_message()`, `validate_constraints()`, `validate_unique()`
     - **docs/**
       - **core_andamios/**
   - **core_config/**
@@ -245,17 +248,32 @@ TransactionTestCase.
     - `log_config.py`
       - **Funciones:**
         - `generate_app_logging_config(apps, base_log_dir, base_formatter='verbose')`: Genera configuraciones de handlers y loggers para cada app especificada.
+    - `settings_tests.py`
+    - `api_settings.py`
     - `urls.py`
+      - **Funciones:**
+        - `include_with_namespace(namespace, module_path, app_name=None)`: Incluye URLs con namespace manejando correctamente app_name
     - **tests/**
+    - **api/**
+      - **v4/**
+        - `config.py`
+        - `urls.py`
+        - **docs/**
+        - **permissions/**
+        - **serializers/**
+        - **views/**
   - **core_docs/**
     - `admin.py`
     - `models.py`
     - `tests.py`
-    - `urls.py`
     - `apps.py`
       - **Clases:**
         - `AppDocsConfig`: Class representing a Django application and its configuration.
           - *Métodos:* `__init__()`, `get_model()`, `get_models()`, `import_models()`, `ready()`
+    - `signals.py`
+      - **Funciones:**
+        - `build_docs()`: Construye la documentación usando Sphinx.
+        - `setup_signals()`: Configura los signals después de que las apps estén listas.
     - `views.py`
       - **Funciones:**
         - `changeLog(request)`: Sin documentación
@@ -271,27 +289,107 @@ path : str
 Devoluciones
 ------------
 HttpResponse
-    Una instancia de HttpResponse que contiene el documento solicitado.
+    Un objeto HttpResponse con el documento solicitado.
 
 Notas
 -----
 Los documentos HTML deben estar ubicados en 'core_docs/docs/_build/html' dentro del directorio BASE_DIR.
 Si el archivo solicitado no se encuentra, esta función redirigirá a 'index.html' como página predeterminada.
+    - `urls.py`
     - **docs/**
       - `conf.py`
+        - **Funciones:**
+          - `get_version()`: Sin documentación
       - **_build/**
         - **html/**
           - **_static/**
             - **scripts/**
             - **styles/**
+            - **images/**
+              - **sistema_pedidos/**
           - **_sources/**
             - **core_andamios/**
           - **core_andamios/**
+          - **_images/**
         - **doctrees/**
           - **core_andamios/**
       - **core_andamios/**
+      - **_static/**
+        - **images/**
+          - **sistema_pedidos/**
     - **management/**
       - **commands/**
+        - `rebuild_docs.py`
+          - **Clases:**
+            - `Command`: The base class from which all management commands ultimately
+derive.
+
+Use this class if you want access to all of the mechanisms which
+parse the command-line arguments and work out what code to call in
+response; if you don't need to change any of that behavior,
+consider using one of the subclasses defined in this file.
+
+If you are interested in overriding/customizing various aspects of
+the command-parsing and -execution behavior, the normal flow works
+as follows:
+
+1. ``django-admin`` or ``manage.py`` loads the command class
+   and calls its ``run_from_argv()`` method.
+
+2. The ``run_from_argv()`` method calls ``create_parser()`` to get
+   an ``ArgumentParser`` for the arguments, parses them, performs
+   any environment changes requested by options like
+   ``pythonpath``, and then calls the ``execute()`` method,
+   passing the parsed arguments.
+
+3. The ``execute()`` method attempts to carry out the command by
+   calling the ``handle()`` method with the parsed arguments; any
+   output produced by ``handle()`` will be printed to standard
+   output and, if the command is intended to produce a block of
+   SQL statements, will be wrapped in ``BEGIN`` and ``COMMIT``.
+
+4. If ``handle()`` or ``execute()`` raised any exception (e.g.
+   ``CommandError``), ``run_from_argv()`` will  instead print an error
+   message to ``stderr``.
+
+Thus, the ``handle()`` method is typically the starting point for
+subclasses; many built-in commands and command types either place
+all of their logic in ``handle()``, or perform some additional
+parsing work in ``handle()`` and then delegate from it to more
+specialized methods as needed.
+
+Several attributes affect behavior at various steps along the way:
+
+``help``
+    A short description of the command, which will be printed in
+    help messages.
+
+``output_transaction``
+    A boolean indicating whether the command outputs SQL
+    statements; if ``True``, the output will automatically be
+    wrapped with ``BEGIN;`` and ``COMMIT;``. Default value is
+    ``False``.
+
+``requires_migrations_checks``
+    A boolean; if ``True``, the command prints a warning if the set of
+    migrations on disk don't match the migrations in the database.
+
+``requires_system_checks``
+    A list or tuple of tags, e.g. [Tags.staticfiles, Tags.models]. System
+    checks registered in the chosen tags will be checked for errors prior
+    to executing the command. The value '__all__' can be used to specify
+    that all system checks should be performed. Default value is '__all__'.
+
+    To validate an individual application's models
+    rather than all applications' models, call
+    ``self.check(app_configs)`` from ``handle()``, where ``app_configs``
+    is the list of application's configuration provided by the
+    app registry.
+
+``stealth_options``
+    A tuple of any options the command uses which aren't defined by the
+    argument parser.
+              - *Métodos:* `__init__()`, `add_arguments()`, `add_base_argument()`, `check()`, `check_migrations()`, `create_parser()`, `execute()`, `get_check_kwargs()`, `get_version()`, `handle()`, `print_help()`, `run_from_argv()`
   - **core_elementos/**
     - `admin.py`
     - `apps.py`
@@ -329,11 +427,11 @@ Si el archivo solicitado no se encuentra, esta función redirigirá a 'index.htm
           - *Métodos:* `__init__()`, `get_model()`, `get_models()`, `import_models()`, `ready()`
     - `models.py`
     - `tests.py`
-    - `urls.py`
     - `views.py`
       - **Clases:**
         - `Vista_Index`: Render a template. Pass keyword arguments from the URLconf to the context.
           - *Métodos:* `__init__()`, `dispatch()`, `get()`, `get_context_data()`, `get_template_names()`, `http_method_not_allowed()`, `options()`, `render_to_response()`, `setup()`
+    - `urls.py`
   - **facturacion/**
     - `admin.py`
       - **Clases:**
@@ -394,7 +492,6 @@ Returns:
         - `handler(websocket, path)`: Esta función se ejecuta para cada cliente WebSocket que se conecta.
 Ahora enviará una respuesta JSON fija después de recibir cualquier mensaje.
         - `main()`: Función principal para iniciar el servidor WebSocket.
-    - `urls.py`
     - `views.py`
       - **Clases:**
         - `CierreZVieW`: Handles viewing past Z Closures and initiating a new one.
@@ -428,6 +525,7 @@ Ahora enviará una respuesta JSON fija después de recibir cualquier mensaje.
         - `TicketItem`: Represents a single item line within a fiscal ticket.
           - *Métodos:* `__init__()`, `get_item_json()`, `set_div_cant()`
     - `tests.py`
+    - `urls.py`
   - **pedido/**
     - `apps.py`
       - **Clases:**
@@ -534,11 +632,11 @@ class.
         - `Articulo`: Articulo(id, codigo, descripcion, precio_base, ultimo_cambio, actualizado, precio_efectivo)
           - *Métodos:* `__init__()`, `adelete()`, `arefresh_from_db()`, `asave()`, `clean()`, `clean_fields()`, `date_error_message()`, `delete()`, `full_clean()`, `get_constraints()`, `get_deferred_fields()`, `prepare_database_save()`, `refresh_from_db()`, `save()`, `save_base()`, `serializable_value()`, `unique_error_message()`, `validate_constraints()`, `validate_unique()`
     - `tests.py`
-    - `urls.py`
     - `views.py`
       - **Clases:**
         - `Crud`: Render a template. Pass keyword arguments from the URLconf to the context.
           - *Métodos:* `__init__()`, `dispatch()`, `get()`, `get_context_data()`, `get_template_names()`, `http_method_not_allowed()`, `options()`, `post()`, `render_to_response()`, `setup()`
+    - `urls.py`
   - **x_cartel/**
     - `admin.py`
     - `apps.py`
@@ -554,7 +652,6 @@ class.
         - `Cartelitos`: Cartelitos(id, item, proveedor, revisar, habilitado, descripcion)
           - *Métodos:* `__init__()`, `adelete()`, `arefresh_from_db()`, `asave()`, `clean()`, `clean_fields()`, `date_error_message()`, `delete()`, `full_clean()`, `get_constraints()`, `get_deferred_fields()`, `prepare_database_save()`, `refresh_from_db()`, `save()`, `save_base()`, `serializable_value()`, `unique_error_message()`, `validate_constraints()`, `validate_unique()`
     - `tests.py`
-    - `urls.py`
     - `views.py`
       - **Clases:**
         - `Cartel`: Render a template. Pass keyword arguments from the URLconf to the context.
@@ -569,6 +666,7 @@ dispatch-by-method and simple sanity checking.
       - **Funciones:**
         - `precios_articulos(request, articulo_id)`: Sin documentación
         - `precios_articulos_cajon(request, cajon_id)`: Sin documentación
+    - `urls.py`
   - **x_widgets/**
     - `admin.py`
     - `apps.py`
@@ -613,12 +711,168 @@ functions.
     - **facturacion/**
       - `conftest.py`
         - **Clases:**
-          - `AppFacturacion`: Sin documentación
+          - `FacturacionTestData`: Clase para agrupar instancias de prueba relacionadas con facturación
             - *Métodos:* `__init__()`
+      - `test_classes.py`
+        - **Clases:**
+          - `FormasPagoTest`: Similar to TransactionTestCase, but use `transaction.atomic()` to achieve
+test isolation.
+
+In most situations, TestCase should be preferred to TransactionTestCase as
+it allows faster execution. However, there are some situations where using
+TransactionTestCase might be necessary (e.g. testing some transactional
+behavior).
+
+On database backends with no transaction support, TestCase behaves as
+TransactionTestCase.
+            - *Métodos:* `__init__()`, `addCleanup()`, `addTypeEqualityFunc()`, `assertAlmostEqual()`, `assertAlmostEquals()`, `assertContains()`, `assertCountEqual()`, `assertDictContainsSubset()`, `assertDictEqual()`, `assertEqual()`, `assertEquals()`, `assertFalse()`, `assertFieldOutput()`, `assertFormError()`, `assertFormSetError()`, `assertGreater()`, `assertGreaterEqual()`, `assertHTMLEqual()`, `assertHTMLNotEqual()`, `assertIn()`, `assertInHTML()`, `assertIs()`, `assertIsInstance()`, `assertIsNone()`, `assertIsNot()`, `assertIsNotNone()`, `assertJSONEqual()`, `assertJSONNotEqual()`, `assertLess()`, `assertLessEqual()`, `assertListEqual()`, `assertLogs()`, `assertMultiLineEqual()`, `assertNoLogs()`, `assertNotAlmostEqual()`, `assertNotAlmostEquals()`, `assertNotContains()`, `assertNotEqual()`, `assertNotEquals()`, `assertNotIn()`, `assertNotInHTML()`, `assertNotIsInstance()`, `assertNotRegex()`, `assertNotRegexpMatches()`, `assertNumQueries()`, `assertQuerySetEqual()`, `assertRaises()`, `assertRaisesMessage()`, `assertRaisesRegex()`, `assertRaisesRegexp()`, `assertRedirects()`, `assertRegex()`, `assertRegexpMatches()`, `assertSequenceEqual()`, `assertSetEqual()`, `assertTemplateNotUsed()`, `assertTemplateUsed()`, `assertTrue()`, `assertTupleEqual()`, `assertURLEqual()`, `assertWarns()`, `assertWarnsMessage()`, `assertWarnsRegex()`, `assertXMLEqual()`, `assertXMLNotEqual()`, `assert_()`, `countTestCases()`, `debug()`, `defaultTestResult()`, `doCleanups()`, `fail()`, `failIf()`, `failIfAlmostEqual()`, `failIfEqual()`, `failUnless()`, `failUnlessAlmostEqual()`, `failUnlessEqual()`, `failUnlessRaises()`, `id()`, `modify_settings()`, `run()`, `setUp()`, `settings()`, `shortDescription()`, `skipTest()`, `subTest()`, `tearDown()`, `test_creacion_con_transaccion_invalida()`, `test_creacion_con_transaccion_nula()`, `test_creacion_formas_pago()`, `test_get_efectivo()`, `test_get_formas_pago_json()`, `test_get_importe()`
+          - `TicketCabeceraTest`: Similar to TransactionTestCase, but use `transaction.atomic()` to achieve
+test isolation.
+
+In most situations, TestCase should be preferred to TransactionTestCase as
+it allows faster execution. However, there are some situations where using
+TransactionTestCase might be necessary (e.g. testing some transactional
+behavior).
+
+On database backends with no transaction support, TestCase behaves as
+TransactionTestCase.
+            - *Métodos:* `__init__()`, `addCleanup()`, `addTypeEqualityFunc()`, `assertAlmostEqual()`, `assertAlmostEquals()`, `assertContains()`, `assertCountEqual()`, `assertDictContainsSubset()`, `assertDictEqual()`, `assertEqual()`, `assertEquals()`, `assertFalse()`, `assertFieldOutput()`, `assertFormError()`, `assertFormSetError()`, `assertGreater()`, `assertGreaterEqual()`, `assertHTMLEqual()`, `assertHTMLNotEqual()`, `assertIn()`, `assertInHTML()`, `assertIs()`, `assertIsInstance()`, `assertIsNone()`, `assertIsNot()`, `assertIsNotNone()`, `assertJSONEqual()`, `assertJSONNotEqual()`, `assertLess()`, `assertLessEqual()`, `assertListEqual()`, `assertLogs()`, `assertMultiLineEqual()`, `assertNoLogs()`, `assertNotAlmostEqual()`, `assertNotAlmostEquals()`, `assertNotContains()`, `assertNotEqual()`, `assertNotEquals()`, `assertNotIn()`, `assertNotInHTML()`, `assertNotIsInstance()`, `assertNotRegex()`, `assertNotRegexpMatches()`, `assertNumQueries()`, `assertQuerySetEqual()`, `assertRaises()`, `assertRaisesMessage()`, `assertRaisesRegex()`, `assertRaisesRegexp()`, `assertRedirects()`, `assertRegex()`, `assertRegexpMatches()`, `assertSequenceEqual()`, `assertSetEqual()`, `assertTemplateNotUsed()`, `assertTemplateUsed()`, `assertTrue()`, `assertTupleEqual()`, `assertURLEqual()`, `assertWarns()`, `assertWarnsMessage()`, `assertWarnsRegex()`, `assertXMLEqual()`, `assertXMLNotEqual()`, `assert_()`, `countTestCases()`, `debug()`, `defaultTestResult()`, `doCleanups()`, `fail()`, `failIf()`, `failIfAlmostEqual()`, `failIfEqual()`, `failUnless()`, `failUnlessAlmostEqual()`, `failUnlessEqual()`, `failUnlessRaises()`, `id()`, `modify_settings()`, `run()`, `setUp()`, `settings()`, `shortDescription()`, `skipTest()`, `subTest()`, `tearDown()`, `test_creacion_con_cliente_consumidor_final()`, `test_creacion_con_cliente_exento()`, `test_creacion_con_cliente_inexistente()`, `test_creacion_con_cliente_valido()`, `test_creacion_con_id_cliente_invalido()`, `test_creacion_sin_cliente()`, `test_get_boleta_a()`, `test_get_cabezera_json()`, `test_set_consumidor_final_defaults()`
+          - `TicketFacturaTest`: Similar to TransactionTestCase, but use `transaction.atomic()` to achieve
+test isolation.
+
+In most situations, TestCase should be preferred to TransactionTestCase as
+it allows faster execution. However, there are some situations where using
+TransactionTestCase might be necessary (e.g. testing some transactional
+behavior).
+
+On database backends with no transaction support, TestCase behaves as
+TransactionTestCase.
+            - *Métodos:* `__init__()`, `addCleanup()`, `addTypeEqualityFunc()`, `assertAlmostEqual()`, `assertAlmostEquals()`, `assertContains()`, `assertCountEqual()`, `assertDictContainsSubset()`, `assertDictEqual()`, `assertEqual()`, `assertEquals()`, `assertFalse()`, `assertFieldOutput()`, `assertFormError()`, `assertFormSetError()`, `assertGreater()`, `assertGreaterEqual()`, `assertHTMLEqual()`, `assertHTMLNotEqual()`, `assertIn()`, `assertInHTML()`, `assertIs()`, `assertIsInstance()`, `assertIsNone()`, `assertIsNot()`, `assertIsNotNone()`, `assertJSONEqual()`, `assertJSONNotEqual()`, `assertLess()`, `assertLessEqual()`, `assertListEqual()`, `assertLogs()`, `assertMultiLineEqual()`, `assertNoLogs()`, `assertNotAlmostEqual()`, `assertNotAlmostEquals()`, `assertNotContains()`, `assertNotEqual()`, `assertNotEquals()`, `assertNotIn()`, `assertNotInHTML()`, `assertNotIsInstance()`, `assertNotRegex()`, `assertNotRegexpMatches()`, `assertNumQueries()`, `assertQuerySetEqual()`, `assertRaises()`, `assertRaisesMessage()`, `assertRaisesRegex()`, `assertRaisesRegexp()`, `assertRedirects()`, `assertRegex()`, `assertRegexpMatches()`, `assertSequenceEqual()`, `assertSetEqual()`, `assertTemplateNotUsed()`, `assertTemplateUsed()`, `assertTrue()`, `assertTupleEqual()`, `assertURLEqual()`, `assertWarns()`, `assertWarnsMessage()`, `assertWarnsRegex()`, `assertXMLEqual()`, `assertXMLNotEqual()`, `assert_()`, `countTestCases()`, `debug()`, `defaultTestResult()`, `doCleanups()`, `fail()`, `failIf()`, `failIfAlmostEqual()`, `failIfEqual()`, `failUnless()`, `failUnlessAlmostEqual()`, `failUnlessEqual()`, `failUnlessRaises()`, `id()`, `modify_settings()`, `run()`, `setUp()`, `settings()`, `shortDescription()`, `skipTest()`, `subTest()`, `tearDown()`, `test_creacion_ticket_factura()`, `test_get_items_json()`, `test_get_ticket_json()`, `test_setear_items()`
+          - `TicketItemTest`: Similar to TransactionTestCase, but use `transaction.atomic()` to achieve
+test isolation.
+
+In most situations, TestCase should be preferred to TransactionTestCase as
+it allows faster execution. However, there are some situations where using
+TransactionTestCase might be necessary (e.g. testing some transactional
+behavior).
+
+On database backends with no transaction support, TestCase behaves as
+TransactionTestCase.
+            - *Métodos:* `__init__()`, `addCleanup()`, `addTypeEqualityFunc()`, `assertAlmostEqual()`, `assertAlmostEquals()`, `assertContains()`, `assertCountEqual()`, `assertDictContainsSubset()`, `assertDictEqual()`, `assertEqual()`, `assertEquals()`, `assertFalse()`, `assertFieldOutput()`, `assertFormError()`, `assertFormSetError()`, `assertGreater()`, `assertGreaterEqual()`, `assertHTMLEqual()`, `assertHTMLNotEqual()`, `assertIn()`, `assertInHTML()`, `assertIs()`, `assertIsInstance()`, `assertIsNone()`, `assertIsNot()`, `assertIsNotNone()`, `assertJSONEqual()`, `assertJSONNotEqual()`, `assertLess()`, `assertLessEqual()`, `assertListEqual()`, `assertLogs()`, `assertMultiLineEqual()`, `assertNoLogs()`, `assertNotAlmostEqual()`, `assertNotAlmostEquals()`, `assertNotContains()`, `assertNotEqual()`, `assertNotEquals()`, `assertNotIn()`, `assertNotInHTML()`, `assertNotIsInstance()`, `assertNotRegex()`, `assertNotRegexpMatches()`, `assertNumQueries()`, `assertQuerySetEqual()`, `assertRaises()`, `assertRaisesMessage()`, `assertRaisesRegex()`, `assertRaisesRegexp()`, `assertRedirects()`, `assertRegex()`, `assertRegexpMatches()`, `assertSequenceEqual()`, `assertSetEqual()`, `assertTemplateNotUsed()`, `assertTemplateUsed()`, `assertTrue()`, `assertTupleEqual()`, `assertURLEqual()`, `assertWarns()`, `assertWarnsMessage()`, `assertWarnsRegex()`, `assertXMLEqual()`, `assertXMLNotEqual()`, `assert_()`, `countTestCases()`, `debug()`, `defaultTestResult()`, `doCleanups()`, `fail()`, `failIf()`, `failIfAlmostEqual()`, `failIfEqual()`, `failUnless()`, `failUnlessAlmostEqual()`, `failUnlessEqual()`, `failUnlessRaises()`, `id()`, `modify_settings()`, `run()`, `setUp()`, `settings()`, `shortDescription()`, `skipTest()`, `subTest()`, `tearDown()`, `test_creacion_con_datos_minimos()`, `test_creacion_con_todos_los_datos()`, `test_get_item_json()`, `test_set_div_cant()`
       - `test_facturacion.py`
         - **Funciones:**
-          - `test_marca_creation(facturacion)`: Sin documentación
+          - `test_formas_pago_initialization(setup_test_data)`: Sin documentación
+          - `test_formas_pago_with_invalid_transaccion()`: Sin documentación
+          - `test_ticket_cabecera_consumidor_final()`: Sin documentación
+          - `test_ticket_cabecera_with_cliente(db)`: Prueba que TicketCabecera asigne correctamente el tipo de comprobante
+para diferentes tipos de responsabilidades IVA.
+          - `test_ticket_factura_initialization(setup_test_data)`: Test para verificar la inicialización correcta de TicketFactura con datos de cliente.
+          - `test_ticket_item_initialization()`: Sin documentación
+      - `test_models.py`
       - **test_models/**
+        - `test_articulo_vendido.py`
+          - **Clases:**
+            - `ArticuloVendidoModelTest`: Similar to TransactionTestCase, but use `transaction.atomic()` to achieve
+test isolation.
+
+In most situations, TestCase should be preferred to TransactionTestCase as
+it allows faster execution. However, there are some situations where using
+TransactionTestCase might be necessary (e.g. testing some transactional
+behavior).
+
+On database backends with no transaction support, TestCase behaves as
+TransactionTestCase.
+              - *Métodos:* `__init__()`, `addCleanup()`, `addTypeEqualityFunc()`, `assertAlmostEqual()`, `assertAlmostEquals()`, `assertContains()`, `assertCountEqual()`, `assertDictContainsSubset()`, `assertDictEqual()`, `assertEqual()`, `assertEquals()`, `assertFalse()`, `assertFieldOutput()`, `assertFormError()`, `assertFormSetError()`, `assertGreater()`, `assertGreaterEqual()`, `assertHTMLEqual()`, `assertHTMLNotEqual()`, `assertIn()`, `assertInHTML()`, `assertIs()`, `assertIsInstance()`, `assertIsNone()`, `assertIsNot()`, `assertIsNotNone()`, `assertJSONEqual()`, `assertJSONNotEqual()`, `assertLess()`, `assertLessEqual()`, `assertListEqual()`, `assertLogs()`, `assertMultiLineEqual()`, `assertNoLogs()`, `assertNotAlmostEqual()`, `assertNotAlmostEquals()`, `assertNotContains()`, `assertNotEqual()`, `assertNotEquals()`, `assertNotIn()`, `assertNotInHTML()`, `assertNotIsInstance()`, `assertNotRegex()`, `assertNotRegexpMatches()`, `assertNumQueries()`, `assertQuerySetEqual()`, `assertRaises()`, `assertRaisesMessage()`, `assertRaisesRegex()`, `assertRaisesRegexp()`, `assertRedirects()`, `assertRegex()`, `assertRegexpMatches()`, `assertSequenceEqual()`, `assertSetEqual()`, `assertTemplateNotUsed()`, `assertTemplateUsed()`, `assertTrue()`, `assertTupleEqual()`, `assertURLEqual()`, `assertWarns()`, `assertWarnsMessage()`, `assertWarnsRegex()`, `assertXMLEqual()`, `assertXMLNotEqual()`, `assert_()`, `countTestCases()`, `debug()`, `defaultTestResult()`, `doCleanups()`, `fail()`, `failIf()`, `failIfAlmostEqual()`, `failIfEqual()`, `failUnless()`, `failUnlessAlmostEqual()`, `failUnlessEqual()`, `failUnlessRaises()`, `id()`, `modify_settings()`, `run()`, `setUp()`, `settings()`, `shortDescription()`, `skipTest()`, `subTest()`, `tearDown()`, `test_creacion_articulo_vendido_con_item()`, `test_creacion_articulo_vendido_sin_registrar()`, `test_get_item_con_articulo_sin_registrar()`, `test_get_item_con_item_none()`, `test_get_item_con_item_registrado()`, `test_str_representation_con_item()`, `test_str_representation_sin_item_ni_sin_registrar()`, `test_str_representation_sin_registrar()`
+        - `test_cierre_z.py`
+          - **Clases:**
+            - `CierreZModelTest`: Similar to TransactionTestCase, but use `transaction.atomic()` to achieve
+test isolation.
+
+In most situations, TestCase should be preferred to TransactionTestCase as
+it allows faster execution. However, there are some situations where using
+TransactionTestCase might be necessary (e.g. testing some transactional
+behavior).
+
+On database backends with no transaction support, TestCase behaves as
+TransactionTestCase.
+              - *Métodos:* `__init__()`, `addCleanup()`, `addTypeEqualityFunc()`, `assertAlmostEqual()`, `assertAlmostEquals()`, `assertContains()`, `assertCountEqual()`, `assertDictContainsSubset()`, `assertDictEqual()`, `assertEqual()`, `assertEquals()`, `assertFalse()`, `assertFieldOutput()`, `assertFormError()`, `assertFormSetError()`, `assertGreater()`, `assertGreaterEqual()`, `assertHTMLEqual()`, `assertHTMLNotEqual()`, `assertIn()`, `assertInHTML()`, `assertIs()`, `assertIsInstance()`, `assertIsNone()`, `assertIsNot()`, `assertIsNotNone()`, `assertJSONEqual()`, `assertJSONNotEqual()`, `assertLess()`, `assertLessEqual()`, `assertListEqual()`, `assertLogs()`, `assertMultiLineEqual()`, `assertNoLogs()`, `assertNotAlmostEqual()`, `assertNotAlmostEquals()`, `assertNotContains()`, `assertNotEqual()`, `assertNotEquals()`, `assertNotIn()`, `assertNotInHTML()`, `assertNotIsInstance()`, `assertNotRegex()`, `assertNotRegexpMatches()`, `assertNumQueries()`, `assertQuerySetEqual()`, `assertRaises()`, `assertRaisesMessage()`, `assertRaisesRegex()`, `assertRaisesRegexp()`, `assertRedirects()`, `assertRegex()`, `assertRegexpMatches()`, `assertSequenceEqual()`, `assertSetEqual()`, `assertTemplateNotUsed()`, `assertTemplateUsed()`, `assertTrue()`, `assertTupleEqual()`, `assertURLEqual()`, `assertWarns()`, `assertWarnsMessage()`, `assertWarnsRegex()`, `assertXMLEqual()`, `assertXMLNotEqual()`, `assert_()`, `countTestCases()`, `debug()`, `defaultTestResult()`, `doCleanups()`, `fail()`, `failIf()`, `failIfAlmostEqual()`, `failIfEqual()`, `failUnless()`, `failUnlessAlmostEqual()`, `failUnlessEqual()`, `failUnlessRaises()`, `id()`, `modify_settings()`, `run()`, `setUp()`, `settings()`, `shortDescription()`, `skipTest()`, `subTest()`, `tearDown()`, `test_creacion_cierre_z()`, `test_fecha_auto_ahora()`, `test_incremento_zeta_numero()`, `test_str_representation()`, `test_valores_por_defecto()`
+        - `test_cliente.py`
+          - **Clases:**
+            - `ClienteModelTest`: Similar to TransactionTestCase, but use `transaction.atomic()` to achieve
+test isolation.
+
+In most situations, TestCase should be preferred to TransactionTestCase as
+it allows faster execution. However, there are some situations where using
+TransactionTestCase might be necessary (e.g. testing some transactional
+behavior).
+
+On database backends with no transaction support, TestCase behaves as
+TransactionTestCase.
+              - *Métodos:* `__init__()`, `addCleanup()`, `addTypeEqualityFunc()`, `assertAlmostEqual()`, `assertAlmostEquals()`, `assertContains()`, `assertCountEqual()`, `assertDictContainsSubset()`, `assertDictEqual()`, `assertEqual()`, `assertEquals()`, `assertFalse()`, `assertFieldOutput()`, `assertFormError()`, `assertFormSetError()`, `assertGreater()`, `assertGreaterEqual()`, `assertHTMLEqual()`, `assertHTMLNotEqual()`, `assertIn()`, `assertInHTML()`, `assertIs()`, `assertIsInstance()`, `assertIsNone()`, `assertIsNot()`, `assertIsNotNone()`, `assertJSONEqual()`, `assertJSONNotEqual()`, `assertLess()`, `assertLessEqual()`, `assertListEqual()`, `assertLogs()`, `assertMultiLineEqual()`, `assertNoLogs()`, `assertNotAlmostEqual()`, `assertNotAlmostEquals()`, `assertNotContains()`, `assertNotEqual()`, `assertNotEquals()`, `assertNotIn()`, `assertNotInHTML()`, `assertNotIsInstance()`, `assertNotRegex()`, `assertNotRegexpMatches()`, `assertNumQueries()`, `assertQuerySetEqual()`, `assertRaises()`, `assertRaisesMessage()`, `assertRaisesRegex()`, `assertRaisesRegexp()`, `assertRedirects()`, `assertRegex()`, `assertRegexpMatches()`, `assertSequenceEqual()`, `assertSetEqual()`, `assertTemplateNotUsed()`, `assertTemplateUsed()`, `assertTrue()`, `assertTupleEqual()`, `assertURLEqual()`, `assertWarns()`, `assertWarnsMessage()`, `assertWarnsRegex()`, `assertXMLEqual()`, `assertXMLNotEqual()`, `assert_()`, `countTestCases()`, `debug()`, `defaultTestResult()`, `doCleanups()`, `fail()`, `failIf()`, `failIfAlmostEqual()`, `failIfEqual()`, `failUnless()`, `failUnlessAlmostEqual()`, `failUnlessEqual()`, `failUnlessRaises()`, `id()`, `modify_settings()`, `run()`, `setUp()`, `settings()`, `shortDescription()`, `skipTest()`, `subTest()`, `tearDown()`, `test_creacion_cliente()`, `test_get_responsabilidad()`, `test_get_tipo_documento()`, `test_responsabilidad_choices()`, `test_str_representation()`, `test_tipo_documento_choices()`
+        - `test_metodo_pago.py`
+          - **Clases:**
+            - `MetodoPagoModelTest`: Similar to TransactionTestCase, but use `transaction.atomic()` to achieve
+test isolation.
+
+In most situations, TestCase should be preferred to TransactionTestCase as
+it allows faster execution. However, there are some situations where using
+TransactionTestCase might be necessary (e.g. testing some transactional
+behavior).
+
+On database backends with no transaction support, TestCase behaves as
+TransactionTestCase.
+              - *Métodos:* `__init__()`, `addCleanup()`, `addTypeEqualityFunc()`, `assertAlmostEqual()`, `assertAlmostEquals()`, `assertContains()`, `assertCountEqual()`, `assertDictContainsSubset()`, `assertDictEqual()`, `assertEqual()`, `assertEquals()`, `assertFalse()`, `assertFieldOutput()`, `assertFormError()`, `assertFormSetError()`, `assertGreater()`, `assertGreaterEqual()`, `assertHTMLEqual()`, `assertHTMLNotEqual()`, `assertIn()`, `assertInHTML()`, `assertIs()`, `assertIsInstance()`, `assertIsNone()`, `assertIsNot()`, `assertIsNotNone()`, `assertJSONEqual()`, `assertJSONNotEqual()`, `assertLess()`, `assertLessEqual()`, `assertListEqual()`, `assertLogs()`, `assertMultiLineEqual()`, `assertNoLogs()`, `assertNotAlmostEqual()`, `assertNotAlmostEquals()`, `assertNotContains()`, `assertNotEqual()`, `assertNotEquals()`, `assertNotIn()`, `assertNotInHTML()`, `assertNotIsInstance()`, `assertNotRegex()`, `assertNotRegexpMatches()`, `assertNumQueries()`, `assertQuerySetEqual()`, `assertRaises()`, `assertRaisesMessage()`, `assertRaisesRegex()`, `assertRaisesRegexp()`, `assertRedirects()`, `assertRegex()`, `assertRegexpMatches()`, `assertSequenceEqual()`, `assertSetEqual()`, `assertTemplateNotUsed()`, `assertTemplateUsed()`, `assertTrue()`, `assertTupleEqual()`, `assertURLEqual()`, `assertWarns()`, `assertWarnsMessage()`, `assertWarnsRegex()`, `assertXMLEqual()`, `assertXMLNotEqual()`, `assert_()`, `countTestCases()`, `debug()`, `defaultTestResult()`, `doCleanups()`, `fail()`, `failIf()`, `failIfAlmostEqual()`, `failIfEqual()`, `failUnless()`, `failUnlessAlmostEqual()`, `failUnlessEqual()`, `failUnlessRaises()`, `id()`, `modify_settings()`, `run()`, `setUp()`, `settings()`, `shortDescription()`, `skipTest()`, `subTest()`, `tearDown()`, `test_creacion_metodo_pago()`, `test_str_representation()`, `test_str_representation_display_vacio()`, `test_valores_por_defecto()`
+        - `test_transaccion.py`
+          - **Clases:**
+            - `TransaccionModelTest`: Similar to TransactionTestCase, but use `transaction.atomic()` to achieve
+test isolation.
+
+In most situations, TestCase should be preferred to TransactionTestCase as
+it allows faster execution. However, there are some situations where using
+TransactionTestCase might be necessary (e.g. testing some transactional
+behavior).
+
+On database backends with no transaction support, TestCase behaves as
+TransactionTestCase.
+              - *Métodos:* `__init__()`, `addCleanup()`, `addTypeEqualityFunc()`, `assertAlmostEqual()`, `assertAlmostEquals()`, `assertContains()`, `assertCountEqual()`, `assertDictContainsSubset()`, `assertDictEqual()`, `assertEqual()`, `assertEquals()`, `assertFalse()`, `assertFieldOutput()`, `assertFormError()`, `assertFormSetError()`, `assertGreater()`, `assertGreaterEqual()`, `assertHTMLEqual()`, `assertHTMLNotEqual()`, `assertIn()`, `assertInHTML()`, `assertIs()`, `assertIsInstance()`, `assertIsNone()`, `assertIsNot()`, `assertIsNotNone()`, `assertJSONEqual()`, `assertJSONNotEqual()`, `assertLess()`, `assertLessEqual()`, `assertListEqual()`, `assertLogs()`, `assertMultiLineEqual()`, `assertNoLogs()`, `assertNotAlmostEqual()`, `assertNotAlmostEquals()`, `assertNotContains()`, `assertNotEqual()`, `assertNotEquals()`, `assertNotIn()`, `assertNotInHTML()`, `assertNotIsInstance()`, `assertNotRegex()`, `assertNotRegexpMatches()`, `assertNumQueries()`, `assertQuerySetEqual()`, `assertRaises()`, `assertRaisesMessage()`, `assertRaisesRegex()`, `assertRaisesRegexp()`, `assertRedirects()`, `assertRegex()`, `assertRegexpMatches()`, `assertSequenceEqual()`, `assertSetEqual()`, `assertTemplateNotUsed()`, `assertTemplateUsed()`, `assertTrue()`, `assertTupleEqual()`, `assertURLEqual()`, `assertWarns()`, `assertWarnsMessage()`, `assertWarnsRegex()`, `assertXMLEqual()`, `assertXMLNotEqual()`, `assert_()`, `countTestCases()`, `debug()`, `defaultTestResult()`, `doCleanups()`, `fail()`, `failIf()`, `failIfAlmostEqual()`, `failIfEqual()`, `failUnless()`, `failUnlessAlmostEqual()`, `failUnlessEqual()`, `failUnlessRaises()`, `id()`, `modify_settings()`, `run()`, `setUp()`, `settings()`, `shortDescription()`, `skipTest()`, `subTest()`, `tearDown()`, `test_creacion_transaccion()`, `test_fecha_auto_ahora()`, `test_get_cliente_id()`, `test_str_representation()`, `test_valores_por_defecto()`
+      - **utils/**
+        - `factories.py`
+          - **Funciones:**
+            - `articulo_vendido_factory(**kwargs)`: Crea una instancia de ArticuloVendido con datos de prueba.
+
+Args:
+    **kwargs: Valores personalizados para sobrescribir los valores por defecto
+    
+Returns:
+    ArticuloVendido: Instancia con datos de prueba
+            - `cierre_z_factory(**kwargs)`: Crea una instancia de CierreZ con datos de prueba.
+
+Args:
+    **kwargs: Valores personalizados para sobrescribir los valores por defecto
+    
+Returns:
+    CierreZ: Instancia con datos de prueba
+            - `cliente_factory(**kwargs)`: Crea una instancia de Cliente con datos de prueba.
+
+Args:
+    **kwargs: Valores personalizados para sobrescribir los valores por defecto
+    
+Returns:
+    Cliente: Instancia de Cliente con datos de prueba
+            - `metodo_pago_factory(**kwargs)`: Crea una instancia de MetodoPago con datos de prueba.
+
+Args:
+    **kwargs: Valores personalizados para sobrescribir los valores por defecto
+    
+Returns:
+    MetodoPago: Instancia con datos de prueba
+            - `transaccion_factory(**kwargs)`: Crea una instancia de Transaccion con datos de prueba.
+
+Args:
+    **kwargs: Valores personalizados para sobrescribir los valores por defecto
+    
+Returns:
+    Transaccion: Instancia con datos de prueba
   - **.pytest_cache/**
     - **v/**
       - **cache/**
@@ -632,7 +886,6 @@ functions.
         - `buckup()`: Sin documentación
         - `medir_tiempo(func)`: Sin documentación
         - `reckup()`: Sin documentación
-    - `urls.py`
     - `views.py`
       - **Clases:**
         - `Actualizar`: Render a template. Pass keyword arguments from the URLconf to the context.
@@ -691,6 +944,7 @@ separado en segundo plano. Las tareas se agregan de forma no bloqueante.
         - `recolectar_procesar()`: Se va a cambiar a futuro cuando
  se refactorize el modo en el que se capuran las planillas.
         - `tirar_comando(comando='ls')`: Sin documentación
+    - `urls.py`
     - **tests/**
   - **utils/**
     - `constantes_django.py`
@@ -722,7 +976,6 @@ separado en segundo plano. Las tareas se agregan de forma no bloqueante.
       - **Funciones:**
         - `armar_tabla(id_carpeta_inbox, id_carpeta_plantillas, credentials)`: Sin documentación
         - `get_emails(gmail_service, drive_service)`: Sin documentación
-    - `urls.py`
     - `views_old.py`
       - **Clases:**
         - `BusquedaForm`: Formulario de búsqueda que permite al usuario seleccionar una Marca, Cajón, Cajonera y Sector específicos.
@@ -861,6 +1114,7 @@ Establece el tipo de entrada a 'time'.
           - *Métodos:* `__init__()`, `adelete()`, `arefresh_from_db()`, `asave()`, `clean()`, `clean_fields()`, `date_error_message()`, `delete()`, `full_clean()`, `get_constraints()`, `get_deferred_fields()`, `prepare_database_save()`, `refresh_from_db()`, `save()`, `save_base()`, `serializable_value()`, `unique_error_message()`, `validate_constraints()`, `validate_unique()`
         - `Tipo_Registro`: Tipo_Registro(id, nombre)
           - *Métodos:* `__init__()`, `adelete()`, `arefresh_from_db()`, `asave()`, `clean()`, `clean_fields()`, `date_error_message()`, `delete()`, `full_clean()`, `get_constraints()`, `get_deferred_fields()`, `prepare_database_save()`, `refresh_from_db()`, `save()`, `save_base()`, `serializable_value()`, `unique_error_message()`, `validate_constraints()`, `validate_unique()`
+    - `urls.py`
     - **templatetags/**
       - `custom_filters.py`
         - **Funciones:**
@@ -934,19 +1188,235 @@ dispatch-by-method and simple sanity checking.
     - **facturacion/**
     - **bdd/**
     - **actualizador/**
+    - **uml_visualizer/**
   - **core_testing/**
+    - `admin.py`
+    - `apps.py`
+      - **Clases:**
+        - `CoreTestingConfig`: Configuration for core_testing application.
+          - *Métodos:* `__init__()`, `get_model()`, `get_models()`, `import_models()`, `ready()`
+    - `conftest.py`
+      - *Error al analizar el módulo: No module named 'model_bakery'*
+    - `models.py`
+      - **Clases:**
+        - `ModuleCoverage`: Almacena información de cobertura de código por módulo.
+          - *Métodos:* `__init__()`, `adelete()`, `arefresh_from_db()`, `asave()`, `clean()`, `clean_fields()`, `date_error_message()`, `delete()`, `full_clean()`, `get_constraints()`, `get_deferred_fields()`, `get_next_by_last_updated()`, `get_previous_by_last_updated()`, `prepare_database_save()`, `refresh_from_db()`, `save()`, `save_base()`, `serializable_value()`, `unique_error_message()`, `update_from_coverage_data()`, `validate_constraints()`, `validate_unique()`
+        - `TestCase`: Almacena información sobre un caso de prueba individual.
+          - *Métodos:* `__init__()`, `adelete()`, `arefresh_from_db()`, `asave()`, `clean()`, `clean_fields()`, `date_error_message()`, `delete()`, `full_clean()`, `get_constraints()`, `get_deferred_fields()`, `get_next_by_created_at()`, `get_previous_by_created_at()`, `get_status_display()`, `prepare_database_save()`, `refresh_from_db()`, `save()`, `save_base()`, `serializable_value()`, `unique_error_message()`, `validate_constraints()`, `validate_unique()`
+        - `TestRun`: Almacena información sobre una ejecución de pruebas.
+          - *Métodos:* `__init__()`, `adelete()`, `arefresh_from_db()`, `asave()`, `clean()`, `clean_fields()`, `date_error_message()`, `delete()`, `full_clean()`, `get_constraints()`, `get_deferred_fields()`, `get_next_by_created_at()`, `get_next_by_started_at()`, `get_next_by_updated_at()`, `get_previous_by_created_at()`, `get_previous_by_started_at()`, `get_previous_by_updated_at()`, `get_status_display()`, `prepare_database_save()`, `refresh_from_db()`, `save()`, `save_base()`, `serializable_value()`, `unique_error_message()`, `update_from_pytest_json()`, `validate_constraints()`, `validate_unique()`
+    - `signals.py`
+      - **Funciones:**
+        - `module_coverage_post_save(sender, instance, created, **kwargs)`: Señal post-save para el modelo ModuleCoverage.
+Actualiza la cobertura en TestRun cuando se guarda un registro de cobertura.
+        - `test_case_post_save(sender, instance, created, **kwargs)`: Señal post-save para el modelo TestCase.
+Actualiza las estadísticas de TestRun cuando se guarda un caso de prueba.
+        - `test_run_post_save(sender, instance, created, **kwargs)`: Señal post-save para el modelo TestRun.
+Registra la creación o actualización de una ejecución de pruebas.
+        - `test_run_pre_save(sender, instance, **kwargs)`: Señal pre-save para el modelo TestRun.
+Genera un nombre por defecto para nuevas ejecuciones de prueba.
+    - `storage.py`
+      - **Clases:**
+        - `TestResultStorage`: Clase para manejar el almacenamiento de resultados de pruebas.
+          - *Métodos:* `get_run_filename()`, `get_test_stats()`, `list_test_runs()`, `load_test_run()`, `save_test_run()`
+    - `urls.py`
+    - `views.py`
+    - `views_test.py`
+      - **Clases:**
+        - `TestInterfaceView`: Vista para probar una interfaz de testing específica.
+          - *Métodos:* `__init__()`, `dispatch()`, `get()`, `http_method_not_allowed()`, `options()`, `setup()`
+      - **Funciones:**
+        - `list_testing_interfaces(request: django.http.request.HttpRequest) -> django.http.response.HttpResponse`: Vista que lista todas las interfaces de testing disponibles.
     - **views/**
+      - `views.py`
+        - **Clases:**
+          - `AppDetailView`: Vista para mostrar detalles de una aplicación específica.
+
+Muestra estadísticas de cobertura y pruebas para una aplicación Django específica,
+incluyendo módulos que la componen, tendencias de cobertura y pruebas recientes.
+            - *Métodos:* `__init__()`, `dispatch()`, `get()`, `get_app_name()`, `get_context_data()`, `get_login_url()`, `get_permission_denied_message()`, `get_redirect_field_name()`, `get_template_names()`, `handle_no_permission()`, `http_method_not_allowed()`, `options()`, `render_to_response()`, `setup()`
+          - `CoverageReportView`: Vista simple para mostrar el informe de cobertura de pruebas.
+
+Muestra un listado de módulos con su porcentaje de cobertura,
+ordenados de mayor a menor cobertura.
+            - *Métodos:* `__init__()`, `dispatch()`, `get()`, `get_context_data()`, `get_login_url()`, `get_permission_denied_message()`, `get_redirect_field_name()`, `get_template_names()`, `handle_no_permission()`, `http_method_not_allowed()`, `options()`, `render_to_response()`, `setup()`
+          - `InterfaceTestingView`: Vista para interactuar con una interfaz de testing específica.
+Esta vista se encarga de cargar dinámicamente la interfaz solicitada.
+
+Nota: Ya incluye LoginRequiredMixin a través de TestingView.
+            - *Métodos:* `__init__()`, `dispatch()`, `get()`, `get_context_data()`, `get_interface()`, `get_interface_class()`, `get_login_url()`, `get_permission_denied_message()`, `get_redirect_field_name()`, `get_template_names()`, `handle_no_permission()`, `http_method_not_allowed()`, `options()`, `post()`, `render_to_response()`, `setup()`
+          - `ModuleCoverageDetailView`: Vista para mostrar detalles de cobertura de un módulo específico.
+            - *Métodos:* `__init__()`, `dispatch()`, `get()`, `get_context_data()`, `get_context_object_name()`, `get_login_url()`, `get_object()`, `get_permission_denied_message()`, `get_queryset()`, `get_redirect_field_name()`, `get_slug_field()`, `get_template_names()`, `handle_no_permission()`, `http_method_not_allowed()`, `options()`, `render_to_response()`, `setup()`
+          - `TestHistoryView`: Vista para mostrar el historial de ejecuciones de pruebas.
+            - *Métodos:* `__init__()`, `dispatch()`, `get()`, `get_context_data()`, `get_login_url()`, `get_permission_denied_message()`, `get_redirect_field_name()`, `get_template_names()`, `handle_no_permission()`, `http_method_not_allowed()`, `options()`, `render_to_response()`, `setup()`
+          - `TestRunDetailView`: Vista para mostrar los detalles de una ejecución de pruebas.
+            - *Métodos:* `__init__()`, `dispatch()`, `get()`, `get_login_url()`, `get_permission_denied_message()`, `get_redirect_field_name()`, `handle_no_permission()`, `http_method_not_allowed()`, `options()`, `setup()`
+          - `TestRunListView`: Vista para mostrar una lista de ejecuciones de pruebas.
+            - *Métodos:* `__init__()`, `dispatch()`, `get()`, `get_allow_empty()`, `get_context_data()`, `get_context_object_name()`, `get_login_url()`, `get_ordering()`, `get_paginate_by()`, `get_paginate_orphans()`, `get_paginator()`, `get_permission_denied_message()`, `get_queryset()`, `get_redirect_field_name()`, `get_template_names()`, `handle_no_permission()`, `http_method_not_allowed()`, `options()`, `paginate_queryset()`, `render_to_response()`, `setup()`
+          - `TestingDashboardView`: Vista principal del dashboard de testing.
+Muestra un resumen de las pruebas y la cobertura de código agrupado por aplicación.
+            - *Métodos:* `__init__()`, `dispatch()`, `get()`, `get_app_name()`, `get_context_data()`, `get_login_url()`, `get_permission_denied_message()`, `get_redirect_field_name()`, `get_template_names()`, `handle_no_permission()`, `http_method_not_allowed()`, `options()`, `render_to_response()`, `setup()`
+        - **Funciones:**
+          - `api_coverage_data(request)`: API para obtener datos de cobertura actualizados.
+          - `api_test_status(request)`: API para obtener el estado actual de las pruebas.
+          - `discover_testing_interfaces() -> Dict[str, Type[core_testing.testing_interfaces.base.TestingInterface]]`: Descubre automáticamente todas las interfaces de testing disponibles.
+
+Returns:
+    Dict[str, Type[TestingInterface]]: Diccionario con las interfaces encontradas
+          - `get_test_form(request: django.http.request.HttpRequest, interface_name: str) -> django.http.response.JsonResponse`: Vista que devuelve el formulario HTML para un test específico.
+
+Args:
+    request: Objeto HttpRequest
+    interface_name: Nombre de la interfaz de testing
+    
+Returns:
+    JsonResponse con el formulario HTML o un mensaje de error
+          - `list_testing_interfaces(request: django.http.request.HttpRequest) -> django.http.response.HttpResponse`: Vista que lista todas las interfaces de testing disponibles.
+
+Args:
+    request: Objeto HttpRequest
+    
+Returns:
+    HttpResponse con la lista de interfaces renderizada
+          - `run_test_api(request: django.http.request.HttpRequest, interface_name: str) -> django.http.response.JsonResponse`: API para ejecutar un test y devolver los resultados en formato JSON.
+
+Args:
+    request: Objeto HttpRequest
+    interface_name: Nombre de la interfaz de testing
+    
+Returns:
+    JsonResponse con los resultados del test
+      - `views_test.py`
+        - **Clases:**
+          - `TestInterfaceView`: Vista para probar una interfaz de testing específica.
+            - *Métodos:* `__init__()`, `dispatch()`, `get()`, `http_method_not_allowed()`, `options()`, `setup()`
+        - **Funciones:**
+          - `list_testing_interfaces(request: django.http.request.HttpRequest) -> django.http.response.HttpResponse`: Vista que lista todas las interfaces de testing disponibles.
     - **management/**
       - **commands/**
+        - `run_tests.py`
+          - **Clases:**
+            - `Command`: Comando para ejecutar pruebas y guardar resultados en la base de datos.
+              - *Métodos:* `__init__()`, `add_arguments()`, `add_base_argument()`, `check()`, `check_migrations()`, `create_parser()`, `execute()`, `get_check_kwargs()`, `get_version()`, `handle()`, `print_help()`, `run_from_argv()`
+          - **Funciones:**
+            - `setup_logging()`: Configura el sistema de logging para el comando.
     - **templatetags/**
+      - `math_filters.py`
+        - **Funciones:**
+          - `div(value, arg)`: Sin documentación
+          - `mul(value, arg)`: Sin documentación
+      - `testing_filters.py`
+        - **Funciones:**
+          - `basename(filepath)`: Extrae el nombre base de una ruta de archivo.
+
+Args:
+    filepath (str): Ruta completa del archivo
+    
+Returns:
+    str: Nombre del archivo con su extensión
+          - `coverage_badge_class(coverage_percent)`: Devuelve la clase de color para la insignia de cobertura según el porcentaje.
+          - `coverage_color(coverage_percent)`: Devuelve la clase de color para la cobertura según el porcentaje.
+          - `coverage_progress(coverage_percent, size='normal')`: Genera una barra de progreso para la cobertura de código.
+          - `format_coverage_trend(trend_value)`: Formatea el valor de tendencia de cobertura.
+          - `format_duration(seconds)`: Formatea la duración en segundos a un formato legible.
+          - `get_status_bg_class(status)`: Devuelve la clase de color de fondo según el estado de la prueba.
+          - `get_status_icon(status)`: Devuelve el ícono correspondiente al estado de la prueba.
+          - `percentage(value, total)`: Calcula el porcentaje de un valor respecto a un total.
+
+Args:
+    value: El valor a calcular
+    total: El valor total (100%)
+    
+Returns:
+    float: El porcentaje calculado, o 0 si el total es 0
+          - `status_color(status)`: Devuelve la clase de color de Bootstrap para un estado de prueba.
+
+Args:
+    status (str): Estado de la prueba (passed, failed, error, skipped, running, pending)
+    
+Returns:
+    str: Clase de color de Bootstrap (success, danger, warning, info, secondary)
+          - `test_result_progress(test_run)`: Genera una barra de progreso para los resultados de las pruebas.
+          - `test_result_summary(test_run)`: Genera un resumen de los resultados de las pruebas.
+          - `test_status_bg_color(status)`: Devuelve la clase de color de fondo para un estado de prueba.
+          - `test_status_count(test_runs, status)`: Cuenta el número de ejecuciones con un estado específico.
+          - `test_status_percent(test_runs, status)`: Calcula el porcentaje de ejecuciones con un estado específico.
+          - `test_trend_icon(trend_value)`: Devuelve un ícono que representa la tendencia del rendimiento de las pruebas.
     - **testing_interfaces/**
+      - `base.py`
+        - **Clases:**
+          - `TestingInterface`: Interfaz base para todos los módulos de testing.
+Define los métodos que deben implementar las interfaces de testing específicas.
+            - *Métodos:* `get_available_tests()`, `get_test_form()`, `run_test()`
+          - `TestingView`: Vista base para las interfaces de testing.
+Proporciona funcionalidad común para todas las vistas de testing.
+            - *Métodos:* `__init__()`, `dispatch()`, `get()`, `get_context_data()`, `get_interface()`, `get_login_url()`, `get_permission_denied_message()`, `get_redirect_field_name()`, `get_template_names()`, `handle_no_permission()`, `http_method_not_allowed()`, `options()`, `post()`, `render_to_response()`, `setup()`
+      - `example.py`
+        - **Clases:**
+          - `ExampleTestingInterface`: Interfaz de ejemplo para testing.
+            - *Métodos:* `get_available_tests()`, `get_test_form()`, `run_test()`
+      - `example_interface.py`
+        - **Clases:**
+          - `ExampleTestForm`: Formulario de ejemplo para el test.
+            - *Métodos:* `__init__()`, `add_error()`, `add_initial_prefix()`, `add_prefix()`, `as_div()`, `as_p()`, `as_table()`, `as_ul()`, `clean()`, `full_clean()`, `get_context()`, `get_initial_for_field()`, `has_changed()`, `has_error()`, `hidden_fields()`, `is_multipart()`, `is_valid()`, `non_field_errors()`, `order_fields()`, `render()`, `visible_fields()`
+          - `ExampleTestingInterface`: Ejemplo de implementación de TestingInterface.
+Esta clase muestra cómo implementar una interfaz de testing personalizada.
+            - *Métodos:* `get_available_tests()`, `get_test_form()`, `run_test()`
+          - `ExampleTestingView`: Vista para la interfaz de ejemplo.
+            - *Métodos:* `__init__()`, `dispatch()`, `get()`, `get_context_data()`, `get_interface()`, `get_login_url()`, `get_permission_denied_message()`, `get_redirect_field_name()`, `get_template_names()`, `handle_no_permission()`, `http_method_not_allowed()`, `options()`, `post()`, `render_to_response()`, `setup()`
+      - `test_interface.py`
+        - **Clases:**
+          - `TestInterface`: Implementación de prueba de TestingInterface para usar en pruebas unitarias.
+            - *Métodos:* `get_available_tests()`, `get_test_form()`, `run_test()`
       - **views/**
+        - `example.py`
+          - **Clases:**
+            - `ExampleInterfaceView`: Vista para la interfaz de ejemplo de testing.
+Ya incluye LoginRequiredMixin a través de TestingView.
+              - *Métodos:* `__init__()`, `dispatch()`, `get()`, `get_context_data()`, `get_interface()`, `get_login_url()`, `get_permission_denied_message()`, `get_redirect_field_name()`, `get_template_names()`, `handle_no_permission()`, `http_method_not_allowed()`, `options()`, `post()`, `render_to_response()`, `setup()`
+        - `example_interface.py`
+          - **Clases:**
+            - `ExampleInterfaceTestingView`: Vista para la interfaz de ejemplo avanzada de testing.
+Ya incluye LoginRequiredMixin a través de TestingView.
+              - *Métodos:* `__init__()`, `dispatch()`, `get()`, `get_context_data()`, `get_interface()`, `get_login_url()`, `get_permission_denied_message()`, `get_redirect_field_name()`, `get_template_names()`, `handle_no_permission()`, `http_method_not_allowed()`, `options()`, `post()`, `render_to_response()`, `setup()`
     - **tests/**
+      - `conftest.py`
+        - **Funciones:**
+          - `pytest_collection_modifyitems(config, items)`: Modifica la colección de pruebas para excluir clases abstractas.
+          - `pytest_configure(config)`: Configura el entorno de pruebas de Django.
+      - `test_basic.py`
+        - **Clases:**
+          - `BasicTest`: Similar to TransactionTestCase, but use `transaction.atomic()` to achieve
+test isolation.
+
+In most situations, TestCase should be preferred to TransactionTestCase as
+it allows faster execution. However, there are some situations where using
+TransactionTestCase might be necessary (e.g. testing some transactional
+behavior).
+
+On database backends with no transaction support, TestCase behaves as
+TransactionTestCase.
+            - *Métodos:* `__init__()`, `addCleanup()`, `addTypeEqualityFunc()`, `assertAlmostEqual()`, `assertAlmostEquals()`, `assertContains()`, `assertCountEqual()`, `assertDictContainsSubset()`, `assertDictEqual()`, `assertEqual()`, `assertEquals()`, `assertFalse()`, `assertFieldOutput()`, `assertFormError()`, `assertFormSetError()`, `assertGreater()`, `assertGreaterEqual()`, `assertHTMLEqual()`, `assertHTMLNotEqual()`, `assertIn()`, `assertInHTML()`, `assertIs()`, `assertIsInstance()`, `assertIsNone()`, `assertIsNot()`, `assertIsNotNone()`, `assertJSONEqual()`, `assertJSONNotEqual()`, `assertLess()`, `assertLessEqual()`, `assertListEqual()`, `assertLogs()`, `assertMultiLineEqual()`, `assertNoLogs()`, `assertNotAlmostEqual()`, `assertNotAlmostEquals()`, `assertNotContains()`, `assertNotEqual()`, `assertNotEquals()`, `assertNotIn()`, `assertNotInHTML()`, `assertNotIsInstance()`, `assertNotRegex()`, `assertNotRegexpMatches()`, `assertNumQueries()`, `assertQuerySetEqual()`, `assertRaises()`, `assertRaisesMessage()`, `assertRaisesRegex()`, `assertRaisesRegexp()`, `assertRedirects()`, `assertRegex()`, `assertRegexpMatches()`, `assertSequenceEqual()`, `assertSetEqual()`, `assertTemplateNotUsed()`, `assertTemplateUsed()`, `assertTrue()`, `assertTupleEqual()`, `assertURLEqual()`, `assertWarns()`, `assertWarnsMessage()`, `assertWarnsRegex()`, `assertXMLEqual()`, `assertXMLNotEqual()`, `assert_()`, `countTestCases()`, `debug()`, `defaultTestResult()`, `doCleanups()`, `fail()`, `failIf()`, `failIfAlmostEqual()`, `failIfEqual()`, `failUnless()`, `failUnlessAlmostEqual()`, `failUnlessEqual()`, `failUnlessRaises()`, `id()`, `modify_settings()`, `run()`, `setUp()`, `settings()`, `shortDescription()`, `skipTest()`, `subTest()`, `tearDown()`, `test_dashboard_view()`
+      - `test_urls.py`
+        - **Clases:**
+          - `CoreTestingURLTests`: Pruebas para las URLs del módulo core_testing.
+            - *Métodos:* `__init__()`, `addCleanup()`, `addTypeEqualityFunc()`, `assertAlmostEqual()`, `assertAlmostEquals()`, `assertContains()`, `assertCountEqual()`, `assertDictContainsSubset()`, `assertDictEqual()`, `assertEqual()`, `assertEquals()`, `assertFalse()`, `assertFieldOutput()`, `assertFormError()`, `assertFormSetError()`, `assertGreater()`, `assertGreaterEqual()`, `assertHTMLEqual()`, `assertHTMLNotEqual()`, `assertIn()`, `assertInHTML()`, `assertIs()`, `assertIsInstance()`, `assertIsNone()`, `assertIsNot()`, `assertIsNotNone()`, `assertJSONEqual()`, `assertJSONNotEqual()`, `assertLess()`, `assertLessEqual()`, `assertListEqual()`, `assertLogs()`, `assertMultiLineEqual()`, `assertNoLogs()`, `assertNotAlmostEqual()`, `assertNotAlmostEquals()`, `assertNotContains()`, `assertNotEqual()`, `assertNotEquals()`, `assertNotIn()`, `assertNotInHTML()`, `assertNotIsInstance()`, `assertNotRegex()`, `assertNotRegexpMatches()`, `assertNumQueries()`, `assertQuerySetEqual()`, `assertRaises()`, `assertRaisesMessage()`, `assertRaisesRegex()`, `assertRaisesRegexp()`, `assertRedirects()`, `assertRegex()`, `assertRegexpMatches()`, `assertSequenceEqual()`, `assertSetEqual()`, `assertTemplateNotUsed()`, `assertTemplateUsed()`, `assertTrue()`, `assertTupleEqual()`, `assertURLEqual()`, `assertWarns()`, `assertWarnsMessage()`, `assertWarnsRegex()`, `assertXMLEqual()`, `assertXMLNotEqual()`, `assert_()`, `countTestCases()`, `debug()`, `defaultTestResult()`, `doCleanups()`, `fail()`, `failIf()`, `failIfAlmostEqual()`, `failIfEqual()`, `failUnless()`, `failUnlessAlmostEqual()`, `failUnlessEqual()`, `failUnlessRaises()`, `id()`, `modify_settings()`, `run()`, `setUp()`, `settings()`, `shortDescription()`, `skipTest()`, `subTest()`, `tearDown()`, `test_coverage_report_url_accessible()`, `test_coverage_report_url_resolves()`, `test_dashboard_url_accessible()`, `test_dashboard_url_resolves()`, `test_nonexistent_run_detail_returns_404()`, `test_run_detail_url_accessible()`, `test_run_detail_url_resolves()`, `test_testrun_list_url()`, `test_urls_require_authentication()`
     - **utils/**
+      - `create_test_data.py`
+        - **Funciones:**
+          - `create_test_cases(test_run, count=10)`: Crea casos de prueba para una ejecución.
+          - `create_test_data()`: Función principal para crear datos de prueba.
+          - `create_test_run(user, status='passed', days_ago=0)`: Crea una ejecución de prueba con estado aleatorio.
+          - `create_test_user()`: Crea un usuario de prueba si no existe.
+      - `migrate_to_file_storage.py`
+        - **Funciones:**
+          - `migrate_test_runs()`: Migra todos los TestRuns y sus TestCases asociados al almacenamiento en archivos.
     - **.pytest_cache/**
       - **v/**
         - **cache/**
     - **fixtures/**
+    - **testing_templates/**
+      - **core_testing/**
   - **gestor_articulos/**
   - **htmlcov/**
   - **test_logs/**
@@ -957,12 +1427,31 @@ dispatch-by-method and simple sanity checking.
       - **Clases:**
         - `UmlVisualizerConfig`: Configuración de la aplicación UML Visualizer.
           - *Métodos:* `__init__()`, `get_model()`, `get_models()`, `import_models()`, `ready()`
+    - `context_processors.py`
+      - **Funciones:**
+        - `user_info(request)`: A context processor that provides safe access to user information.
     - `models.py`
+    - `project_analyzer.py`
+      - **Clases:**
+        - `ProjectAnalyzer`: Analiza la estructura del proyecto Django y extrae información sobre
+modelos, vistas, formularios y otras clases importantes.
+          - *Métodos:* `__init__()`, `generate_project_documentation()`, `get_project_structure()`
     - `tests.py`
+    - `urls.py`
     - `views.py`
       - **Funciones:**
-        - `app_diagram(request, app_label)`: Vista para mostrar el diagrama de una aplicación específica.
-        - `download_diagram(request, app_label)`: Vista para descargar el diagrama de una aplicación.
+        - `_convert_dot_to_png(dot_file, output_file)`: Convierte un archivo DOT a PNG
+        - `_generate_forms_diagram(app_label, output_file, all_apps)`: Genera un diagrama de los formularios de la aplicación
+        - `_generate_models_diagram(app_label, temp_dot_file, output_file, all_apps)`: Genera el diagrama de modelos usando django-extensions graph_models
+        - `_generate_views_diagram(app_label, output_file, all_apps)`: Genera un diagrama de las vistas de la aplicación
+        - `app_diagram(request, app_label)`: Vista para mostrar los diagramas de una aplicación específica.
+Muestra tres diagramas: modelos, vistas y formularios.
+        - `download_diagram(request, app_label)`: Vista para descargar el diagrama de una aplicación o del proyecto completo.
+
+Args:
+    request: Objeto HttpRequest
+    app_label: Nombre de la aplicación o 'project' para el diagrama completo
+        - `download_docs(request)`: Vista para descargar la documentación del proyecto en formato Markdown.
         - `generate_app_diagram(app_label, output_file)`: Genera un diagrama UML para una aplicación específica.
 
 Args:
@@ -972,11 +1461,199 @@ Args:
 Returns:
     bool: True si se generó correctamente, False en caso contrario
     str: Mensaje de error en caso de fallo
+        - `generate_diagram(app_label, output_file_base, all_apps=False)`: Genera tres diagramas UML para una aplicación o para todo el proyecto:
+1. Diagrama de modelos
+2. Diagrama de vistas
+3. Diagrama de formularios
+
+Args:
+    app_label (str): Nombre de la aplicación o None para todo el proyecto
+    output_file_base (str): Ruta base del archivo de salida (sin extensión)
+    all_apps (bool): Si es True, genera el diagrama de todo el proyecto
+    
+Returns:
+    tuple: (éxito, mensaje_de_error, diagramas)
         - `is_admin(user)`: Sin documentación
-        - `project_diagram(request)`: Genera un diagrama UML de todo el proyecto.
+        - `project_diagram(request)`: Vista para mostrar el diagrama completo del proyecto con información detallada.
         - `uml_dashboard(request)`: Vista del panel de control que muestra todas las aplicaciones instaladas.
-    - `urls.py`
     - **services/**
+    - **management/**
+      - **commands/**
+        - `cleanup_socialaccounts.py`
+          - **Clases:**
+            - `Command`: The base class from which all management commands ultimately
+derive.
+
+Use this class if you want access to all of the mechanisms which
+parse the command-line arguments and work out what code to call in
+response; if you don't need to change any of that behavior,
+consider using one of the subclasses defined in this file.
+
+If you are interested in overriding/customizing various aspects of
+the command-parsing and -execution behavior, the normal flow works
+as follows:
+
+1. ``django-admin`` or ``manage.py`` loads the command class
+   and calls its ``run_from_argv()`` method.
+
+2. The ``run_from_argv()`` method calls ``create_parser()`` to get
+   an ``ArgumentParser`` for the arguments, parses them, performs
+   any environment changes requested by options like
+   ``pythonpath``, and then calls the ``execute()`` method,
+   passing the parsed arguments.
+
+3. The ``execute()`` method attempts to carry out the command by
+   calling the ``handle()`` method with the parsed arguments; any
+   output produced by ``handle()`` will be printed to standard
+   output and, if the command is intended to produce a block of
+   SQL statements, will be wrapped in ``BEGIN`` and ``COMMIT``.
+
+4. If ``handle()`` or ``execute()`` raised any exception (e.g.
+   ``CommandError``), ``run_from_argv()`` will  instead print an error
+   message to ``stderr``.
+
+Thus, the ``handle()`` method is typically the starting point for
+subclasses; many built-in commands and command types either place
+all of their logic in ``handle()``, or perform some additional
+parsing work in ``handle()`` and then delegate from it to more
+specialized methods as needed.
+
+Several attributes affect behavior at various steps along the way:
+
+``help``
+    A short description of the command, which will be printed in
+    help messages.
+
+``output_transaction``
+    A boolean indicating whether the command outputs SQL
+    statements; if ``True``, the output will automatically be
+    wrapped with ``BEGIN;`` and ``COMMIT;``. Default value is
+    ``False``.
+
+``requires_migrations_checks``
+    A boolean; if ``True``, the command prints a warning if the set of
+    migrations on disk don't match the migrations in the database.
+
+``requires_system_checks``
+    A list or tuple of tags, e.g. [Tags.staticfiles, Tags.models]. System
+    checks registered in the chosen tags will be checked for errors prior
+    to executing the command. The value '__all__' can be used to specify
+    that all system checks should be performed. Default value is '__all__'.
+
+    To validate an individual application's models
+    rather than all applications' models, call
+    ``self.check(app_configs)`` from ``handle()``, where ``app_configs``
+    is the list of application's configuration provided by the
+    app registry.
+
+``stealth_options``
+    A tuple of any options the command uses which aren't defined by the
+    argument parser.
+              - *Métodos:* `__init__()`, `add_arguments()`, `add_base_argument()`, `check()`, `check_migrations()`, `create_parser()`, `execute()`, `get_check_kwargs()`, `get_version()`, `handle()`, `print_help()`, `run_from_argv()`
+        - `fix_socialaccounts.py`
+          - **Clases:**
+            - `Command`: The base class from which all management commands ultimately
+derive.
+
+Use this class if you want access to all of the mechanisms which
+parse the command-line arguments and work out what code to call in
+response; if you don't need to change any of that behavior,
+consider using one of the subclasses defined in this file.
+
+If you are interested in overriding/customizing various aspects of
+the command-parsing and -execution behavior, the normal flow works
+as follows:
+
+1. ``django-admin`` or ``manage.py`` loads the command class
+   and calls its ``run_from_argv()`` method.
+
+2. The ``run_from_argv()`` method calls ``create_parser()`` to get
+   an ``ArgumentParser`` for the arguments, parses them, performs
+   any environment changes requested by options like
+   ``pythonpath``, and then calls the ``execute()`` method,
+   passing the parsed arguments.
+
+3. The ``execute()`` method attempts to carry out the command by
+   calling the ``handle()`` method with the parsed arguments; any
+   output produced by ``handle()`` will be printed to standard
+   output and, if the command is intended to produce a block of
+   SQL statements, will be wrapped in ``BEGIN`` and ``COMMIT``.
+
+4. If ``handle()`` or ``execute()`` raised any exception (e.g.
+   ``CommandError``), ``run_from_argv()`` will  instead print an error
+   message to ``stderr``.
+
+Thus, the ``handle()`` method is typically the starting point for
+subclasses; many built-in commands and command types either place
+all of their logic in ``handle()``, or perform some additional
+parsing work in ``handle()`` and then delegate from it to more
+specialized methods as needed.
+
+Several attributes affect behavior at various steps along the way:
+
+``help``
+    A short description of the command, which will be printed in
+    help messages.
+
+``output_transaction``
+    A boolean indicating whether the command outputs SQL
+    statements; if ``True``, the output will automatically be
+    wrapped with ``BEGIN;`` and ``COMMIT;``. Default value is
+    ``False``.
+
+``requires_migrations_checks``
+    A boolean; if ``True``, the command prints a warning if the set of
+    migrations on disk don't match the migrations in the database.
+
+``requires_system_checks``
+    A list or tuple of tags, e.g. [Tags.staticfiles, Tags.models]. System
+    checks registered in the chosen tags will be checked for errors prior
+    to executing the command. The value '__all__' can be used to specify
+    that all system checks should be performed. Default value is '__all__'.
+
+    To validate an individual application's models
+    rather than all applications' models, call
+    ``self.check(app_configs)`` from ``handle()``, where ``app_configs``
+    is the list of application's configuration provided by the
+    app registry.
+
+``stealth_options``
+    A tuple of any options the command uses which aren't defined by the
+    argument parser.
+              - *Métodos:* `__init__()`, `add_arguments()`, `add_base_argument()`, `check()`, `check_migrations()`, `create_parser()`, `execute()`, `get_check_kwargs()`, `get_version()`, `handle()`, `print_help()`, `run_from_argv()`
+    - **tests/**
+      - `test_views.py`
+        - **Clases:**
+          - `UMLLoggingMiddleware`: Middleware para registrar información de las peticiones.
+            - *Métodos:* `__init__()`
+          - `UMLVisualizerViewsTest`: Pruebas para las vistas del visualizador UML.
+            - *Métodos:* `__init__()`, `addCleanup()`, `addTypeEqualityFunc()`, `assertAlmostEqual()`, `assertAlmostEquals()`, `assertContains()`, `assertCountEqual()`, `assertDictContainsSubset()`, `assertDictEqual()`, `assertEqual()`, `assertEquals()`, `assertFalse()`, `assertFieldOutput()`, `assertFormError()`, `assertFormSetError()`, `assertGreater()`, `assertGreaterEqual()`, `assertHTMLEqual()`, `assertHTMLNotEqual()`, `assertIn()`, `assertInHTML()`, `assertIs()`, `assertIsInstance()`, `assertIsNone()`, `assertIsNot()`, `assertIsNotNone()`, `assertJSONEqual()`, `assertJSONNotEqual()`, `assertLess()`, `assertLessEqual()`, `assertListEqual()`, `assertLogs()`, `assertMultiLineEqual()`, `assertNoLogs()`, `assertNotAlmostEqual()`, `assertNotAlmostEquals()`, `assertNotContains()`, `assertNotEqual()`, `assertNotEquals()`, `assertNotIn()`, `assertNotInHTML()`, `assertNotIsInstance()`, `assertNotRegex()`, `assertNotRegexpMatches()`, `assertNumQueries()`, `assertQuerySetEqual()`, `assertRaises()`, `assertRaisesMessage()`, `assertRaisesRegex()`, `assertRaisesRegexp()`, `assertRedirects()`, `assertRegex()`, `assertRegexpMatches()`, `assertSequenceEqual()`, `assertSetEqual()`, `assertTemplateNotUsed()`, `assertTemplateUsed()`, `assertTrue()`, `assertTupleEqual()`, `assertURLEqual()`, `assertWarns()`, `assertWarnsMessage()`, `assertWarnsRegex()`, `assertXMLEqual()`, `assertXMLNotEqual()`, `assert_()`, `countTestCases()`, `debug()`, `defaultTestResult()`, `doCleanups()`, `fail()`, `failIf()`, `failIfAlmostEqual()`, `failIfEqual()`, `failUnless()`, `failUnlessAlmostEqual()`, `failUnlessEqual()`, `failUnlessRaises()`, `id()`, `modify_settings()`, `run()`, `setUp()`, `settings()`, `shortDescription()`, `skipTest()`, `subTest()`, `tearDown()`, `test_app_diagram_view()`, `test_download_diagram()`, `test_download_docs()`, `test_generate_diagram()`, `test_project_diagram_view()`, `test_uml_dashboard_view()`, `test_unauthorized_access()`
   - **assets/**
     - **uml_visualizer/**
       - **css/**
+  - **docs/**
+    - **adr/**
+  - **instalacion_raspbian/**
+    - `crear_contenedor_python.py`
+      - **Funciones:**
+        - `crear_contenedor_django(nombre_base)`: Crea un volumen y un contenedor de Python para Django.
+        - `ejecutar_comando(comando)`: Ejecuta un comando en la terminal e imprime la salida.
+        - `instalar_docker()`: Intenta instalar Docker si no está instalado.
+        - `verificar_docker_instalado()`: Verifica si Docker está instalado.
+  - **scripts/**
+    - `crear_documentacion.py`
+      - **Funciones:**
+        - `crear_documentacion(app_name, app_path)`: Crea la estructura de documentación para una aplicación.
+        - `main()`: Sin documentación
+    - `documentation_workflow.py`
+      - **Funciones:**
+        - `check_git_status() -> bool`: Verifica si hay cambios sin confirmar.
+        - `commit_changes()`: Confirma los cambios con un mensaje descriptivo.
+        - `create_documentation_branch() -> bool`: Crea la rama de documentación si no existe.
+        - `create_feature_branch() -> str`: Crea una rama de feature para los cambios de documentación.
+        - `create_pr(base: str, head: str, title: str = None)`: Crea un Pull Request usando el comando gh (GitHub CLI).
+        - `get_current_branch() -> str`: Obtiene la rama actual.
+        - `main()`: Sin documentación
+        - `push_changes(branch: str)`: Hace push de los cambios al repositorio remoto.
+        - `run_command(cmd: List[str], cwd: str = None) -> Tuple[bool, str]`: Ejecuta un comando y devuelve (éxito, salida).
+  - **test_results/**
