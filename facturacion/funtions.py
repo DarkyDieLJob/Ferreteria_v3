@@ -168,14 +168,36 @@ def registrar_articulos_vendidos(request_dict):
         logger.error("Error al crear la instancia de Transaccion.", exc_info=True)
         raise # Re-raise critical error
 
-    # --- 4. Create and Associate Sold Items ---
+    # --- 4. Validate Cart Contents ---
+    logger.debug("Validando contenido del carrito...")
+    items_en_carrito = list(articulos) + list(articulos_sin_registro)
+    
+    # Check for empty cart
+    if not items_en_carrito:
+        error_msg = f"Carrito ID {carrito.id} está vacío. No se puede procesar la transacción."
+        logger.error(error_msg)
+        raise ValueError(error_msg)
+    
+    # Validate quantities and amounts
+    for idx, articulo in enumerate(items_en_carrito, 1):
+        # Validate quantity
+        if articulo.cantidad <= 0:
+            error_msg = f"Artículo {idx}: La cantidad debe ser mayor a cero (actual: {articulo.cantidad})"
+            logger.error(error_msg)
+            raise ValueError(error_msg)
+        
+        # Validate price
+        precio = getattr(articulo, 'precio', None) or getattr(getattr(articulo, 'item', None), 'precio', 0)
+        if precio <= 0:
+            descripcion = getattr(articulo, 'descripcion', f"ID:{getattr(articulo, 'id', 'N/A')}")
+            error_msg = f"Artículo {idx} ({descripcion}): El precio debe ser mayor a cero (actual: {precio})"
+            logger.error(error_msg)
+            raise ValueError(error_msg)
+
+    # --- 5. Create and Associate Sold Items ---
     logger.debug("Creando y asociando ArticuloVendido a la transacción...")
     articulos_vendidos_creados = []
     try:
-        # Combine lists for iteration
-        items_en_carrito = list(articulos) + list(articulos_sin_registro)
-        if not items_en_carrito:
-             logger.warning(f"Carrito ID {carrito.id} está vacío. No se crearán ArticuloVendido.")
 
         for articulo_carrito in items_en_carrito:
             # Create ArticuloVendido instance
