@@ -3,7 +3,7 @@
 {% block form_content %}
 <div style="display: flex; align-items: center;">
     <h1>Cierres Fiscales</h1>
-    <form method="post" action="{% url 'cierres-fiscales' %}">
+    <form method="post" action="{% url 'facturacion:cierres-fiscales' %}">
         {% csrf_token %}
         <button type="submit" class="submit">Cierre Fiscal Z</button>
     </form>
