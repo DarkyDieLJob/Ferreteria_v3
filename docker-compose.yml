@@ -1,0 +1,17 @@
+version: "3.9"
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ferreteria_web
+    ports:
+      - "8001:8001"
+    environment:
+      - DJANGO_SETTINGS_MODULE=core_config.settings
+      - TZ=America/Argentina/Buenos_Aires
+    volumes:
+      - ./media:/app/media
+      - ./logs:/app/logs
+      - ./db.sqlite3:/app/db.sqlite3
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8001"
