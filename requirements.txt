@@ -34,3 +34,4 @@ myst-parser
 furo
 markdown2
 emojis
+djangorestframework
