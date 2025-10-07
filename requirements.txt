@@ -29,3 +29,7 @@ django-dynamic-fixture
 factory-boy
 PyJWT
 websockets
+sphinx
+myst-parser
+furo
+markdown2
