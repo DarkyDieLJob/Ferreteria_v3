@@ -35,3 +35,4 @@ furo
 markdown2
 emojis
 djangorestframework
+drf-yasg
