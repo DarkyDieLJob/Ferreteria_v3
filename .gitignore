@@ -94,3 +94,6 @@ db.sqlite3-wal
 .coverage
 *.log
 logs/
+
+# Sphinx build artifacts
+core_docs/docs/_build/
