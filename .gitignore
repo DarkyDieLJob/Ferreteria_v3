@@ -79,3 +79,12 @@ media/pedidos/Sumar.xlsx
 media/pedidos/Suprabond.xlsx
 media/pedidos/Violini.xlsx
 media/pedidos/YAYI.xlsx
+media/
+# Ignorar bases de datos y backups
+*.sqlite3
+*.bak
+*.sql
+
+# Ignorar logs y archivos temporales
+logs/
+*.swp

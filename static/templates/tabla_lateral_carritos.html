@@ -6,9 +6,24 @@
             width: 95% !important;
         }
     }
+    /* Loading indicator style */
+    .loading-indicator {
+        display: none;
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: #ffc107;
+        padding: 5px 10px;
+        border-radius: 3px;
+        font-size: 12px;
+        z-index: 1000;
+    }
 </style>
 
-<div id="tablaCarrito" class="position-fixed top-0 end-0" style="width: 50%; height: 100%; overflow: auto; display: none;">
+<!-- Loading indicator -->
+<div id="cartLoading" class="loading-indicator">Actualizando carrito...</div>
+
+<div id="tablaCarrito" class="position-fixed top-0 end-0" style="width: 50%; height: 100%; overflow: auto; display: none; background-color: white; z-index: 1050;">
     
 <div class="p-3">
     <div class='row'>
@@ -16,7 +31,7 @@
     </div>
 </div>
 
-
+<!-- Rest of your existing HTML remains unchanged -->
 <div class="p-3">
     <div class="card">
         <!-- Aqui un form -->
@@ -33,10 +48,6 @@
             <input type="hidden" id="total_efectivo" name="total_efectivo" value="">
             <button id="enviar-transaccion"  type="submit" class="btn btn-primary">Cerrar Transacción</button>
             <button type="button" class="btn btn-secondary" id="nuevoCliente"> + Cliente</button>
-            <!--
-
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modalNuevoCliente">Nuevo Cliente</button>
-            -->
         </form>
     </div>
 </div>
@@ -52,17 +63,14 @@
         </div>
         <div class="modal-body">
           <form id="formNuevoCliente" method="post">
-            <!-- Aquí van los campos del formulario para agregar un nuevo cliente -->
             <input type="text" id="razon_social" name="razon_social" placeholder="Razón Social">
             <input type="text" id="cuit_dni" name="cuit_dni" placeholder="CUIT/DNI">
-            <!-- Agrega los demás campos según tu modelo de Cliente -->
             <button type="submit" class="btn btn-primary">Guardar</button>
           </form>
         </div>
       </div>
     </div>
-  </div>
-  
+</div>
 
 <div class="p-3">
     <div class="card">
@@ -98,316 +106,397 @@
 </div>
 
 </div>
+
 <script>
-    document.getElementById('enviar-transaccion').addEventListener('click', function(event) {
-      const tablaArticulos = document.getElementById('tabla-articulos');
-      console.log(tablaArticulos.rows.length)
-      if (tablaArticulos.rows.length < 4 ) {
-        event.preventDefault(); // Evita que se envíe el formulario
+// Variables globales para el control de actualización
+let cartUpdateInterval = null;
+const CART_UPDATE_INTERVAL = 3000; // 3 segundos
+let isUpdatingCart = false;
+let lastCartData = null;
+
+// Función para mostrar/ocultar el indicador de carga
+function toggleLoadingIndicator(show) {
+    const indicator = document.getElementById('cartLoading');
+    if (indicator) {
+        indicator.style.display = show ? 'block' : 'none';
+    }
+}
+
+// Función para iniciar la actualización automática
+function startCartAutoUpdate() {
+    // Detener cualquier intervalo existente
+    stopCartAutoUpdate();
+    
+    // Iniciar nuevo intervalo
+    cartUpdateInterval = setInterval(updateCartIfVisible, CART_UPDATE_INTERVAL);
+    console.log('Iniciando actualización automática del carrito');
+}
+
+// Función para detener la actualización automática
+function stopCartAutoUpdate() {
+    if (cartUpdateInterval) {
+        clearInterval(cartUpdateInterval);
+        cartUpdateInterval = null;
+        console.log('Detenida actualización automática del carrito');
+    }
+}
+
+// Función para actualizar el carrito si está visible
+function updateCartIfVisible() {
+    // Solo actualizar si la pestaña está activa y el carrito está visible
+    if (document.visibilityState === 'visible' && $("#tablaCarrito").is(":visible")) {
+        const currentCartName = $("#tablaCarrito").data("nombre");
+        if (currentCartName && !isUpdatingCart) {
+            updateCart(currentCartName);
+        }
+    }
+}
+
+// Función para actualizar el carrito
+function updateCart(nombre) {
+    if (isUpdatingCart) return;
+    
+    isUpdatingCart = true;
+    toggleLoadingIndicator(true);
+    
+    $.ajax({
+        url: '/consultar_carrito/',
+        type: 'get',
+        dataType: 'json',
+        success: function(data) {
+            // Verificar si hay cambios antes de actualizar
+            const currentData = JSON.stringify(data);
+            if (lastCartData !== currentData) {
+                lastCartData = currentData;
+                llenarCarrito(nombre);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error al actualizar el carrito:', error);
+            // Reintentar después de un tiempo en caso de error
+            setTimeout(() => isUpdatingCart = false, 5000);
+        },
+        complete: function() {
+            toggleLoadingIndicator(false);
+            isUpdatingCart = false;
+        }
+    });
+}
+
+// Resto de tu código JavaScript existente...
+document.getElementById('enviar-transaccion').addEventListener('click', function(event) {
+    const tablaArticulos = document.getElementById('tabla-articulos');
+    console.log(tablaArticulos.rows.length)
+    if (tablaArticulos.rows.length < 4 ) {
+        event.preventDefault();
         alert('No hay artículos en el carrito. Agrega al menos uno antes de enviar la transacción.');
-      }
+    }
+});
+
+document.getElementById('nuevoCliente').onclick = function () {
+    window.location.href = "/facturacion/clientes/";
+};
+
+$(document).ready(function(){
+    // Iniciar la actualización automática
+    startCartAutoUpdate();
+    
+    // Manejar cambios en la visibilidad de la pestaña
+    $(document).on('visibilitychange', function() {
+        if (document.visibilityState === 'visible') {
+            // Actualizar inmediatamente al volver a la pestaña
+            const currentCartName = $("#tablaCarrito").data("nombre");
+            if (currentCartName) {
+                updateCart(currentCartName);
+            }
+            startCartAutoUpdate();
+        } else {
+            stopCartAutoUpdate();
+        }
     });
 
-    document.getElementById('nuevoCliente').onclick = function () {
-        window.location.href = "/facturacion/clientes/";
+    // Resto de tu código document.ready existente...
+    $.ajax({
+        url: '/obtener_cliente/',
+        type: 'get',
+        dataType: 'json',
+        success: function(data) {
+            var select = $("#cliente_id");
+            data.clientes.forEach(function(cliente) {
+                select.append('<option value="' + cliente.id + '">' + cliente.razon_social + ' (' + cliente.cuit_dni + ')' + '</option>');
+            });
+        }
+    });
+    
+    // Resto de tu código JavaScript existente...
+    $("#buscar_cliente").prop("disabled", true);
+    $("#cliente_id").prop("disabled", true);
+
+    $("#buscar_cliente").on('input', function() {
+        var buscar = $(this).val().toLowerCase();
+        $("#cliente_id option").each(function() {
+            var texto = $(this).text().toLowerCase();
+            $(this).toggle(texto.indexOf(buscar) > -1);
+        });
+    });
+
+    $("#metodo_de_pago").change(function() {
+        var metodoDePagoSeleccionado = $(this).val();
+        if (metodoDePagoSeleccionado === '1') {
+            $("#buscar_cliente").prop("disabled", true);
+            $("#cliente_id").prop("disabled", true);
+            $("#cliente_id").val("");
+        } else {
+            $("#buscar_cliente").prop("disabled", false);
+            $("#cliente_id").prop("disabled", false);
+        }
+    });
+    
+    // Modificar la función mostrarCarrito para manejar la actualización automática
+    window.mostrarCarrito = function(nombre) {
+        if ($("#tablaCarrito").is(":visible")) {
+            if ($("#tablaCarrito").data("nombre") !== nombre) {
+                llenarCarrito(nombre);
+            }
+        } else {
+            $("#tablaCarrito").show();
+            llenarCarrito(nombre);
+            // Forzar una actualización inmediata al mostrar el carrito
+            updateCart(nombre);
+        }
     };
-    $(document).ready(function(){
-        // Al inicio, hacemos una solicitud AJAX para obtener los clientes
-        $.ajax({
-            url: '/obtener_cliente/',
+
+    // Modificar llenarCarrito para actualizar lastCartData
+    window.llenarCarrito = function(nombre) {
+        toggleLoadingIndicator(true);
+        return $.ajax({
+            url: '/consultar_carrito/',
             type: 'get',
             dataType: 'json',
             success: function(data) {
-                var select = $("#cliente_id");
-                data.clientes.forEach(function(cliente) {
-                    select.append('<option value="' + cliente.id + '">' + cliente.razon_social + ' (' + cliente.cuit_dni + ')' + '</option>');
+                lastCartData = JSON.stringify(data); // Actualizar los datos del carrito
+                var tbody = $("#tablaCarrito table tbody");
+                tbody.empty();
+                
+                data[nombre].articulos.forEach(function(item) {
+                    tbody.append('<tr><td>' + item.item + '</td><td><input type="number" class="cantidad-articulo" data-id="' + item.id + '" data-tipo="registrado" value="' + item.cantidad + '" style="width: 50px;"></td><td>' + item.precio + '</td><td><button class="btn btn-danger eliminar-articulo" data-id="' + item.id + '" data-tipo="registrado">X</button></td></tr>');
+                });
+                
+                data[nombre].articulos_sin_registro.forEach(function(item) {
+                    tbody.append('<tr><td>' + item.descripcion + '</td><td><input type="number" class="cantidad-articulo" data-id="' + item.id + '" data-tipo="no-registrado" value="' + item.cantidad + '" style="width: 50px;"></td><td>' + item.precio + '</td><td><button class="btn btn-danger eliminar-articulo" data-id="' + item.id + '" data-tipo="no-registrado">X</button></td></tr>');
+                });
+                
+                tbody.append('<tr><td>Total</td><td></td><td>' + data[nombre].total + '</td><td></td></tr>');
+                tbody.append('<tr><td>Total Efectivo</td><td></td><td>' + data[nombre].total_efectivo + '</td><td></td></tr>');
+                
+                $("#tablaCarrito").data("nombre", nombre);
+                $("#carrito_id").val(data[nombre].carrito_id);
+                cambiarColorFondoCarrito(data[nombre].carrito_id);
+                $("#cliente_id").val("");
+
+                // Actualizar métodos de pago
+                $.ajax({
+                    url: '/obtener_metodos_pago/',
+                    type: 'get',
+                    dataType: 'json',
+                    success: function(metodos_pago) {
+                        var select = $("#metodo_de_pago");
+                        var currentValue = select.val();
+                        select.empty();
+                        metodos_pago.forEach(function(metodo_pago) {
+                            select.append('<option value="' + metodo_pago.id + '">' + metodo_pago.display + '</option>');
+                        });
+                        // Restaurar el valor seleccionado si existe
+                        if (currentValue) {
+                            select.val(currentValue);
+                        }
+                    }
+                });
+            },
+            complete: function() {
+                toggleLoadingIndicator(false);
+            }
+        });
+    };
+    
+    // Resto de tus funciones existentes...
+    function cambiarColorFondoCarrito(carrito_id) {
+        const coloresCarritos = {
+            1: "lightyellow",
+            2: "lightgreen",
+            3: "lightblue",
+        };
+        const color = coloresCarritos[carrito_id] || "white";
+        $("#tablaCarrito").css("background-color", color);
+    }
+    
+    $(document).on('change', '.cantidad-articulo', function() {
+        var id = $(this).attr('data-id');
+        var tipo = $(this).attr('data-tipo');
+        var cantidad = $(this).val();
+        var url = tipo === 'registrado' ? '/actualizar_cantidad_articulo/' : '/actualizar_cantidad_articulo_sin_registro/';
+        
+        $.ajax({
+            url: url,
+            type: 'post',
+            data: JSON.stringify({
+                'id': id,
+                'cantidad': cantidad
+            }),
+            contentType: "application/json",
+            success: function(data) {
+                updateCart($("#tablaCarrito").data("nombre"));
+            }
+        });
+    });
+    
+    $(document).on('click', '.eliminar-articulo', function() {
+        var id = $(this).attr('data-id');
+        var tipo = $(this).attr('data-tipo');
+        var url = tipo === 'registrado' ? '/eliminar_articulo/' : '/eliminar_articulo_sin_registro/';
+        
+        $.ajax({
+            url: url,
+            type: 'post',
+            data: JSON.stringify({
+                'id': id
+            }),
+            contentType: "application/json",
+            success: function(data) {
+                updateCart($("#tablaCarrito").data("nombre"));
+            }
+        });
+    });
+    
+    function getColorPorCarritoId(carrito_id) {
+        const coloresCarritos = {
+            1: "lightyellow",
+            2: "lightgreen",
+            3: "lightblue",
+        };
+        return coloresCarritos[carrito_id] || "white";
+    }
+    
+    function crearControlador(nombre) {
+        return function() {
+            mostrarCarrito(nombre);
+        };
+    }
+
+    // Inicialización de botones de carrito
+    $.ajax({
+        url: '/consultar_carrito/',
+        type: 'get',
+        dataType: 'json',
+        success: function(data) {
+            console.log(data);
+            for (var nombre in data) {
+                let carrito_id = data[nombre].carrito_id;
+                let color = getColorPorCarritoId(carrito_id);
+                console.log(color);
+                $("#botonesCarrito").append('<button id="botonCarrito' + nombre + '" class="btn" style="background-color:' + color + ';">Carrito de ' + nombre + '</button>');
+                $("#botonCarrito" + nombre).click(crearControlador(nombre));
+            }
+        }
+    });
+
+    // Controlador para el botón de cerrar
+    $("#cerrarCarrito").click(function() {
+        $("#tablaCarrito").hide();
+    });
+
+    // Manejo del formulario de transacción
+    $("#formTransaccion").submit(function(e) {
+        e.preventDefault();
+        var nombre = $("#tablaCarrito").data("nombre");
+        
+        $.ajax({
+            url: '/consultar_carrito/',
+            type: 'get',
+            dataType: 'json',
+            success: function(data) {
+                $("#usuario").val(nombre);
+                $("#carrito_id").val(data[nombre].carrito_id);
+                $("#articulos_vendidos").val(JSON.stringify(data[nombre].articulos));
+                $("#cliente_id").val();
+                $("#total").val(data[nombre].total);
+                $("#total_efectivo").val(data[nombre].total_efectivo);
+
+                console.log(data[nombre].total);
+                console.log(data[nombre].total_efectivo);
+                console.log($("#formTransaccion").serialize());
+                
+                $.ajax({
+                    url: '/procesar_transaccion/',
+                    type: 'post',
+                    data: $("#formTransaccion").serialize(),
+                    beforeSend: function(xhr) {
+                        xhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
+                        $("#formTransaccion :input").prop("disabled", true);
+                    },
+                    success: function(response) {
+                        $("#formTransaccion").trigger("reset");
+                        $("#formArticuloSinRegistro").trigger("reset");
+                        $("table tbody").empty();
+                        $("#formTransaccion :input").prop("disabled", false);
+                        $("#buscar_cliente").prop("disabled", true);
+                        $("#cliente_id").prop("disabled", true);
+                        $("#cliente_id").val("");
+                    }
                 });
             }
         });
-    
-        // Bloqueamos el campo de búsqueda y el selector de clientes desde el inicio
-        $("#buscar_cliente").prop("disabled", true);
-        $("#cliente_id").prop("disabled", true);
-    
-        // Agregamos un controlador de eventos para el campo de búsqueda
-        $("#buscar_cliente").on('input', function() {
-            var buscar = $(this).val().toLowerCase();
-            $("#cliente_id option").each(function() {
-                var texto = $(this).text().toLowerCase();
-                $(this).toggle(texto.indexOf(buscar) > -1);
-            });
-        });
-    
-        // Agregamos un controlador de eventos para el campo de selección de método de pago
-        $("#metodo_de_pago").change(function() {
-            var metodoDePagoSeleccionado = $(this).val();
-            if (metodoDePagoSeleccionado === '1') {
-                // Si el método de pago es "Efectivo S/Ticket", deshabilitamos el campo de búsqueda de clientes
-                // y el selector de clientes, y restablecemos el campo de selección de clientes
-                $("#buscar_cliente").prop("disabled", true);
-                $("#cliente_id").prop("disabled", true);
-                $("#cliente_id").val("");
-            } else {
-                // Si el método de pago es diferente, habilitamos el campo de búsqueda de clientes y el selector de clientes
-                $("#buscar_cliente").prop("disabled", false);
-                $("#cliente_id").prop("disabled", false);
-            }
-        });
-        
-        
-
-        function mostrarCarrito(nombre) {
-            if ($("#tablaCarrito").is(":visible")) {
-                // Si la tabla ya está visible, solo la actualizamos si es necesario
-                if ($("#tablaCarrito").data("nombre") !== nombre) {
-                    llenarCarrito(nombre);
-                }
-            } else {
-                // Si la tabla no está visible, la mostramos y la llenamos
-                $("#tablaCarrito").show();
-                llenarCarrito(nombre);
-            }
-        }
-
-        function llenarCarrito(nombre) {
-            $.ajax({
-                url: '/consultar_carrito/',
-                type: 'get',
-                dataType: 'json',
-                success: function(data) {
-                    var tbody = $("#tablaCarrito table tbody");
-                    tbody.empty();  // Limpiar el tbody antes de llenarlo
-                    data[nombre].articulos.forEach(function(item) {
-                        tbody.append('<tr><td>' + item.item + '</td><td><input type="number" class="cantidad-articulo" data-id="' + item.id + '" data-tipo="registrado" value="' + item.cantidad + '" style="width: 50px;"></td><td>' + item.precio + '</td><td><button class="btn btn-danger eliminar-articulo" data-id="' + item.id + '" data-tipo="registrado">X</button></td></tr>');
-                    });
-                    data[nombre].articulos_sin_registro.forEach(function(item) {
-                        tbody.append('<tr><td>' + item.descripcion + '</td><td><input type="number" class="cantidad-articulo" data-id="' + item.id + '" data-tipo="no-registrado" value="' + item.cantidad + '" style="width: 50px;"></td><td>' + item.precio + '</td><td><button class="btn btn-danger eliminar-articulo" data-id="' + item.id + '" data-tipo="no-registrado">X</button></td></tr>');
-                    });
-                    
-                    
-                    // Añadir el total al final
-                    tbody.append('<tr><td>Total</td><td></td><td>' + data[nombre].total + '</td></td><td></tr>');
-                    tbody.append('<tr><td>Total Efectivo</td><td></td><td>' + data[nombre].total_efectivo + '</td></td><td></tr>');
-                    // Guardamos el nombre del carrito que estamos mostrando
-                    $("#tablaCarrito").data("nombre", nombre);
-                    // Guardamos el ID del carrito en el campo oculto y establecemos el color de fondo
-                    $("#carrito_id").val(data[nombre].carrito_id);
-                    cambiarColorFondoCarrito(data[nombre].carrito_id); // Llamamos a la función para cambiar el color de fondo
-                    // Restablecemos el campo de selección del cliente a su valor por defecto
-                    $("#cliente_id").val("");
-                    // Llenar el elemento de selección con las opciones de pago
-                    $.ajax({
-                        url: '/obtener_metodos_pago/',
-                        type: 'get',
-                        dataType: 'json',
-                        success: function(metodos_pago) {
-                            var select = $("#metodo_de_pago");
-                            select.empty();  // Limpiar el elemento de selección antes de llenarlo
-                            metodos_pago.forEach(function(metodo_pago) {
-                                select.append('<option value="' + metodo_pago.id + '">' + metodo_pago.display + '</option>');
-                            });
-                        }
-                    });
-                }
-            });
-        }
-        
-        // Función para cambiar el color de fondo del elemento #tablaCarrito según el carrito_id
-        function cambiarColorFondoCarrito(carrito_id) {
-            var color = "white"; // Color por defecto
-        
-            // Ejemplo con un objeto de mapeo (más eficiente para muchos casos):
-            const coloresCarritos = {
-                1: "lightyellow",
-                2: "lightgreen",
-                3: "lightblue",
-                // ... añade más casos según sea necesario ...
-            };
-            color = coloresCarritos[carrito_id] || "white"; // Color si no coincide con ningún caso
-        
-            // Aplicar el color de fondo
-            $("#tablaCarrito").css("background-color", color);
-        }
-        
-        $(document).on('change', '.cantidad-articulo', function() {
-            var id = $(this).attr('data-id');
-            var tipo = $(this).attr('data-tipo');
-            var cantidad = $(this).val();
-            var url = tipo === 'registrado' ? '/actualizar_cantidad_articulo/' : '/actualizar_cantidad_articulo_sin_registro/';
-            $.ajax({
-                url: url,
-                type: 'post',
-                data: JSON.stringify({
-                    'id': id,
-                    'cantidad': cantidad
-                }),
-                contentType: "application/json",
-                success: function(data) {
-                    // Actualizar el carrito después de cambiar la cantidad
-                    llenarCarrito($("#tablaCarrito").data("nombre"));
-                }
-            });
-        });
-        
-
-        $(document).on('click', '.eliminar-articulo', function() {
-            var id = $(this).attr('data-id');  // Agrega esta línea
-            var tipo = $(this).attr('data-tipo');
-            var url = tipo === 'registrado' ? '/eliminar_articulo/' : '/eliminar_articulo_sin_registro/';
-            $.ajax({
-                url: url,
-                type: 'post',
-                data: JSON.stringify({
-                    'id': id  // Y cambia esta línea
-                }),
-                contentType: "application/json",
-                success: function(data) {
-                    // Actualizar el carrito después de eliminar el artículo
-                    llenarCarrito($("#tablaCarrito").data("nombre"));
-                }
-            });
-        });
-        
-        function getColorPorCarritoId(carrito_id) {
-            // Ejemplo con un objeto de mapeo (más eficiente para muchos casos):
-            const coloresCarritos = {
-                1: "lightyellow",
-                2: "lightgreen",
-                3: "lightblue",
-                // ... añade más casos según sea necesario ...
-            };
-            return coloresCarritos[carrito_id] || "white"; // Color si no coincide con ningún caso
-        }
-        
-        
-        
-        function crearControlador(nombre) {
-            return function() {
-                mostrarCarrito(nombre);
-            };
-        }
-
-        $(document).ready(function(){
-            $.ajax({
-                url: '/consultar_carrito/',
-                type: 'get',
-                dataType: 'json',
-                success: function(data) {
-                    // Añadimos un botón para cada carrito
-                    console.log(data);
-                    for (var nombre in data) {
-                        let carrito_id = data[nombre].carrito_id; // Obtener el carrito_id
-                        let color = getColorPorCarritoId(carrito_id); // Obtener el color correspondiente
-                        console.log(color);
-                        $("#botonesCarrito").append('<button id="botonCarrito' + nombre + '" class="btn" style="background-color:' + color + ';">Carrito de ' + nombre + '</button>');
-                        $("#botonCarrito" + nombre).click(crearControlador(nombre));
-                    }
-                }
-            });
-
-            // Agregamos un controlador de eventos para el botón de cerrar
-            $("#cerrarCarrito").click(function() {
-                $("#tablaCarrito").hide();
-            });
-        });
-
-        $("#formTransaccion").submit(function(e) {
-            e.preventDefault();  // Evitar que el formulario se envíe de la forma predeterminada
-            var nombre = $("#tablaCarrito").data("nombre");
-            
-            $.ajax({
-                url: '/consultar_carrito/',
-                type: 'get',
-                dataType: 'json',
-                success: function(data) {
-                    $("#usuario").val(nombre);
-                    $("#carrito_id").val(data[nombre].carrito_id);
-                    $("#articulos_vendidos").val(JSON.stringify(data[nombre].articulos));
-                    $("#metodo_de_pago").val(/* Aquí debes obtener el método de pago seleccionado por el usuario */);
-                    $("#cliente_id").val();
-                    $("#total").val(data[nombre].total);
-                    $("#total_efectivo").val(data[nombre].total_efectivo);
-
-                    console.log(data[nombre].total);
-                    console.log(data[nombre].total_efectivo);
-                    console.log($("#formTransaccion").serialize());
-                    // Aquí enviamos los datos del formulario a tu servidor
-                    $.ajax({
-                        url: '/procesar_transaccion/',
-                        type: 'post',
-                        data: $("#formTransaccion").serialize(),
-                        beforeSend: function(xhr) {
-                            xhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
-                            $("#formTransaccion :input").prop("disabled", true);
-                            // bloquear
-                        },
-                        success: function(response) {
-                            // Aquí puedes manejar la respuesta de tu servidor
-                            // cerrar y limpiar
-                            // Limpiar el formulario
-                            $("#formTransaccion").trigger("reset");
-                            $("#formArticuloSinRegistro").trigger("reset");
-                            
-                            // Limpiar la tabla
-                            $("table tbody").empty();
-
-                            // Desbloquear el formulario
-                            $("#formTransaccion :input").prop("disabled", false);
-
-                            // Reiniciar los campos de búsqueda y selección
-                            $("#buscar_cliente").prop("disabled", true);
-                            $("#cliente_id").prop("disabled", true);
-                            $("#cliente_id").val("");
-                        }
-                    });
-                }
-            });
-        });
-
-        $("#formArticuloSinRegistro").on("submit", function(e) {
-            console.log('submit sin regitros...')
-            e.preventDefault();
-            var descripcion = $("#descripcion").val();
-            var cantidad = $("#cantidad").val();
-            var precio = $("#precio").val();
-            var carrito_id = $("#carrito_id").val();
-            console.log('variables seteadas...')
-            $.ajax({
-                url: '/agregar_articulo_sin_registro/',
-                type: 'post',
-                data: JSON.stringify({
-                    'descripcion': descripcion,
-                    'cantidad': cantidad,
-                    'precio': precio,
-                    'carrito_id': carrito_id
-                }),
-                contentType: "application/json",
-                success: function(data) {
-                    // Actualizar el carrito después de agregar el artículo
-                    console.log('datos a /agregar_articulo_sin_registro/')
-                    console.log(data)
-                    llenarCarrito($("#tablaCarrito").data("nombre"));
-                    console.log('tabla rellenada...')
-                    $("#formArticuloSinRegistro").trigger("reset");
-                }
-            });
-        });
-
-        function getCookie(name) {
-            var cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                var cookies = document.cookie.split(';');
-                for (var i = 0; i < cookies.length; i++) {
-                    var cookie = jQuery.trim(cookies[i]);
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-    
     });
-    
+
+    // Manejo del formulario de artículos sin registro
+    $("#formArticuloSinRegistro").on("submit", function(e) {
+        console.log('submit sin registros...');
+        e.preventDefault();
+        var descripcion = $("#descripcion").val();
+        var cantidad = $("#cantidad").val();
+        var precio = $("#precio").val();
+        var carrito_id = $("#carrito_id").val();
+        
+        console.log('variables seteadas...');
+        $.ajax({
+            url: '/agregar_articulo_sin_registro/',
+            type: 'post',
+            data: JSON.stringify({
+                'descripcion': descripcion,
+                'cantidad': cantidad,
+                'precio': precio,
+                'carrito_id': carrito_id
+            }),
+            contentType: "application/json",
+            success: function(data) {
+                console.log('datos a /agregar_articulo_sin_registro/');
+                console.log(data);
+                updateCart($("#tablaCarrito").data("nombre"));
+                console.log('tabla rellenada...');
+                $("#formArticuloSinRegistro").trigger("reset");
+            }
+        });
+    });
+
+    // Función para obtener cookies
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+
+// Inicializar la actualización automática cuando el documento esté listo
+$(document).ready(function() {
+    startCartAutoUpdate();
+});
 </script>
