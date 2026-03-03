@@ -2,5 +2,5 @@ from django.apps import AppConfig
 
 
 class AndamiosConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'core_andamios'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "core_andamios"

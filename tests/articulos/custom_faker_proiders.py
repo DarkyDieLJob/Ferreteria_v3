@@ -3,6 +3,7 @@ from faker.providers import BaseProvider
 
 fake = Faker()
 
+
 class CuitProvider(BaseProvider):
     def cuit(self):
         init_number = fake.random_number(digits=2, fix_len=True)

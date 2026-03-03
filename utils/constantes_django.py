@@ -1,5 +1,4 @@
 TIPOS_LOGS = [
-    ('I', 'INFO: '),
-    ('E', 'Error: '),
-    
+    ("I", "INFO: "),
+    ("E", "Error: "),
 ]

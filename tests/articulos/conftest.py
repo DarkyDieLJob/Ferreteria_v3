@@ -1,6 +1,14 @@
 import pytest
 from ddf import G
-from articulos.models import Articulo, ArticuloProveedor, Cartel, Categoria, CodigoBarras, Marca, Proveedor
+from articulos.models import (
+    Articulo,
+    ArticuloProveedor,
+    Cartel,
+    Categoria,
+    CodigoBarras,
+    Marca,
+    Proveedor,
+)
 
 
 class AppArticulos:
@@ -9,21 +17,15 @@ class AppArticulos:
         self.categoria = G(Categoria)
         self.cartel = G(Cartel)
         self.proveedor = G(Proveedor)
-        self.articulo = G(
-            Articulo, 
-            marca=self.marca, 
-            categoria=self.categoria
-            )
-        self.codigo_barras = G(
-            CodigoBarras, 
-            articulo=self.articulo
-            )
+        self.articulo = G(Articulo, marca=self.marca, categoria=self.categoria)
+        self.codigo_barras = G(CodigoBarras, articulo=self.articulo)
         self.articulo_proveedor = G(
-            ArticuloProveedor, 
-            articulo=self.articulo, 
-            proveedor=self.proveedor, 
-            cartel=self.cartel
-            )
+            ArticuloProveedor,
+            articulo=self.articulo,
+            proveedor=self.proveedor,
+            cartel=self.cartel,
+        )
+
 
 @pytest.fixture
 def articulos():

@@ -43,3 +43,43 @@
 
     - En caso de tener que refactorizar modelos se recomienda, para no perder la compatibilidad entre versiones, que se creen nuevos modelos y se recarguen los datos. Aunque el modelo anterior quede sin efecto puede ser necesario en alguna otra version y/o hacer mas facil una "vuelta atras".
 
+
+## Configuración de Actualizadores (CSV)
+
+- ACT_CSV_BATCH_SIZE
+  - Tamaño de lote para el procesamiento por lotes del CSV en `actualizador/actualizador_csv.py`.
+  - Tipo: entero.
+  - Valor por defecto: 1000.
+  - Cómo configurarlo:
+    - En settings.py: `ACT_CSV_BATCH_SIZE = 1000` (u otro valor)
+    - Por variable de entorno: `export ACT_CSV_BATCH_SIZE=1000`
+
+- ACT_CSV_EFECTIVO_DESCUENTO_PCT
+  - Porcentaje de descuento a aplicar sobre la columna `final_efectivo` leída del CSV, antes del redondeo y de actualizar la BDD.
+  - Tipo: float/porcentaje (por ejemplo, 15 para 15%).
+  - Valor por defecto: 0.
+  - Cómo configurarlo:
+    - En settings.py: `ACT_CSV_EFECTIVO_DESCUENTO_PCT = 0.0` (u otro valor)
+    - Por variable de entorno: `export ACT_CSV_EFECTIVO_DESCUENTO_PCT=15`
+
+Notas:
+- Si no se definen estas claves en settings.py, se intentan leer desde variables de entorno. Si tampoco existen, se usan los valores por defecto indicados.
+- El descuento aplica únicamente sobre `final_efectivo` proveniente del CSV y luego se realiza el redondeo configurado.
+
+
+## Redondeo unificado de precios
+
+- Simular impacto (no guarda):
+
+  ```bash
+  python manage.py apply_rounding --dry-run --batch-size 1000
+  ```
+
+- Aplicar cambios en BD:
+
+  ```bash
+  python manage.py apply_rounding --batch-size 1000
+  ```
+
+- Nota: Los precios se redondean y persisten en la base de datos. Las vistas deben mostrar directamente los valores almacenados (por ejemplo, usando `floatformat:0`), sin aplicar filtros adicionales.
+

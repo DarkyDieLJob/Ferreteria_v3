@@ -10,21 +10,21 @@
                 </div>
                 <div class="center h-30" style="height: 45mm; padding-top: 35px;">
                     <h1 class="col">
-                        {% load custom_filters %}{{ dato.final_efectivo|custom_price }}
+                        {{ dato.final_efectivo|floatformat:0 }}
                     </h1>
                     <cite title="Efectivo">Precio en efectivo</cite>
                 </div>
                 <div class="row-cols-2 ">
                     <div class="col-md-6" style="height: 25mm; padding-top: 25px;">
                         <h6>
-                            {% load custom_filters %}{{ dato.final|custom_price  }}
+                            {{ dato.final|floatformat:0 }}
                         </h6>
                         <cite title="Lista">Precio de lista</cite>
                     </div>
                     {% if dato.final_rollo > 0 %}
                         <div class="col-md-6" style="height: 20mm;">
                             <h6>
-                                {% load custom_filters %}{{ dato.final_rollo|custom_price  }}
+                                {{ dato.final_rollo|floatformat:0 }}
                             </h6>
                             <cite title="Efectivo">Precio en </cite>
                         </div>

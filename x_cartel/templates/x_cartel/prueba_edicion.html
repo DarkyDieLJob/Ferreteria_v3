@@ -82,19 +82,26 @@
         }
         
         
-        // Función para aplicar el filtro 'custom_price'
+        // Función para aplicar el redondeo unificado (modo cartel por defecto en esta vista)
         function custom_price(price) {
-            if (price > 1000) {
-                price = Math.round(price / 500) * 500;
+            var v = parseFloat(String(price).replace(',', '.')) || 0;
+            if (v <= 0) return 0;
+            if (v < 50) return 50;
+            if (v < 75) return 50;
+            if (v < 100) return 100;
+
+            var r;
+            if (v > 1000) {
+                r = Math.round(v / 500) * 500; // modo cartel
             } else {
-                price = Math.round(price / 50) * 50;
+                r = Math.round(v / 100) * 100; // regla normal
             }
-        
-            if (price != 0 & price % 1000 == 0) {
-                price -= 100;
+
+            if (r >= 10000 && r % 1000 === 0) {
+                r = r - 100; // ajuste especial para múltiplos de 1000 grandes
             }
-        
-            return price;
+
+            return Math.max(r, 50);
         }
         
         // Función para obtener el ID de la URL

@@ -2,6 +2,7 @@ from django import template
 
 register = template.Library()
 
+
 @register.filter
 def get_attr(objeto, nombre_atributo):
     if isinstance(objeto, dict):

@@ -24,7 +24,7 @@
                 </div>
                 <div class="center h-30" style="height: 45mm; padding-top: 35px;">
                     <h1 class="col" style="font-size: 4em;">
-                        $ {% load custom_filters %}{{ dato.item.final_efectivo|custom_price }}
+                        $ {{ dato.item.final_efectivo|floatformat:0 }}
                     </h1>
                     <cite title="Efectivo" style="font-size: 2em;">Precio en efectivo</cite>
                 </div>
@@ -32,7 +32,7 @@
                     {% if dato.item.final != dato.item.final_efectivo %}
                         <div class="col-md-6" style="height: 25mm; padding-top: 25px;">
                             <h6>
-                                $ {% load custom_filters %}{{ dato.item.final|custom_price  }}
+                                $ {{ dato.item.final|floatformat:0  }}
                             </h6>
                             <cite title="Lista">Precio de lista</cite>
                         </div>
@@ -40,7 +40,7 @@
                     {% if dato.item.final_rollo > 0 %}
                         <div class="col-md-6" style="height: 20mm;">
                             <h6>
-                                $ {% load custom_filters %}{{ dato.item.final_rollo|custom_price  }}
+                                $ {{ dato.item.final_rollo|floatformat:0  }}
                             </h6>
                             <cite title="Efectivo">Precio en </cite>
                         </div>

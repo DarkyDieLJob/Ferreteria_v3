@@ -1,4 +1,3 @@
-{% load custom_filters %}
 <!-- tabla_listado_carteles.html -->
 <div class="overflow-auto h-100">
 <table class="table table-striped w-auto">
@@ -25,10 +24,10 @@
                     <a href="{{ dato.url }}">{{ dato.descripcion }}</a>
                 </td>
                 <td class="{{ dato.actualizado|yesno:',text-danger' }}">
-                            ${% load custom_filters %}{{ dato.final_efectivo|custom_price }}
+                            $ {{ dato.final_efectivo|floatformat:0 }}
                 </td>
                 <td class="{{ dato.actualizado|yesno:',text-danger' }}">
-                            ${% load custom_filters %}{{ dato.final|custom_price }}
+                            $ {{ dato.final|floatformat:0 }}
                 </td>
             </tr>
         {% endfor %}

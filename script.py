@@ -1,13 +1,16 @@
-#marcar lista de pedidos, como trabajados. agregar "eliminar pedido"
+# marcar lista de pedidos, como trabajados. agregar "eliminar pedido"
 import os
-os.environ['DJANGO_SETTINGS_MODULE'] = 'core_config.settings'
+
+os.environ["DJANGO_SETTINGS_MODULE"] = "core_config.settings"
 import django
+
 django.setup()
 
-from bdd.models import  Item, Lista_Pedidos
+from bdd.models import Item, Lista_Pedidos
 from facturacion.models import Cliente
 import re
 from django.db.models import F
+from utils.rounding import round_price
 
 
 def principal():
@@ -18,15 +21,18 @@ def principal():
         articulo_trabajado.trabajado = True
         articulo_trabajado.proveedor = pedido.proveedor
         articulo_trabajado.save()
-        print(articulo_trabajado," Guardado puto!!")
+        print(articulo_trabajado, " Guardado puto!!")
+
 
 def lista():
     listado = Item.objects.filter(trabajado=True)
     for item in listado:
         print(item.proveedor)
-        
+
+
 from x_cartel.models import Carteles
 from bdd.models import Proveedor
+
 
 def listar_carteles():
     listado = Carteles.objects.all()
@@ -39,39 +45,56 @@ def listar_carteles():
             # Si el proveedor del item o del cartel no está definido, intentamos actualizarlo
             if item.proveedor is None or cartel.proveedor is None:
                 # Suponemos que el código tiene el formato '#####/abreviatura'
-                codigo_parts = item.codigo.split('/')
+                codigo_parts = item.codigo.split("/")
                 if len(codigo_parts) == 2:
-                    abreviatura = '/' + codigo_parts[1]  # Agregamos la barra a la abreviatura
+                    abreviatura = (
+                        "/" + codigo_parts[1]
+                    )  # Agregamos la barra a la abreviatura
                     try:
-                        proveedor = Proveedor.objects.get(identificador__abreviatura=abreviatura)
+                        proveedor = Proveedor.objects.get(
+                            identificador__abreviatura=abreviatura
+                        )
                         item.proveedor = proveedor
                         cartel.proveedor = proveedor
                         item.save()  # Guardamos el cambio en el item
                         cartel.save()  # Guardamos el cambio en el cartel
-                        print(f"Proveedor actualizado a {proveedor} para el item {item} y el cartel {cartel}")
+                        print(
+                            f"Proveedor actualizado a {proveedor} para el item {item} y el cartel {cartel}"
+                        )
                     except Proveedor.DoesNotExist:
-                        print(f"No se encontró un proveedor con la abreviatura {abreviatura}")
+                        print(
+                            f"No se encontró un proveedor con la abreviatura {abreviatura}"
+                        )
         except:
             pass
 
+
 def agregar_precio():
-    lista = ['13019/V',]
+    lista = [
+        "13019/V",
+    ]
     precio = [194580]
-    
+
     for i in range(len(lista)):
         print(lista[i])
         item = Item.objects.get(codigo=lista[i])
         item.final_efectivo = precio[i]
         item.save()
-    
+
+
 from facturacion.classes import ComandoFiscal
 
+
 def get_status_fiscal():
-    fiscal = ComandoFiscal(carrito_id=2, id_cliente=0, tipo_pago='Debito', monto_abonado='0')
+    fiscal = ComandoFiscal(
+        carrito_id=2, id_cliente=0, tipo_pago="Debito", monto_abonado="0"
+    )
     fiscal.get_status()
-    
+
+
 from django.db import transaction
 from bdd.models import Item
+
 
 def update_items():
     # Obtén todos los objetos Item donde final_efectivo es 0 o 0.0
@@ -80,54 +103,33 @@ def update_items():
     # Actualiza final_efectivo al valor de final en lotes de 10000
     for i in range(0, items_to_update.count(), 10000):
         with transaction.atomic():
-            batch = items_to_update[i:i+10000]
+            batch = items_to_update[i : i + 10000]
             for item in batch:
                 item.final_efectivo = item.final
-            Item.objects.bulk_update(batch, ['final_efectivo'])
+            Item.objects.bulk_update(batch, ["final_efectivo"])
 
     # Obtén todos los objetos Item donde codigo no contiene una barra ('/')
-    items_to_delete = Item.objects.exclude(codigo__contains='/')
+    items_to_delete = Item.objects.exclude(codigo__contains="/")
 
     # Elimina todos estos objetos de una vez
     with transaction.atomic():
         items_to_delete.delete()
 
-def custom_round(price):
-    # Obtén el número de dígitos en el precio
-    digits = len(str(price))
-
-    # Aplica las reglas de redondeo basadas en el número de dígitos
-    if digits == 1:
-        if price == 0:
-            pass
-        else:
-            return 10
-    elif digits == 2:
-        return round(price / 5) * 5 if price > 10 else 10
-    elif digits == 3:
-        return round(price / 10) * 10
-    elif digits == 4:
-        return round(price / 50) * 50
-    elif digits == 5:
-        return round(price / 50) * 50
-    elif digits == 6:
-        return round(price / 50) * 50
-    elif digits >= 7:
-        return round(price / 500) * 500
-    else:
-        return price
 
 def redondear():
     items = Item.objects.all()
     items_para_actualizar = []
     for item in items:
-        item.final = custom_round(item.final)
-        item.final_efectivo = custom_round(item.final_efectivo)
+        is_cartel = bool(getattr(item, "tiene_cartel", False))
+        item.final = round_price(item.final, is_cartel=is_cartel)
+        item.final_efectivo = round_price(item.final_efectivo, is_cartel=is_cartel)
         items_para_actualizar.append(item)
-        
-    Item.objects.bulk_update(items_para_actualizar,["final","final_efectivo"])
+
+    Item.objects.bulk_update(items_para_actualizar, ["final", "final_efectivo"])
+
 
 import time
+
 
 def dibujo():
     import time
@@ -142,46 +144,47 @@ def dibujo():
 
     # Animación
     for _ in range(5):  # Número de veces que se repite la animación
-        os.system('cls' if os.name == 'nt' else 'clear')  # Limpia la pantalla
+        os.system("cls" if os.name == "nt" else "clear")  # Limpia la pantalla
         print(vaquero + latigo + pc)
         time.sleep(0.5)
-        os.system('cls' if os.name == 'nt' else 'clear')  # Limpia la pantalla
+        os.system("cls" if os.name == "nt" else "clear")  # Limpia la pantalla
         print(vaquero + "   " + pc)
         time.sleep(0.5)
 
 
-    
 def probando():
-    
+
     primero = True
     segundo = False
     tercero = True
-    
+
     if (primero or segundo) and tercero:
         print("si")
+
 
 def quitar_guiones_cuit():
     clientes = Cliente.objects.all()
     cliente_list = []
 
     for cliente in clientes:
-        cliente.cuit_dni = cliente.cuit_dni.replace('-', '')
+        cliente.cuit_dni = cliente.cuit_dni.replace("-", "")
         cliente_list.append(cliente)
 
         if len(cliente_list) == 10000:
             with transaction.atomic():
-                Cliente.objects.bulk_update(cliente_list, ['cuit_dni'])
+                Cliente.objects.bulk_update(cliente_list, ["cuit_dni"])
             cliente_list = []
 
     # Procesar los registros restantes (si hay menos de 10000)
     if cliente_list:
         with transaction.atomic():
-            Cliente.objects.bulk_update(cliente_list, ['cuit_dni'])
+            Cliente.objects.bulk_update(cliente_list, ["cuit_dni"])
+
 
 from actualizador.actualizador_csv import filtrar_trabajados
 
-if __name__ == '__main__':
-    #probando()
+if __name__ == "__main__":
+    # probando()
     quitar_guiones_cuit()
-    #principal()
-    #filtrar_trabajados()
+    # principal()
+    # filtrar_trabajados()

@@ -1,4 +1,4 @@
-'''from django.contrib import admin
+"""from django.contrib import admin
 from django.db import models
 from .models import *
 from django.db.models.fields.reverse_related import ManyToOneRel
@@ -33,10 +33,16 @@ from . import models as my_models
 model_classes = [cls for name, cls in inspect.getmembers(my_models) if inspect.isclass(cls) and issubclass(cls, models.Model) and not cls._meta.abstract]
 for model in model_classes:
     admin.site.register(model, BaseModelAdmin)
-'''
+"""
 
 from django.contrib import admin
-from .models import Modelo_Tablas, Modelo_Formularios, Modelo_Tarjetas, Modelo_Listas, Paginas
+from .models import (
+    Modelo_Tablas,
+    Modelo_Formularios,
+    Modelo_Tarjetas,
+    Modelo_Listas,
+    Paginas,
+)
 
 admin.site.register(Modelo_Tablas)
 admin.site.register(Modelo_Formularios)

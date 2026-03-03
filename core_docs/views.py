@@ -26,21 +26,23 @@ def serve_docs(request, path):
     Los documentos HTML deben estar ubicados en 'core_docs/docs/_build/html' dentro del directorio BASE_DIR.
     Si el archivo solicitado no se encuentra, esta función redirigirá a 'index.html' como página predeterminada.
     """
-    document_root = settings.BASE_DIR / 'core_docs/docs/_build/html'
+    document_root = settings.BASE_DIR / "core_docs/docs/_build/html"
     try:
         return serve(request, path, document_root=document_root)
     except Http404:
         # Si el archivo no se encuentra, puedes redirigir a 'index.html' como página predeterminada
-        return serve(request, 'index.html', document_root=document_root)
+        return serve(request, "index.html", document_root=document_root)
+
 
 import markdown2
 import emojis
 import os
 
+
 def changeLog(request):
-    dir_file = os.path.join(settings.BASE_DIR, 'CHANGELOG.md')
-    with open(dir_file, 'r', encoding='utf-8') as f:
+    dir_file = os.path.join(settings.BASE_DIR, "CHANGELOG.md")
+    with open(dir_file, "r", encoding="utf-8") as f:
         markdown_text = f.read()
         html = markdown2.markdown(markdown_text)
         change_log = emojis.encode(html)
-    return render(request, 'change_log.html', {'changelog': change_log})
+    return render(request, "change_log.html", {"changelog": change_log})

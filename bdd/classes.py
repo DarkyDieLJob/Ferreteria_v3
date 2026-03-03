@@ -16,41 +16,44 @@ import requests
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 
-SCOPES = ["https://www.googleapis.com/auth/drive",
-          "https://www.googleapis.com/auth/drive.file",
-          'https://www.googleapis.com/auth/',
-          'https://www.googleapis.com/auth/gmail.readonly',
-          'https://www.googleapis.com/auth/gmail.modify',
-          'https://www.googleapis.com/auth/gmail.compose',
-          ]
+SCOPES = [
+    "https://www.googleapis.com/auth/drive",
+    "https://www.googleapis.com/auth/drive.file",
+    "https://www.googleapis.com/auth/",
+    "https://www.googleapis.com/auth/gmail.readonly",
+    "https://www.googleapis.com/auth/gmail.modify",
+    "https://www.googleapis.com/auth/gmail.compose",
+]
 
-class Patoba():
+
+class Patoba:
     def __init__(self, request) -> None:
         self.request = request
         if self.request == None:
             social_token = SocialToken.objects.get(account__user=1)
         else:
-            print("Usuario: ",self.request.user)
+            print("Usuario: ", self.request.user)
             social_token = SocialToken.objects.get(account__user=self.request.user)
         self.credenciales = Credentials(
             token=social_token.token,
             refresh_token=social_token.token_secret,
             client_id=social_token.app.client_id,
             client_secret=social_token.app.secret,
-            token_uri = "https://oauth2.googleapis.com/token",
+            token_uri="https://oauth2.googleapis.com/token",
         )
-        self.gmail_service = build(
-            'gmail', 'v1', credentials=self.credenciales)
-        self.drive_service = build(
-            'drive', 'v3', credentials=self.credenciales)
-        self.sheet_service = build(
-            'sheets', 'v4', credentials=self.credenciales)
+        self.gmail_service = build("gmail", "v1", credentials=self.credenciales)
+        self.drive_service = build("drive", "v3", credentials=self.credenciales)
+        self.sheet_service = build("sheets", "v4", credentials=self.credenciales)
         self.filtro_hojas_descarga = [
-            'Reemplazable', 'Intermedio', 'BDD', 'Diccionario', 'Etiquetado',
+            "Reemplazable",
+            "Intermedio",
+            "BDD",
+            "Diccionario",
+            "Etiquetado",
         ]
-    
-        self.id_carpeta_pedidos = '1kkoTDNOCbWwzjmTzWOZPR3xVMUAYtYOj'
-    
+
+        self.id_carpeta_pedidos = "1kkoTDNOCbWwzjmTzWOZPR3xVMUAYtYOj"
+
     def subir_sqlite3_a_drive(self, ruta_archivo, nombre_archivo, carpeta_id):
         """
         Sube o actualiza un archivo SQLite3 en Google Drive.
@@ -61,28 +64,33 @@ class Patoba():
             carpeta_id (str): ID de la carpeta en Drive.
         """
         # Buscar el archivo existente
-        query = f"name='{nombre_archivo}' and '{carpeta_id}' in parents and trashed=false"
+        query = (
+            f"name='{nombre_archivo}' and '{carpeta_id}' in parents and trashed=false"
+        )
         results = self.drive_service.files().list(q=query, fields="files(id)").execute()
-        files = results.get('files', [])
+        files = results.get("files", [])
 
-        media = MediaFileUpload(ruta_archivo, mimetype='application/x-sqlite3', resumable=True)
+        media = MediaFileUpload(
+            ruta_archivo, mimetype="application/x-sqlite3", resumable=True
+        )
 
         if files:
             # Actualizar el archivo existente
-            file_id = files[0]['id']
-            request = self.drive_service.files().update(fileId=file_id, media_body=media)
+            file_id = files[0]["id"]
+            request = self.drive_service.files().update(
+                fileId=file_id, media_body=media
+            )
             file = request.execute()
             print(f'Archivo SQLite3 actualizado en Drive, ID: {file.get("id")}')
         else:
             # Crear un nuevo archivo
-            file_metadata = {
-                'name': nombre_archivo,
-                'parents': [carpeta_id]
-            }
-            request = self.drive_service.files().create(body=file_metadata, media_body=media)
+            file_metadata = {"name": nombre_archivo, "parents": [carpeta_id]}
+            request = self.drive_service.files().create(
+                body=file_metadata, media_body=media
+            )
             file = request.execute()
             print(f'Archivo SQLite3 subido a Drive, ID: {file.get("id")}')
-    
+
     def descargar_sqlite3_de_drive(self, nombre_archivo, carpeta_id, ruta_destino):
         """
         Descarga un archivo SQLite3 desde Google Drive.
@@ -93,46 +101,47 @@ class Patoba():
             ruta_destino (str): Ruta completa donde guardar el archivo descargado.
         """
         # Buscar el archivo en Drive
-        query = f"name='{nombre_archivo}' and '{carpeta_id}' in parents and trashed=false"
+        query = (
+            f"name='{nombre_archivo}' and '{carpeta_id}' in parents and trashed=false"
+        )
         results = self.drive_service.files().list(q=query, fields="files(id)").execute()
-        files = results.get('files', [])
+        files = results.get("files", [])
 
         if files:
-            file_id = files[0]['id']
+            file_id = files[0]["id"]
             request = self.drive_service.files().get_media(fileId=file_id)
-            fh = io.FileIO(ruta_destino, 'wb')
+            fh = io.FileIO(ruta_destino, "wb")
             downloader = MediaIoBaseDownload(fh, request)
             done = False
             while done is False:
                 status, done = downloader.next_chunk()
                 print(f"Descargando {int(status.progress() * 100)}%.")
-            print(f'Archivo SQLite3 descargado a: {ruta_destino}')
+            print(f"Archivo SQLite3 descargado a: {ruta_destino}")
         else:
             print(f'No se encontró el archivo SQLite3 "{nombre_archivo}" en Drive.')
-        
+
     def crear_hoja_google_drive(self, nombre_libro, datos, libro_id=None):
         if libro_id is None:
             # Crear un nuevo libro de Google Sheets con el nombre especificado
-            libro = self.sheet_service.spreadsheets().create(body={'properties': {'title': nombre_libro}}).execute()
-            libro_id = libro['spreadsheetId']
+            libro = (
+                self.sheet_service.spreadsheets()
+                .create(body={"properties": {"title": nombre_libro}})
+                .execute()
+            )
+            libro_id = libro["spreadsheetId"]
         else:
             # Borrar el contenido de la hoja existente
             self.sheet_service.spreadsheets().values().clear(
                 spreadsheetId=libro_id,
-                range='A1:Z1000'  # Ajusta esto al rango que desees borrar
+                range="A1:Z1000",  # Ajusta esto al rango que desees borrar
             ).execute()
             self.desaturar()
 
         # Escribir los datos en la hoja
-        cuerpo = {
-            'values': datos
-        }
-        rango = 'A1'
+        cuerpo = {"values": datos}
+        rango = "A1"
         self.sheet_service.spreadsheets().values().update(
-            spreadsheetId=libro_id,
-            range=rango,
-            valueInputOption='RAW',
-            body=cuerpo
+            spreadsheetId=libro_id, range=rango, valueInputOption="RAW", body=cuerpo
         ).execute()
         self.desaturar()
 
@@ -140,82 +149,77 @@ class Patoba():
         requests = [
             # Agregar borde a las celdas
             {
-                'updateBorders': {
-                    'range': {
-                        'sheetId': 0,
-                        'startRowIndex': 0,
-                        'endRowIndex': len(datos),
-                        'startColumnIndex': 0,
-                        'endColumnIndex': len(datos[0])
+                "updateBorders": {
+                    "range": {
+                        "sheetId": 0,
+                        "startRowIndex": 0,
+                        "endRowIndex": len(datos),
+                        "startColumnIndex": 0,
+                        "endColumnIndex": len(datos[0]),
                     },
-                    'innerHorizontal': {
-                        'style': 'SOLID',
-                        'width': 1,
-                        'color': {'red': 0, 'green': 0, 'blue': 0, 'alpha': 1}
+                    "innerHorizontal": {
+                        "style": "SOLID",
+                        "width": 1,
+                        "color": {"red": 0, "green": 0, "blue": 0, "alpha": 1},
                     },
-                    'innerVertical': {
-                        'style': 'SOLID',
-                        'width': 1,
-                        'color': {'red': 0, 'green': 0, 'blue': 0, 'alpha': 1}
-                    }
+                    "innerVertical": {
+                        "style": "SOLID",
+                        "width": 1,
+                        "color": {"red": 0, "green": 0, "blue": 0, "alpha": 1},
+                    },
                 }
             },
             # Ajustar el tamaño de la columna B
             {
-                'updateDimensionProperties': {
-                    'range': {
-                        'sheetId': 0,
-                        'dimension': 'COLUMNS',
-                        'startIndex': 1,
-                        'endIndex': 2
+                "updateDimensionProperties": {
+                    "range": {
+                        "sheetId": 0,
+                        "dimension": "COLUMNS",
+                        "startIndex": 1,
+                        "endIndex": 2,
                     },
-                    'properties': {
-                        'pixelSize': 400  # Ajusta esto al tamaño deseado
-                    },
-                    'fields': 'pixelSize'
+                    "properties": {"pixelSize": 400},  # Ajusta esto al tamaño deseado
+                    "fields": "pixelSize",
                 }
             },
             # Centrar el texto en las columnas C y D
             {
-                'repeatCell': {
-                    'range': {
-                        'sheetId': 0,
-                        'startRowIndex': 0,
-                        'endRowIndex': len(datos),
-                        'startColumnIndex': 2,
-                        'endColumnIndex': 4
+                "repeatCell": {
+                    "range": {
+                        "sheetId": 0,
+                        "startRowIndex": 0,
+                        "endRowIndex": len(datos),
+                        "startColumnIndex": 2,
+                        "endColumnIndex": 4,
                     },
-                    'cell': {
-                        'userEnteredFormat': {
-                            'horizontalAlignment': 'CENTER'
-                        }
-                    },
-                    'fields': 'userEnteredFormat.horizontalAlignment'
+                    "cell": {"userEnteredFormat": {"horizontalAlignment": "CENTER"}},
+                    "fields": "userEnteredFormat.horizontalAlignment",
                 }
-            }
+            },
         ]
-        body = {
-            'requests': requests
-        }
+        body = {"requests": requests}
         self.sheet_service.spreadsheets().batchUpdate(
-            spreadsheetId=libro_id,
-            body=body
+            spreadsheetId=libro_id, body=body
         ).execute()
         self.desaturar()
 
         # Mover el libro a la carpeta deseada
-        archivo = self.drive_service.files().get(fileId=libro_id,
-                                                fields='parents').execute()
-        anterior_padre = ",".join(archivo.get('parents'))
-        archivo = self.drive_service.files().update(fileId=libro_id,
-                                                    addParents=self.id_carpeta_pedidos,
-                                                    removeParents=anterior_padre,
-                                                    fields='id, parents').execute()
+        archivo = (
+            self.drive_service.files().get(fileId=libro_id, fields="parents").execute()
+        )
+        anterior_padre = ",".join(archivo.get("parents"))
+        archivo = (
+            self.drive_service.files()
+            .update(
+                fileId=libro_id,
+                addParents=self.id_carpeta_pedidos,
+                removeParents=anterior_padre,
+                fields="id, parents",
+            )
+            .execute()
+        )
 
         return libro_id
-
-
-
 
     def filtrar_trabajados(self):
         # Obtener todos los proveedores
@@ -223,17 +227,23 @@ class Patoba():
 
         for proveedor in proveedores:
             # Filtrar items por proveedor y si están trabajados
-            filtrados = Item.objects.filter(Q(trabajado=True) & Q(proveedor=proveedor)).order_by('codigo')
+            filtrados = Item.objects.filter(
+                Q(trabajado=True) & Q(proveedor=proveedor)
+            ).order_by("codigo")
 
             # Preparar los datos para la hoja de Google Sheets
-            datos = [['Codigo', 'Descripción', 'Stock', 'Carga Stock']]  # Ajusta los nombres de las columnas a tus campos
+            datos = [
+                ["Codigo", "Descripción", "Stock", "Carga Stock"]
+            ]  # Ajusta los nombres de las columnas a tus campos
 
             # Agregar los datos de los items
             for item in filtrados:
-                datos.append([item.codigo, item.descripcion, item.stock, ''])  # Ajusta los atributos a tus campos
+                datos.append(
+                    [item.codigo, item.descripcion, item.stock, ""]
+                )  # Ajusta los atributos a tus campos
 
             # Crear un nombre de hoja único para cada proveedor
-            nombre_libro = f'{proveedor.text_display}_trabajado'
+            nombre_libro = f"{proveedor.text_display}_trabajado"
 
             # Obtener el ID del libro si ya existe
             libro_id = self.obtener_id_por_nombre(nombre_libro, self.id_carpeta_pedidos)
@@ -241,34 +251,46 @@ class Patoba():
             # Crear o actualizar la hoja de Google Sheets
             self.crear_hoja_google_drive(nombre_libro, datos, libro_id)
 
-
     def desaturar(self):
         time.sleep(0.07)
 
     def listar(self, cant, id_carpeta):
         print("listar")
         query = f"'{id_carpeta}' in parents and trashed = false"
-        resultado = self.drive_service.files().list(
-            q=query, pageSize=cant, fields="nextPageToken, files(id,name)").execute()
-        listado = resultado.get('files', [])
+        resultado = (
+            self.drive_service.files()
+            .list(q=query, pageSize=cant, fields="nextPageToken, files(id,name)")
+            .execute()
+        )
+        listado = resultado.get("files", [])
         self.desaturar()
         return listado
 
     def obtener_id_por_nombre(self, nombre_archivo, id_carpeta):
         try:
             query = f"mimeType!='application/vnd.google-apps.folder' and trashed = false and name='{nombre_archivo}' and parents in '{id_carpeta}'"
-            results = self.drive_service.files().list(
-                q=query, fields="nextPageToken, files(id, name)").execute()
-            items = results.get('files', [])
+            results = (
+                self.drive_service.files()
+                .list(q=query, fields="nextPageToken, files(id, name)")
+                .execute()
+            )
+            items = results.get("files", [])
             self.desaturar()
-            return items[0]['id']
+            return items[0]["id"]
         except Exception as e:
             print(
-                f"No se encontró un archivo con el nombre {nombre_archivo} en la carpeta especificada")
+                f"No se encontró un archivo con el nombre {nombre_archivo} en la carpeta especificada"
+            )
             print(e)
             return None
 
-    def copiar_reemplazable(self, id_archivo_proveedor, hoja_seleccionada, id_hoja_reemplazable, id_archivo_plantilla) -> None:
+    def copiar_reemplazable(
+        self,
+        id_archivo_proveedor,
+        hoja_seleccionada,
+        id_hoja_reemplazable,
+        id_archivo_plantilla,
+    ) -> None:
         """
         Copia el contenido de una hoja de cálculo de un archivo .xls o .xlsx alojado en Google Drive a una hoja de cálculo
         de un archivo de Google Sheets.
@@ -298,46 +320,61 @@ class Patoba():
         valores = [df.columns.values.tolist()] + df.values.tolist()
 
         # Ajusta el tamaño de la hoja de destino si es necesario
-        sheet_properties = self.sheet_service.spreadsheets().get(spreadsheetId=id_archivo_plantilla).execute()['sheets']
+        sheet_properties = (
+            self.sheet_service.spreadsheets()
+            .get(spreadsheetId=id_archivo_plantilla)
+            .execute()["sheets"]
+        )
         for sheet in sheet_properties:
-            if sheet['properties']['sheetId'] == int(id_hoja_reemplazable):
-                sheet_rows = sheet['properties']['gridProperties']['rowCount']
+            if sheet["properties"]["sheetId"] == int(id_hoja_reemplazable):
+                sheet_rows = sheet["properties"]["gridProperties"]["rowCount"]
                 break
 
         if len(valores) > sheet_rows:
             body = {
-                'requests': [
+                "requests": [
                     {
-                        'appendDimension': {
-                            'sheetId': id_hoja_reemplazable,
-                            'dimension': 'ROWS',
-                            'length': len(valores) - sheet_rows
+                        "appendDimension": {
+                            "sheetId": id_hoja_reemplazable,
+                            "dimension": "ROWS",
+                            "length": len(valores) - sheet_rows,
                         }
                     }
                 ]
             }
-            self.sheet_service.spreadsheets().batchUpdate(spreadsheetId=id_archivo_plantilla, body=body).execute()
+            self.sheet_service.spreadsheets().batchUpdate(
+                spreadsheetId=id_archivo_plantilla, body=body
+            ).execute()
 
         # Actualiza el contenido de la hoja de destino con los nuevos valores
         body = {
-            'requests': [
+            "requests": [
                 {
-                    'updateCells': {
-                        'range': {
-                            'sheetId': id_hoja_reemplazable,
-                            'startRowIndex': 0,
-                            'startColumnIndex': 0,
-                            'endRowIndex': len(valores),
-                            'endColumnIndex': len(valores[0])
+                    "updateCells": {
+                        "range": {
+                            "sheetId": id_hoja_reemplazable,
+                            "startRowIndex": 0,
+                            "startColumnIndex": 0,
+                            "endRowIndex": len(valores),
+                            "endColumnIndex": len(valores[0]),
                         },
-                        'rows': [{'values': [{'userEnteredValue': {'stringValue': str(c)}} for c in row]} for row in valores],
-                        'fields': 'userEnteredValue'
+                        "rows": [
+                            {
+                                "values": [
+                                    {"userEnteredValue": {"stringValue": str(c)}}
+                                    for c in row
+                                ]
+                            }
+                            for row in valores
+                        ],
+                        "fields": "userEnteredValue",
                     }
                 }
             ]
         }
         self.sheet_service.spreadsheets().batchUpdate(
-            spreadsheetId=id_archivo_plantilla, body=body).execute()
+            spreadsheetId=id_archivo_plantilla, body=body
+        ).execute()
 
     def obtener_id_hoja_por_nombre(self, nombre_hoja, id_archivo):
         """
@@ -350,49 +387,50 @@ class Patoba():
         :return: El ID de la hoja de cálculo, o None si no se encuentra.
         :rtype: str or None
         """
-        hojas = self.sheet_service.spreadsheets().get(
-            spreadsheetId=id_archivo).execute().get('sheets', [])
+        hojas = (
+            self.sheet_service.spreadsheets()
+            .get(spreadsheetId=id_archivo)
+            .execute()
+            .get("sheets", [])
+        )
         for hoja in hojas:
-            if hoja['properties']['title'] == nombre_hoja:
-                return hoja['properties']['sheetId']
+            if hoja["properties"]["title"] == nombre_hoja:
+                return hoja["properties"]["sheetId"]
         return None
 
     def obtener_g_sheet_por_id(self, id_archivo_plantilla):
         try:
-            g_sheet = self.sheet_service.spreadsheets().get(
-                spreadsheetId=id_archivo_plantilla).execute()
+            g_sheet = (
+                self.sheet_service.spreadsheets()
+                .get(spreadsheetId=id_archivo_plantilla)
+                .execute()
+            )
             self.desaturar()
         except:
-            print(
-                f"No se encontro un archivo con el ID: {id_archivo_plantilla}")
+            print(f"No se encontro un archivo con el ID: {id_archivo_plantilla}")
             g_sheet = None
         return g_sheet
 
     def copiar_hoja(self, id_hoja, id_archivo, id_archivo_destino):
-        response = self.sheet_service.spreadsheets().sheets().copyTo(
-            spreadsheetId=id_archivo,
-            sheetId=id_hoja,
-            body={
-                'destinationSpreadsheetId': id_archivo_destino
-            }
-        ).execute()
+        response = (
+            self.sheet_service.spreadsheets()
+            .sheets()
+            .copyTo(
+                spreadsheetId=id_archivo,
+                sheetId=id_hoja,
+                body={"destinationSpreadsheetId": id_archivo_destino},
+            )
+            .execute()
+        )
         self.desaturar()
-        id_hoja_copiada = response['sheetId']
-        titulo_hoja_copiada = response['title']
+        id_hoja_copiada = response["sheetId"]
+        titulo_hoja_copiada = response["title"]
         return id_hoja_copiada, titulo_hoja_copiada
 
     def eliminar_hoja(self, id_hoja, id_archivo):
         self.sheet_service.spreadsheets().batchUpdate(
             spreadsheetId=id_archivo,
-            body={
-                'requests': [
-                    {
-                        'deleteSheet': {
-                            'sheetId': id_hoja
-                        }
-                    }
-                ]
-            }
+            body={"requests": [{"deleteSheet": {"sheetId": id_hoja}}]},
         ).execute()
         self.desaturar()
 
@@ -400,18 +438,15 @@ class Patoba():
         self.sheet_service.spreadsheets().batchUpdate(
             spreadsheetId=id_archivo,
             body={
-                'requests': [
+                "requests": [
                     {
-                        'updateSheetProperties': {
-                            'properties': {
-                                'sheetId': id_hoja,
-                                'title': nuevo_nombre
-                            },
-                            'fields': 'title'
+                        "updateSheetProperties": {
+                            "properties": {"sheetId": id_hoja, "title": nuevo_nombre},
+                            "fields": "title",
                         }
                     }
                 ]
-            }
+            },
         ).execute()
         self.desaturar()
 
@@ -420,7 +455,7 @@ class Patoba():
         archivo = self.drive_service.files().get(fileId=id_archivo).execute()
         query = f"name='{archivo['name']}' and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false and parents in '{id_carpeta}'"
         response = self.drive_service.files().list(q=query).execute()
-        files = response.get('files', [])
+        files = response.get("files", [])
         return archivo, files
 
     def actualizar_contenido_copiar(self, id_hoja_entrante, valores, id_hoja_archivo):
@@ -435,138 +470,186 @@ class Patoba():
         :type id_hoja_archivo: str
         """
         # Ajusta el tamaño de la hoja de destino si es necesario
-        sheet_properties = self.sheet_service.spreadsheets().get(spreadsheetId=id_hoja_archivo).execute()['sheets']
+        sheet_properties = (
+            self.sheet_service.spreadsheets()
+            .get(spreadsheetId=id_hoja_archivo)
+            .execute()["sheets"]
+        )
         for sheet in sheet_properties:
-            if sheet['properties']['sheetId'] == int(id_hoja_entrante):
-                sheet_rows = sheet['properties']['gridProperties']['rowCount']
-                sheet_columns = sheet['properties']['gridProperties']['columnCount']
+            if sheet["properties"]["sheetId"] == int(id_hoja_entrante):
+                sheet_rows = sheet["properties"]["gridProperties"]["rowCount"]
+                sheet_columns = sheet["properties"]["gridProperties"]["columnCount"]
                 break
 
         requests = []
         if len(valores) > sheet_rows:
-            requests.append({
-                'appendDimension': {
-                    'sheetId': id_hoja_entrante,
-                    'dimension': 'ROWS',
-                    'length': len(valores) - sheet_rows
+            requests.append(
+                {
+                    "appendDimension": {
+                        "sheetId": id_hoja_entrante,
+                        "dimension": "ROWS",
+                        "length": len(valores) - sheet_rows,
+                    }
                 }
-            })
+            )
         if len(valores[0]) > sheet_columns:
-            requests.append({
-                'appendDimension': {
-                    'sheetId': id_hoja_entrante,
-                    'dimension': 'COLUMNS',
-                    'length': len(valores[0]) - sheet_columns
+            requests.append(
+                {
+                    "appendDimension": {
+                        "sheetId": id_hoja_entrante,
+                        "dimension": "COLUMNS",
+                        "length": len(valores[0]) - sheet_columns,
+                    }
                 }
-            })
+            )
         if requests:
-            body = {'requests': requests}
-            self.sheet_service.spreadsheets().batchUpdate(spreadsheetId=id_hoja_archivo, body=body).execute()
+            body = {"requests": requests}
+            self.sheet_service.spreadsheets().batchUpdate(
+                spreadsheetId=id_hoja_archivo, body=body
+            ).execute()
 
         # Actualiza el contenido de la hoja de destino con los nuevos valores
         body = {
-            'requests': [
+            "requests": [
                 {
-                    'updateCells': {
-                        'range': {
-                            'sheetId': id_hoja_entrante,
-                            'startRowIndex': 0,
-                            'startColumnIndex': 0,
-                            'endRowIndex': len(valores),
-                            'endColumnIndex': len(valores[0])
+                    "updateCells": {
+                        "range": {
+                            "sheetId": id_hoja_entrante,
+                            "startRowIndex": 0,
+                            "startColumnIndex": 0,
+                            "endRowIndex": len(valores),
+                            "endColumnIndex": len(valores[0]),
                         },
-                        'rows': [{'values': [{'userEnteredValue': {'stringValue': c}} for c in row]} for row in valores],
-                        'fields': 'userEnteredValue'
+                        "rows": [
+                            {
+                                "values": [
+                                    {"userEnteredValue": {"stringValue": c}}
+                                    for c in row
+                                ]
+                            }
+                            for row in valores
+                        ],
+                        "fields": "userEnteredValue",
                     }
                 }
             ]
         }
         self.sheet_service.spreadsheets().batchUpdate(
-            spreadsheetId=id_hoja_archivo, body=body).execute()
+            spreadsheetId=id_hoja_archivo, body=body
+        ).execute()
 
     def crear_hoja_por_nombre(self, id_hoja, nombre):
-        print("nombre: ",nombre)
-        nueva_hoja = self.sheet_service.spreadsheets().batchUpdate(spreadsheetId=id_hoja, body={
-            'requests': [
-                {
-                    'addSheet': {
-                        'properties': {
-                            'title': nombre
-                        }
-                    }
-                }
-            ]
-        }).execute()['replies'][0]['addSheet']['properties']
+        print("nombre: ", nombre)
+        nueva_hoja = (
+            self.sheet_service.spreadsheets()
+            .batchUpdate(
+                spreadsheetId=id_hoja,
+                body={"requests": [{"addSheet": {"properties": {"title": nombre}}}]},
+            )
+            .execute()["replies"][0]["addSheet"]["properties"]
+        )
         self.desaturar()
         return nueva_hoja
 
-    def crear_buscar_copia_descarga(self, id_archivo, id_carpeta):
+    def crear_buscar_copia_descarga(self, id_archivo, id_carpeta, nombre_destino=None):
         archivo, files = self.buscar_copia_por_nombre(id_archivo, id_carpeta)
 
         if len(files) > 0:
             # Si ya existe un archivo con el mismo nombre, actualizar su contenido
-            copia_id = files[0]['id']
-            hojas_copia = self.sheet_service.spreadsheets().get(
-                spreadsheetId=copia_id).execute()['sheets']
-            hojas_copia_dict = {hoja['properties']
-                                ['title']: hoja for hoja in hojas_copia}
+            copia_id = files[0]["id"]
+            hojas_copia = (
+                self.sheet_service.spreadsheets()
+                .get(spreadsheetId=copia_id)
+                .execute()["sheets"]
+            )
+            hojas_copia_dict = {
+                hoja["properties"]["title"]: hoja for hoja in hojas_copia
+            }
         else:
             # Si no existe un archivo con el mismo nombre, crear una copia
-            copia = self.drive_service.files().copy(fileId=id_archivo, body={
-                'name': archivo['name'],
-                'parents': [id_carpeta]
-            }).execute()
-            copia_id = copia['id']
-            hojas_copia_dict = {}
+            body = {"name": nombre_destino or archivo["name"], "parents": [id_carpeta]}
+            copia = (
+                self.drive_service.files().copy(fileId=id_archivo, body=body).execute()
+            )
+            copia_id = copia["id"]
+            # Obtener hojas existentes en la copia recién creada
+            hojas_copia = (
+                self.sheet_service.spreadsheets()
+                .get(spreadsheetId=copia_id)
+                .execute()["sheets"]
+            )
+            hojas_copia_dict = {
+                hoja["properties"]["title"]: hoja for hoja in hojas_copia
+            }
 
         # Obtener todas las hojas del archivo original
-        hojas = self.sheet_service.spreadsheets().get(
-            spreadsheetId=id_archivo).execute()['sheets']
+        hojas = (
+            self.sheet_service.spreadsheets()
+            .get(spreadsheetId=id_archivo)
+            .execute()["sheets"]
+        )
 
         # Filtrar las hojas para excluir las que están en la lista de filtro
-        hojas = [hoja for hoja in hojas if hoja['properties']['title'] not in self.filtro_hojas_descarga]
+        hojas = [
+            hoja
+            for hoja in hojas
+            if hoja["properties"]["title"] not in self.filtro_hojas_descarga
+        ]
 
         # Recorrer todas las hojas y copiar sus valores al archivo destino
         for hoja in hojas:
             rango = f"{hoja['properties']['title']}!A1:Z"
-            valores = self.sheet_service.spreadsheets().values().get(
-                spreadsheetId=id_archivo, range=rango).execute()['values']
-            if hoja['properties']['title'] in hojas_copia_dict:
+            valores = (
+                self.sheet_service.spreadsheets()
+                .values()
+                .get(spreadsheetId=id_archivo, range=rango)
+                .execute()["values"]
+            )
+            if hoja["properties"]["title"] in hojas_copia_dict:
                 # Si ya existe una hoja con el mismo nombre, actualizar su contenido
-                nueva_hoja_id = hojas_copia_dict[hoja['properties']
-                                                 ['title']]['properties']['sheetId']
-                self.actualizar_contenido_copiar(
-                    nueva_hoja_id, valores, copia_id)
+                nueva_hoja_id = hojas_copia_dict[hoja["properties"]["title"]][
+                    "properties"
+                ]["sheetId"]
+                self.actualizar_contenido_copiar(nueva_hoja_id, valores, copia_id)
             else:
                 # Si no existe una hoja con el mismo nombre, crear una nueva
                 nueva_hoja = self.crear_hoja_por_nombre(
-                    copia_id, hoja['properties']['title'])
-                nueva_hoja_id = nueva_hoja['sheetId']
-                self.actualizar_contenido_copiar(
-                    nueva_hoja_id, valores, copia_id)
-        '''
+                    copia_id, hoja["properties"]["title"]
+                )
+                nueva_hoja_id = nueva_hoja["sheetId"]
+                self.actualizar_contenido_copiar(nueva_hoja_id, valores, copia_id)
+        """
         # Eliminar las hojas que no existen en el archivo original
         for _, hoja in hojas_copia_dict.items():
             try:
                 self.eliminar_hoja(hoja['properties']['sheetId'], copia_id)
             except:
-                pass'''
+                pass"""
+
+        # Devolver el ID de la copia final para que el llamador la marque como descargable
+        return copia_id
 
     def download_and_zip_files(self, files_dict):
         # Crear un objeto ZipFile en memoria
         zip_buffer = io.BytesIO()
-        with ZipFile(zip_buffer, 'w') as zip_file:
+        with ZipFile(zip_buffer, "w") as zip_file:
             # Recorrer el diccionario de archivos
             for file_name, file_id in files_dict.items():
                 # Descargar el archivo de Google Drive en formato .xls
                 file = self.drive_service.files().get(fileId=file_id).execute()
-                mime_type = file.get('mimeType')
-                if mime_type == 'application/vnd.google-apps.document':
+                mime_type = file.get("mimeType")
+                if mime_type == "application/vnd.google-apps.document":
                     # Exportar como documento de Microsoft Word
-                    request = self.drive_service.files().export(fileId=file_id, mimeType='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-                elif mime_type == 'application/vnd.google-apps.spreadsheet':
+                    request = self.drive_service.files().export(
+                        fileId=file_id,
+                        mimeType="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    )
+                elif mime_type == "application/vnd.google-apps.spreadsheet":
                     # Exportar como hoja de cálculo de Microsoft Excel
-                    request = self.drive_service.files().export(fileId=file_id, mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                    request = self.drive_service.files().export(
+                        fileId=file_id,
+                        mimeType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    )
                 else:
                     # Descargar el archivo directamente
                     request = self.drive_service.files().get_media(fileId=file_id)
@@ -584,15 +667,14 @@ class Patoba():
                 xls_buffer.seek(0)
 
                 # Guardar el archivo .xls con pandas
-                with pd.ExcelWriter(xls_buffer, engine='xlsxwriter') as writer:
+                with pd.ExcelWriter(xls_buffer, engine="xlsxwriter") as writer:
                     for sheet_name, df in xls_data.items():
                         df = df.fillna("")
                         df.to_excel(writer, sheet_name=sheet_name, index=False)
 
                 # Agregar el archivo .xls al archivo zip
                 xls_buffer.seek(0)
-                zip_file.writestr(f'{file_name}.xlsx', xls_buffer.read())
-
+                zip_file.writestr(f"{file_name}.xlsx", xls_buffer.read())
 
         # Obtener el contenido del archivo zip
         zip_buffer.seek(0)
@@ -602,19 +684,23 @@ class Patoba():
         return zip_content
 
     def actualizar_plantilla(self, spreadsheets, sp):
-        filtros = ['Reemplazable', 'Intermedio', 'Diccionario', 'Etiquetado', 'BDD']
+        filtros = ["Reemplazable", "Intermedio", "Diccionario", "Etiquetado", "BDD"]
 
         # --- Paso 1: Descargar el archivo XLSX de Google Sheets ---
         export_url = f'https://docs.google.com/spreadsheets/d/{spreadsheets["spreadsheetId"]}/export?format=xlsx'
-        response = requests.get(export_url, headers={'Authorization': f'Bearer {self.credenciales.token}'})
-        response.raise_for_status() # Lanza un error si la descarga falla (ej. 404, 500)
+        response = requests.get(
+            export_url, headers={"Authorization": f"Bearer {self.credenciales.token}"}
+        )
+        response.raise_for_status()  # Lanza un error si la descarga falla (ej. 404, 500)
         xlsx_data = response.content
 
         # --- Paso 2: Guardar el archivo XLSX original (temporalmente) ---
         file_name = f'{spreadsheets["properties"]["title"]}.xlsx'
         # La ruta DEBE ser relativa a MEDIA_ROOT
-        original_xlsx_relative_path = os.path.join('descargas', file_name)
-        original_xlsx_full_path = os.path.join(settings.MEDIA_ROOT, original_xlsx_relative_path)
+        original_xlsx_relative_path = os.path.join("descargas", file_name)
+        original_xlsx_full_path = os.path.join(
+            settings.MEDIA_ROOT, original_xlsx_relative_path
+        )
 
         # Eliminar el archivo si ya existe
         if default_storage.exists(original_xlsx_relative_path):
@@ -635,12 +721,18 @@ class Patoba():
         output_ods_file_name = f"{output_base_name}.ods"
 
         # Rutas RELATIVAS dentro de MEDIA_ROOT para los archivos de salida
-        output_xlsx_relative_path = os.path.join('descargas', output_xlsx_file_name)
-        output_ods_relative_path = os.path.join('descargas', output_ods_file_name)
+        output_xlsx_relative_path = os.path.join("descargas", output_xlsx_file_name)
+        output_ods_relative_path = os.path.join("descargas", output_ods_file_name)
 
         # Rutas COMPLETAS en el sistema de archivos para Pandas
-        output_xlsx_full_path = os.path.join(settings.MEDIA_ROOT, output_xlsx_relative_path)
-        output_ods_full_path = os.path.join(settings.MEDIA_ROOT, output_ods_relative_path)
+        output_xlsx_full_path = os.path.join(
+            settings.MEDIA_ROOT, output_xlsx_relative_path
+        )
+        output_ods_full_path = os.path.join(
+            settings.MEDIA_ROOT, output_ods_relative_path
+        )
+        # Asegurar que el directorio exista (p. ej. MEDIA_ROOT/descargas)
+        os.makedirs(os.path.dirname(output_xlsx_full_path), exist_ok=True)
 
         # --- Paso 5: Preparar los ExcelWriter y eliminar archivos existentes ---
         # Eliminar archivos existentes si es necesario
@@ -650,9 +742,10 @@ class Patoba():
             default_storage.delete(output_ods_relative_path)
 
         # Crea objetos ExcelWriter. Asegúrate de que los motores estén disponibles si usas 'odf'.
-        xlsx_writer = pd.ExcelWriter(output_xlsx_full_path, engine='xlsxwriter') # 'xlsxwriter' es un buen motor para .xlsx
-        ods_writer = pd.ExcelWriter(output_ods_full_path, engine='odf')
-
+        xlsx_writer = pd.ExcelWriter(
+            output_xlsx_full_path, engine="xlsxwriter"
+        )  # 'xlsxwriter' es un buen motor para .xlsx
+        ods_writer = pd.ExcelWriter(output_ods_full_path, engine="odf")
 
         # --- Paso 6: Iterar y guardar hojas de cálculo ---
         for sheet_name, df in xlsx_file.items():
@@ -674,14 +767,53 @@ class Patoba():
         # --- Paso 7: Actualizar los enlaces de descarga en el modelo 'sp' ---
         try:
             # Estos enlaces son URL-friendly, no rutas de sistema de archivos
-            sp.link_descarga = f'media/descargas/{output_xlsx_file_name}'
-            sp.link_descarga_ods = f'media/descargas/{output_ods_file_name}'
+            sp.link_descarga = f"media/descargas/{output_xlsx_file_name}"
+            sp.link_descarga_ods = f"media/descargas/{output_ods_file_name}"
             sp.descargar = True
             sp.save()
-            print(f"Enlaces de descarga actualizados para {output_xlsx_file_name} y {output_ods_file_name}")
+            print(
+                f"Enlaces de descarga actualizados para {output_xlsx_file_name} y {output_ods_file_name}"
+            )
+
+            # --- Limpieza: conservar solo la última pareja fechada por proveedor ---
+            try:
+                dir_rel = "descargas"
+                prefix = f"{spreadsheets['properties']['title']}-"
+                allowed = {output_xlsx_file_name, output_ods_file_name}
+                # Listar archivos en el storage bajo 'descargas'
+                _, files = default_storage.listdir(dir_rel)
+                removed = []
+                # Eliminar también el archivo SIN FECHA que se usó para procesar (si existe)
+                undated_xlsx = f"{spreadsheets['properties']['title']}.xlsx"
+                undated_ods = f"{spreadsheets['properties']['title']}.ods"
+                for undated in (undated_xlsx, undated_ods):
+                    if default_storage.exists(os.path.join(dir_rel, undated)):
+                        default_storage.delete(os.path.join(dir_rel, undated))
+                        removed.append(undated)
+                for fname in files:
+                    if not (
+                        fname.startswith(prefix)
+                        and (fname.endswith(".xlsx") or fname.endswith(".ods"))
+                    ):
+                        continue
+                    if fname in allowed:
+                        continue
+                    # Borrar archivos antiguos
+                    default_storage.delete(os.path.join(dir_rel, fname))
+                    removed.append(fname)
+                if removed:
+                    print(
+                        f"Archivos antiguos eliminados para proveedor '{spreadsheets['properties']['title']}': {removed}"
+                    )
+            except Exception as clean_e:
+                print(
+                    f"Advertencia: fallo al limpiar archivos antiguos de descargas: {clean_e}"
+                )
         except Exception as e:
             # Captura la excepción para depuración
-            print(f"Error al actualizar enlaces en Listado_Plantillas para {spreadsheets['spreadsheetId']}: {e}")
+            print(
+                f"Error al actualizar enlaces en Listado_Plantillas para {spreadsheets['spreadsheetId']}: {e}"
+            )
 
     def borrar_por_id(self, id):
         # Elimina el archivo

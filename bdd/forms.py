@@ -3,16 +3,20 @@ from .models import Planilla
 
 
 class DateInput(forms.DateInput):
-    input_type = 'date'
+    input_type = "date"
+
 
 class TimeInput(forms.TimeInput):
-    input_type = 'time'
+    input_type = "time"
+
 
 class DateTimeInput(forms.DateTimeInput):
-    input_type = 'datetime-local'
+    input_type = "datetime-local"
+
 
 class EmailInput(forms.EmailInput):
-    input_type = 'email'
+    input_type = "email"
+
 
 class BaseForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
@@ -29,13 +33,14 @@ class BaseForm(forms.ModelForm):
                 self.fields[field_name].widget = EmailInput()
             # Aquí puedes agregar más condiciones para otros tipos de campos
             # y asignarles widgets personalizados
-            if field_name == 'barras':
-                self.fields[field_name].widget.attrs.update({'autofocus': 'autofocus'})
+            if field_name == "barras":
+                self.fields[field_name].widget.attrs.update({"autofocus": "autofocus"})
+
 
 class Planilla_Form(BaseForm):
     class Meta:
         model = Planilla
         fields = [
-            'nombre',
-            'fecha',
+            "nombre",
+            "fecha",
         ]

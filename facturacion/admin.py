@@ -6,8 +6,9 @@ admin.site.register(Cliente)
 admin.site.register(MetodoPago)
 admin.site.register(CierreZ)
 
+
 class TransaccionAdmin(admin.ModelAdmin):
-    readonly_fields = ('fecha',)
+    readonly_fields = ("fecha",)
+
 
 admin.site.register(Transaccion, TransaccionAdmin)
-

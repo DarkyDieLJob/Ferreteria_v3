@@ -1,5 +1,6 @@
 from django.db.models import QuerySet
 
+
 def agrupar_transacciones_por_fecha(queryset: QuerySet) -> dict:
 
     datos = {}
@@ -16,6 +17,5 @@ def agrupar_transacciones_por_fecha(queryset: QuerySet) -> dict:
         if dia not in datos[año][mes]:
             datos[año][mes][dia] = []
         datos[año][mes][dia].append(dato)
-
 
     return datos
