@@ -83,3 +83,39 @@ Notas:
 
 - Nota: Los precios se redondean y persisten en la base de datos. Las vistas deben mostrar directamente los valores almacenados (por ejemplo, usando `floatformat:0`), sin aplicar filtros adicionales.
 
+
+## Configuración de Logging
+
+- Rutas por defecto (relativas al proyecto):
+  - logs/main.log (log general raíz)
+  - logs/actualizador/info.log y logs/actualizador/error.log
+  - logs/bdd/info.log y logs/bdd/error.log
+  - logs/x_cartel/info.log y logs/x_cartel/error.log
+
+- Rotación de archivos:
+  - maxBytes por defecto: 3 MB
+  - backupCount por defecto: 5 archivos
+
+- Variables configurables (en settings.py o variables de entorno):
+  - LOG_DIR
+    - Directorio base de logs. Por defecto: logs.
+    - Ejemplo: export LOG_DIR=/var/log/ferreteria_v3
+  - LOG_MAX_BYTES
+    - Tamaño máximo por archivo antes de rotar. Por defecto: 3145728 (3 MB).
+    - Ejemplo: export LOG_MAX_BYTES=1048576 (1 MB)
+  - LOG_BACKUP_COUNT
+    - Cantidad de archivos de backup por log. Por defecto: 5.
+    - Ejemplo: export LOG_BACKUP_COUNT=3
+  - LOG_LEVEL / MAIN_LOG_LEVEL
+    - Nivel del log principal/raíz. Por defecto: INFO.
+    - Ejemplo: export MAIN_LOG_LEVEL=WARNING
+  - ACT_LOG_LEVEL, BDD_LOG_LEVEL, X_CARTEL_LOG_LEVEL
+    - Niveles por aplicación. Por defecto: INFO.
+    - Ejemplo: export ACT_LOG_LEVEL=WARNING
+
+- Niveles para Django y terceros:
+  - django, googleapiclient.discovery_cache, google_auth_httplib2, urllib3 configurados en WARNING para reducir ruido.
+
+- Notas de despliegue:
+  - Asegurarse que el proceso tenga permisos de escritura en LOG_DIR.
+  - En entornos con poco espacio (ej. Raspberry Pi), se recomienda LOG_MAX_BYTES=1048576 y LOG_BACKUP_COUNT=5.
