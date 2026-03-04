@@ -8,6 +8,10 @@ from .views.editar import cancelar_articulo_pedido, enviar_pedido
 from .views.faltantes import ListarArticulosFaltantesView
 from .views.home import HomeView, nuevo_pedido
 from .views.pdf import descargar_pedido_pdf
+from .views.pdf_devoluciones import (
+    descargar_devoluciones_pdf,
+    descargar_devoluciones_por_proveedor_pdf,
+)
 
 app_name = "pedido"
 name = "pedido"
@@ -58,6 +62,17 @@ urlpatterns = [
         "pedido/<int:pedido_id>/pdf/",
         descargar_pedido_pdf,
         name="pedido-pdf",
+    ),
+    # Devoluciones PDF
+    path(
+        "devoluciones/pdf/",
+        descargar_devoluciones_pdf,
+        name="devoluciones-pdf",
+    ),
+    path(
+        "devoluciones/<int:proveedor_id>/pdf/",
+        descargar_devoluciones_por_proveedor_pdf,
+        name="devoluciones-proveedor-pdf",
     ),
     # Controlar pedido por proveedor
     path(

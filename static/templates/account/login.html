@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block base_content %}
+<div class="container py-5" style="max-width: 480px;">
+  <h1 class="h3 mb-4 text-center">Iniciar sesión</h1>
+
+  {% if form.non_field_errors %}
+  <div class="alert alert-danger" role="alert">
+    {% for err in form.non_field_errors %}{{ err }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+  </div>
+  {% endif %}
+
+  <form method="post" action="{% url 'account_login' %}" class="card p-4 shadow-sm">
+    {% csrf_token %}
+
+    <div class="mb-3">
+      <label class="form-label" for="id_login">Usuario</label>
+      {# allauth usa 'login' como campo de entrada genérico (username/email) #}
+      {% if form.login %}
+        {{ form.login }}
+      {% elif form.username %}
+        {{ form.username }}
+      {% endif %}
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label" for="id_password">Contraseña</label>
+      {{ form.password }}
+    </div>
+
+    {% if form.remember %}
+    <div class="form-check mb-3">
+      {{ form.remember }}
+      <label class="form-check-label" for="id_remember">Recordarme</label>
+    </div>
+    {% endif %}
+
+    <div class="d-flex align-items-center justify-content-between">
+      <button type="submit" class="btn btn-primary">Iniciar sesión</button>
+      <a href="{% url 'account_reset_password' %}">¿Olvidaste tu contraseña?</a>
+    </div>
+
+    {% if redirect_field_value %}
+      <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+    {% endif %}
+  </form>
+
+  <div class="text-center mt-3">
+    <span>¿No tenés cuenta?</span>
+    <a href="{% url 'account_signup' %}">Registrate</a>
+  </div>
+
+  {% if socialaccount_providers %}
+  <div class="text-center mt-4">
+    <div class="text-muted mb-2">O usar un tercero</div>
+    {% include "socialaccount/snippets/provider_list.html" with process="login" %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

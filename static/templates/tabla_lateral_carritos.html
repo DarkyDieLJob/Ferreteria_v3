@@ -114,6 +114,35 @@ const CART_UPDATE_INTERVAL = 3000; // 3 segundos
 let isUpdatingCart = false;
 let lastCartData = null;
 
+// Utilidades de color para contraste
+function hexToRgb(hex) {
+    if (!hex) return null;
+    const m = hex.replace('#','');
+    const bigint = parseInt(m, 16);
+    if (m.length === 3) {
+        const r = parseInt(m[0]+m[0],16);
+        const g = parseInt(m[1]+m[1],16);
+        const b = parseInt(m[2]+m[2],16);
+        return {r, g, b};
+    }
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const b = bigint & 255;
+    return {r, g, b};
+}
+
+function getTextColorForBg(hex) {
+    const rgb = hexToRgb(hex);
+    if (!rgb) return '#000000';
+    // luminancia relativa W3C
+    const srgb = ['r','g','b'].map(k => {
+        let c = rgb[k]/255;
+        return c <= 0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4);
+    });
+    const L = 0.2126*srgb[0] + 0.7152*srgb[1] + 0.0722*srgb[2];
+    return L > 0.5 ? '#000000' : '#FFFFFF';
+}
+
 // Función para mostrar/ocultar el indicador de carga
 function toggleLoadingIndicator(show) {
     const indicator = document.getElementById('cartLoading');
@@ -162,6 +191,7 @@ function updateCart(nombre) {
     $.ajax({
         url: '/consultar_carrito/',
         type: 'get',
+        data: (window.selectedUser && typeof window.selectedUser === 'string') ? { usuario: window.selectedUser } : {},
         dataType: 'json',
         success: function(data) {
             // Verificar si hay cambios antes de actualizar
@@ -272,6 +302,7 @@ $(document).ready(function(){
         return $.ajax({
             url: '/consultar_carrito/',
             type: 'get',
+            data: (window.selectedUser && typeof window.selectedUser === 'string') ? { usuario: window.selectedUser } : {},
             dataType: 'json',
             success: function(data) {
                 lastCartData = JSON.stringify(data); // Actualizar los datos del carrito
@@ -291,7 +322,17 @@ $(document).ready(function(){
                 
                 $("#tablaCarrito").data("nombre", nombre);
                 $("#carrito_id").val(data[nombre].carrito_id);
-                cambiarColorFondoCarrito(data[nombre].carrito_id);
+                const bgColor = data[nombre].color || 'white';
+                const fgColor = getTextColorForBg(bgColor);
+                $("#tablaCarrito").css({
+                    "background-color": bgColor,
+                    "color": fgColor
+                });
+                // ajustar botones internos si los hubiera
+                $("#tablaCarrito .btn").css({
+                    "border-color": fgColor,
+                    "color": fgColor
+                });
                 $("#cliente_id").val("");
 
                 // Actualizar métodos de pago
@@ -368,13 +409,8 @@ $(document).ready(function(){
         });
     });
     
-    function getColorPorCarritoId(carrito_id) {
-        const coloresCarritos = {
-            1: "lightyellow",
-            2: "lightgreen",
-            3: "lightblue",
-        };
-        return coloresCarritos[carrito_id] || "white";
+    function getColorSeguro(color) {
+        return color || 'white';
     }
     
     function crearControlador(nombre) {
@@ -389,13 +425,46 @@ $(document).ready(function(){
         type: 'get',
         dataType: 'json',
         success: function(data) {
-            console.log(data);
             for (var nombre in data) {
-                let carrito_id = data[nombre].carrito_id;
-                let color = getColorPorCarritoId(carrito_id);
-                console.log(color);
-                $("#botonesCarrito").append('<button id="botonCarrito' + nombre + '" class="btn" style="background-color:' + color + ';">Carrito de ' + nombre + '</button>');
+                let color = getColorSeguro(data[nombre].color);
+                let tcolor = getTextColorForBg(color);
+                $("#botonesCarrito").append('<button id="botonCarrito' + nombre + '" class="btn me-2 mb-2" style="background-color:' + color + '; color:' + tcolor + '; border-color:' + tcolor + ';">Carrito de ' + nombre + '</button>');
                 $("#botonCarrito" + nombre).click(crearControlador(nombre));
+            }
+        }
+    });
+
+    // Selector de cajero (solo si hay usuarios de caja disponibles)
+    $.ajax({
+        url: '/usuarios_caja/',
+        type: 'get',
+        dataType: 'json',
+        success: function(users) {
+            if (Array.isArray(users) && users.length > 0) {
+                const wrap = $('<div id="selectorCajeroWrap" class="p-3"><label for="selectorCajero" class="form-label">Seleccionar cajero</label><select id="selectorCajero" class="form-select"><option value="">Todos</option></select></div>');
+                wrap.insertBefore('#tablaCarrito .p-3:first');
+                const sel = $('#selectorCajero');
+                users.forEach(function(u) {
+                    sel.append('<option value="' + u.nombre + '">' + u.nombre + '</option>');
+                });
+                $(document).on('change', '#selectorCajero', function() {
+                    const val = $(this).val();
+                    window.selectedUser = val || null;
+                    if (window.selectedUser) {
+                        mostrarCarrito(window.selectedUser);
+                    } else {
+                        // Si no hay selección, refrescar lista general
+                        $.get('/consultar_carrito/', function(data) {
+                            $("#botonesCarrito").empty();
+                            for (var nombre in data) {
+                                let color = getColorSeguro(data[nombre].color);
+                                let tcolor = getTextColorForBg(color);
+                                $("#botonesCarrito").append('<button id="botonCarrito' + nombre + '" class="btn me-2 mb-2" style="background-color:' + color + '; color:' + tcolor + '; border-color:' + tcolor + ';">Carrito de ' + nombre + '</button>');
+                                $("#botonCarrito" + nombre).click(crearControlador(nombre));
+                            }
+                        });
+                    }
+                });
             }
         }
     });

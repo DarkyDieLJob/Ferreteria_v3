@@ -6,7 +6,8 @@ from django.conf import settings
 from django.http import FileResponse, JsonResponse, HttpResponse
 from django.shortcuts import render
 from django.db.models import F
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
+import hashlib
 from django.forms.models import model_to_dict
 from django.core import serializers
 from django.views.decorators.csrf import csrf_exempt
@@ -26,6 +27,79 @@ from ..models import (
 from .utils import articulo_to_dict, calcular_total, carrito_to_dict
 
 logger = logging.getLogger(__name__)
+
+
+def _is_caja_general(user: User) -> bool:
+    try:
+        if not user.is_authenticated:
+            return False
+        if user.is_superuser:
+            return True
+        if user.username == "Caja":
+            return True
+        return user.groups.filter(name="caja_general").exists()
+    except Exception:
+        return False
+
+
+def _get_cajeros_queryset():
+    try:
+        grupo = Group.objects.filter(name="cajeros").first()
+        if not grupo:
+            return User.objects.none()
+        return grupo.user_set.exclude(username="Caja")
+    except Exception:
+        return User.objects.none()
+
+
+_USER_COLOR_MAP = {
+    "Mati": "#FFD54F",   # amber 300
+    "Carlos": "#4FC3F7", # light blue 300
+}
+
+_PALETTE = [
+    "#F44336",  # Red 500
+    "#2196F3",  # Blue 500
+    "#4CAF50",  # Green 500
+    "#FF9800",  # Orange 500
+    "#9C27B0",  # Purple 500
+    "#009688",  # Teal 500
+    "#795548",  # Brown 500
+]
+
+
+def _user_color(username: str) -> str:
+    if not username:
+        return "#FFFFFF"
+    if username in _USER_COLOR_MAP:
+        return _USER_COLOR_MAP[username]
+    idx = int(hashlib.md5(username.encode("utf-8")).hexdigest(), 16) % len(_PALETTE)
+    return _PALETTE[idx]
+
+
+def _hsl_to_hex(h, s, l) -> str:
+    # Retenido por compatibilidad si se necesitara en el futuro
+    s /= 100.0
+    l /= 100.0
+    c = (1 - abs(2 * l - 1)) * s
+    x = c * (1 - abs((h / 60.0) % 2 - 1))
+    m = l - c / 2
+    if 0 <= h < 60:
+        r, g, b = c, x, 0
+    elif 60 <= h < 120:
+        r, g, b = x, c, 0
+    elif 120 <= h < 180:
+        r, g, b = 0, c, x
+    elif 180 <= h < 240:
+        r, g, b = 0, x, c
+    elif 240 <= h < 300:
+        r, g, b = x, 0, c
+    else:
+        r, g, b = c, 0, x
+    r = int((r + m) * 255)
+    g = int((g + m) * 255)
+    b = int((b + m) * 255)
+    return f"#{r:02X}{g:02X}{b:02X}"
 
 
 def crear_modificar_lista_pedidos(request, proveedor_id=None):
@@ -311,7 +385,7 @@ def agregar_articulo_a_carrito(request, id_articulo):
 
         item = Item.objects.get(id=id_articulo)
 
-        if usuario_caja_id and request.user.is_staff:
+        if usuario_caja_id and _is_caja_general(request.user):
             usuario_objetivo = User.objects.get(id=usuario_caja_id)
         else:
             usuario_objetivo = request.user
@@ -389,51 +463,45 @@ def consultar_carrito(request):
             return JsonResponse({"error": "Usuario no autenticado"}, status=401)
 
         try:
-            # Lógica especial para administrador 'darkydiel'
-            if request.user.username == "darkydiel":
-                logger.info(
-                    "Usuario 'darkydiel' consultando carritos de Mati y Carlos."
-                )
-                usuarios_especiales = ["Mati", "Carlos"]
+            if _is_caja_general(request.user):
+                username_filtro = request.GET.get("usuario")
+                if username_filtro:
+                    usuarios = User.objects.filter(username=username_filtro)
+                else:
+                    usuarios = _get_cajeros_queryset()
 
-                for username in usuarios_especiales:
+                for u in usuarios:
                     try:
-                        c_obj = Carrito.objects.get(usuario__username=username)
-                        articulos = Articulo.objects.filter(
-                            carrito=c_obj
-                        ).select_related("item")
+                        c_obj, _ = Carrito.objects.get_or_create(usuario=u)
+                        articulos = Articulo.objects.filter(carrito=c_obj).select_related("item")
                         sin_reg = ArticuloSinRegistro.objects.filter(carrito=c_obj)
-
-                        datos[username] = {
+                        datos[u.username] = {
                             "articulos": [articulo_to_dict(a) for a in articulos],
-                            "articulos_sin_registro": [
-                                articulo_to_dict(a) for a in sin_reg
-                            ],
+                            "articulos_sin_registro": [articulo_to_dict(a) for a in sin_reg],
                             "carrito_id": c_obj.id,
+                            "color": _user_color(u.username),
                         }
-                    except Carrito.DoesNotExist:
-                        logger.warning(f"No se encontró el carrito para '{username}'.")
-                        datos[username] = {
+                    except Exception:
+                        datos[u.username] = {
                             "articulos": [],
                             "articulos_sin_registro": [],
                             "carrito_id": None,
                             "error": "No encontrado",
+                            "color": _user_color(u.username),
                         }
-
-            else:  # Para usuarios normales
+            else:
                 logger.info(
                     f"Usuario '{request.user.username}' consultando su propio carrito."
                 )
                 carrito, _ = Carrito.objects.get_or_create(usuario=request.user)
-                articulos = Articulo.objects.filter(carrito=carrito).select_related(
-                    "item"
-                )
+                articulos = Articulo.objects.filter(carrito=carrito).select_related("item")
                 sin_reg = ArticuloSinRegistro.objects.filter(carrito=carrito)
 
                 datos[request.user.username] = {
                     "articulos": [articulo_to_dict(a) for a in articulos],
                     "articulos_sin_registro": [articulo_to_dict(a) for a in sin_reg],
                     "carrito_id": carrito.id,
+                    "color": _user_color(request.user.username),
                 }
 
             # Calcular totales usando la función utilitaria
@@ -457,12 +525,12 @@ def usuarios_caja(request):
     if request.method == "GET":
         logger.info("GET request para obtener usuarios caja.")
         try:
-            # Usando la lista hardcodeada original:
-            usuarios_hardcoded = [
-                {"id": User.objects.get(username="Mati").id, "nombre": "Mati"},
-                {"id": User.objects.get(username="Carlos").id, "nombre": "Carlos"},
+            usuarios = _get_cajeros_queryset().values("id", "username")
+            resp = [
+                {"id": u["id"], "nombre": u["username"], "color": _user_color(u["username"])}
+                for u in usuarios
             ]
-            return JsonResponse(usuarios_hardcoded, safe=False)
+            return JsonResponse(resp, safe=False)
 
         except User.DoesNotExist as e:
             logger.error(f"Error obteniendo ID de usuario caja: {e}")

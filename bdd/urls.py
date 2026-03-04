@@ -4,24 +4,25 @@ from django.urls import path
 # Importamos la vista WelcomeView que acabamos de crear
 from .views_old import (
     Imprimir,
-    usuarios_caja,
-    consultar_carrito,
-    crear_modificar_lista_pedidos,
     ItemsView,
 )
-from .views_old import (
+from .views.ajax import (
     seleccionar_proveedor,
     cambiar_cantidad_pedido,
     editar_item,
     agregar_articulo_a_carrito,
 )
-from .views_old import (
+from .views.ajax import (
     carrito,
     eliminar_articulo_pedido,
-    ListarCarteles,
     descargar_archivo,
+    crear_modificar_lista_pedidos,
+    consultar_carrito,
+    usuarios_caja,
+    reportar_item,
+    enviar_reporte,
 )
-from .views_old import reportar_item, enviar_reporte
+from .views_old import ListarCarteles
 
 
 from .models import NavBar, Armador

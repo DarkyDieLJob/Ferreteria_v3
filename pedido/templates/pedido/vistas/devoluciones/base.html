@@ -7,10 +7,20 @@
 
 {% block cuerpo %}
     {% csrf_token %}
+    <div class="d-flex justify-content-end mb-3">
+        <a id="btnDescargarPDF" class="btn btn-outline-primary" href="{% url 'pedido:devoluciones-pdf' %}">Descargar PDF</a>
+    </div>
     {% include 'pedido/vistas/devoluciones/table_content.html' %}
 {% endblock %}
 
 {% block script %}
     <script src="{% static 'js/pedido/vistas/devoluciones.js' %}"></script>
-    
+    <script>
+      (function(){
+        var btn = document.getElementById('btnDescargarPDF');
+        if (btn && window.location.search && window.location.search.length > 1) {
+          btn.href = btn.href + window.location.search;
+        }
+      })();
+    </script>
 {% endblock %}
