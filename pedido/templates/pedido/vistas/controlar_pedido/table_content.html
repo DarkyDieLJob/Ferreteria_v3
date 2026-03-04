@@ -19,23 +19,29 @@
             <td>
                 <input 
                     type="number" 
-                    class="quantity-input" 
+                    class="form-control form-control-sm quantity-input w-auto d-inline-block" 
                     data-id="llego-{{ articulo.id }}" 
                     value="{{ articulo.cantidad }}" 
                     step="0.01">
             </td>
             <td>
                 <input 
-                    type="checkbox" {% if articulo.llego %}checked{% endif %} 
+                    type="checkbox" checked 
                     id="llego-llego{{ articulo.id }}" 
-                    onclick="agregarAlStock({{ articulo.id}},{{articulo.proveedor.id}},{{ articulo.item.id }})"
+                    class="form-check-input js-llego" 
+                    data-articulo-id="{{ articulo.id }}"
+                    data-proveedor-id="{{ articulo.proveedor.id }}"
+                    data-item-id="{{ articulo.item.id }}"
                 >
             </td>
             <td>
                 <input 
                     type="checkbox" 
                     id="devolver-devolver{{ articulo.id }}" 
-                    onclick="agregarDevolucion({{ articulo.id}},{{articulo.proveedor.id}},{{ articulo.item.id }})"
+                    class="form-check-input js-devolver" 
+                    data-articulo-id="{{ articulo.id }}"
+                    data-proveedor-id="{{ articulo.proveedor.id }}"
+                    data-item-id="{{ articulo.item.id }}"
                 >
             </td>
         </tr>

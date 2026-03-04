@@ -1,51 +1,92 @@
 {% extends 'pedido/elementos/elemento_tabla.html'%}
+
 {% block table_head %}
     <tr>
         <th>Nuevo Pedido</th>
         <th>Pendiente</th>
         <th>Enviado</th>
         <th>Entregado</th>
-        <th>Articulos Faltantes</th>
+        <th>Artículos faltantes</th>
     </tr>
 {% endblock %}
 
 {% block table_body %}
     {% for proveedor, pedidos in pedidos_activos.items %}
         <tr>
-            <td><a href="{% url 'pedido:nuevo-pedido' proveedor.id %}">Nuevo pedido a: {{ proveedor.text_display }}</a></td>
+            <!-- Nuevo pedido: botón a ancho completo con nombre del proveedor -->
             <td>
-                {% for pedido in pedidos %}
-
-                    {% if pedido.get_estado_display == 'Pendiente'%}
-                        <a href="{% url 'pedido:editar-pedido' pedido.id %}">{{ pedido }}</a><br>
-                    {% endif %}
-                {% empty %}
-                    -
-                {% endfor %}
+                <a class="btn btn-sm btn-primary w-100 text-start"
+                   href="{% url 'pedido:nuevo-pedido' proveedor.id %}">
+                    {{ proveedor.text_display }}
+                </a>
             </td>
 
+            <!-- Pendiente: fechas como botones -->
             <td>
-                {% for pedido in pedidos %}
-
-                    {% if pedido.get_estado_display == 'Enviado'%}
-                        <a href="{% url 'pedido:detalle-pedido' pedido.id %}">{{ pedido }}</a><br>
-                    {% endif %}
-                {% empty %}
+                {% with pendientes=pedidos|dictsort:"fecha" %}
+                <div class="d-flex flex-column gap-1">
+                    {% for pedido in pedidos %}
+                        {% if pedido.get_estado_display == 'Pendiente' %}
+                            <a class="btn btn-sm btn-warning"
+                               href="{% url 'pedido:editar-pedido' pedido.id %}">
+                                {{ pedido.fecha }}
+                            </a>
+                        {% endif %}
+                    {% empty %}
                         -
-                {% endfor %}
+                    {% endfor %}
+                </div>
+                {% endwith %}
             </td>
-            <td>
-                {% for pedido in pedidos %}
 
-                    {% if pedido.get_estado_display == 'Entregado'%}
-                        <a href="{% url 'pedido:editar-pedido' pedido.id %}">{{ pedido }}</a><br>
-                    {% endif %}
-                {% empty %}
-                    -
-                {% endfor %}
-            </td>
+            <!-- Enviado: fechas como botones -->
             <td>
-                <a href="{% url 'pedido:listar-faltantes' proveedor.id %}">Ver articulos faltantes</a>
+                <div class="d-flex flex-column gap-1">
+                    {% for pedido in pedidos %}
+                        {% if pedido.get_estado_display == 'Enviado' %}
+                            <a class="btn btn-sm btn-info"
+                               href="{% url 'pedido:detalle-pedido' pedido.id %}">
+                                {{ pedido.fecha }}
+                            </a>
+                        {% endif %}
+                    {% empty %}
+                        -
+                    {% endfor %}
+                </div>
+            </td>
+
+            <!-- Entregado: si se usa, fechas como botones -->
+            <td>
+                <div class="d-flex flex-column gap-1">
+                    {% for pedido in pedidos %}
+                        {% if pedido.get_estado_display == 'Entregado' %}
+                            <a class="btn btn-sm btn-success"
+                               href="{% url 'pedido:editar-pedido' pedido.id %}">
+                                {% if pedido.fecha_entrega %}
+                                    {{ pedido.fecha_entrega }}
+                                {% else %}
+                                    {{ pedido.fecha }}
+                                {% endif %}
+                            </a>
+                        {% endif %}
+                    {% empty %}
+                        -
+                    {% endfor %}
+                </div>
+            </td>
+
+            <!-- Artículos faltantes: botón con icono lista -->
+            <td>
+                <a class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1"
+                   href="{% url 'pedido:listar-faltantes' proveedor.id %}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M2.5 12.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m.5-4.5a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1z"/>
+                        <circle cx="1.75" cy="4" r="1" />
+                        <circle cx="1.75" cy="8" r="1" />
+                        <circle cx="1.75" cy="12" r="1" />
+                    </svg>
+                    Ver listado
+                </a>
             </td>
         </tr>
     {% endfor %}

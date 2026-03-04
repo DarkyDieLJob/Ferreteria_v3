@@ -1,6 +1,12 @@
 {% load crispy_forms_tags %}
-<form method="post" action="{% url 'pedido:editar-pedido' pedido.id %}">
+<form method="post" action="{% url 'pedido:editar-pedido' pedido.id %}" class="row g-2">
     {% csrf_token %}
-    {{ form|crispy }}
-    <button type="submit" class="btn btn-primary">Agregar al pedido</button>
+    <div class="col-12">
+        {{ form|crispy }}
+    </div>
+    <div class="col-12 d-flex justify-content-end">
+        <button type="submit" class="btn btn-primary">
+            Agregar al pedido
+        </button>
+    </div>
 </form>

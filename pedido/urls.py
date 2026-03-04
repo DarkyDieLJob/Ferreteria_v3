@@ -7,6 +7,7 @@ from .views.editar import EditarPedidoView, actualizar_cantidad, agregar_al_pedi
 from .views.editar import cancelar_articulo_pedido, enviar_pedido
 from .views.faltantes import ListarArticulosFaltantesView
 from .views.home import HomeView, nuevo_pedido
+from .views.pdf import descargar_pedido_pdf
 
 app_name = "pedido"
 name = "pedido"
@@ -52,6 +53,11 @@ urlpatterns = [
         "detalle_pedido/<int:pedido_id>",
         DetallePedidoView.as_view(),
         name="detalle-pedido",
+    ),
+    path(
+        "pedido/<int:pedido_id>/pdf/",
+        descargar_pedido_pdf,
+        name="pedido-pdf",
     ),
     # Controlar pedido por proveedor
     path(

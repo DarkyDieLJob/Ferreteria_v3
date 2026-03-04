@@ -1,3 +1,86 @@
+function agregarDevolucion(articulo_id, proveedor_id, item_id){
+    var devolver = document.getElementById('devolver-devolver' + articulo_id).checked;
+    var url = '/pedidos/agregar_devolucion/';
+    var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    var data = {
+        'articulo_id': articulo_id,
+        'proveedor_id': proveedor_id,
+        'pedido_id': pedidoId,
+        'item_id': item_id,
+        'devolver': devolver,
+        'csrfmiddlewaretoken': csrftoken
+    };
+    console.log(url, csrftoken, data);
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        location.reload();
+    });
+}
+
+function pedidoControlado(pedido_id){
+    var url = '/pedidos/marcar_controlado/';
+    var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    var data = {
+        'pedido_id': pedido_id,
+        'csrfmiddlewaretoken': csrftoken
+    };
+    console.log(url, csrftoken, data);
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error){
+            alert(data.error);
+            return;
+        }
+        if (data.status === 'ok'){
+            window.location.href = urlHome;
+        }
+    });
+}
+
+function agregarAlStock(articulo_id, proveedor_id, item_id){
+    var llego = document.getElementById('llego-llego' + articulo_id).checked;
+    var cantidad = document.querySelector('.quantity-input[data-id="llego-' + articulo_id + '"]').value;
+    var url = '/pedidos/agregar_al_stock/';
+    var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    var data = {
+        'articulo_id': articulo_id,
+        'proveedor_id': proveedor_id,
+        'item_id': item_id,
+        'llego': llego,
+        'cantidad': cantidad,
+        'csrfmiddlewaretoken': csrftoken
+    };
+    console.log(url, csrftoken, data);
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        location.reload();
+    });
+}
+
 function actualizarLlego(id){
     var llego = document.getElementById('llego-' + id).checked;
     var url = '/pedidos/actualizar_llego/'+id;
@@ -21,6 +104,55 @@ function actualizarLlego(id){
         console.log(data);
     });
 }
+
+// Delegación de eventos para inputs y botones (sin inline handlers)
+document.addEventListener('DOMContentLoaded', function () {
+    // Cambio de cantidad en inputs (Artículos en el pedido)
+    document.body.addEventListener('change', function (e) {
+        const target = e.target;
+        if (target && target.classList && target.classList.contains('quantity-input')) {
+            const articuloId = target.getAttribute('data-articulo-id');
+            if (articuloId) {
+                actualizarCantidad(articuloId, target.value);
+            }
+        }
+    });
+
+    // Click en botón Cancelar (Artículos en el pedido)
+    document.body.addEventListener('click', function (e) {
+        const btn = e.target.closest('.js-cancelar');
+        if (btn) {
+            const articuloId = btn.getAttribute('data-articulo-id');
+            const proveedorId = btn.getAttribute('data-proveedor-id');
+            const itemId = btn.getAttribute('data-item-id');
+            if (articuloId && proveedorId && itemId) {
+                cancelarArticuloPedido(articuloId, proveedorId, itemId);
+            }
+        }
+    });
+
+    // Click en botón Enviar pedido
+    document.body.addEventListener('click', function (e) {
+        const btnEnviar = e.target.closest('.js-enviar-pedido');
+        if (btnEnviar) {
+            e.preventDefault();
+            enviarPedido(pedidoId);
+        }
+    });
+
+    // Click en botón "Agregar al pedido" (Artículos faltantes)
+    document.body.addEventListener('click', function (e) {
+        const btn = e.target.closest('.js-agregar-al-pedido');
+        if (btn) {
+            const articuloId = btn.getAttribute('data-articulo-id');
+            const proveedorId = btn.getAttribute('data-proveedor-id');
+            const itemId = btn.getAttribute('data-item-id');
+            if (articuloId && proveedorId && itemId) {
+                agregarAlPedido(articuloId, proveedorId, itemId);
+            }
+        }
+    });
+});
 
 function actualizarCantidad(id, cantidad){
     var url = '/pedidos/actualizar_cantidad/'+id;
@@ -59,10 +191,11 @@ function agregarAlPedido(articulo_id, proveedor_id, item_id) {
         'csrfmiddlewaretoken': csrftoken
     };
     console.log(data);
-    //si data cantidad es <= 0, salta un alert y el check se setea en unquecked
+    // si data.cantidad es <= 0, salta un alert y el check se setea en unchecked
     if (data.cantidad <= 0){
         alert('La cantidad debe ser mayor a 0');
-        document.getElementById('agregar-al-pedido-' + articulo_id).checked = false;
+        const chk = document.getElementById('agregar-al-pedido-' + articulo_id);
+        if (chk) chk.checked = false;
         return;
     }
 
@@ -101,9 +234,9 @@ function enviarPedido(pedido_id) {
     })
     .then(response => response.json())
     .then(data => {
-        //si {'status': 'error', 'message': 'El pedido no tiene artículos'} salta un alert
+        // si {'status': 'error', 'message': 'El pedido no tiene artículos'} salta un alert
         if (data.status === 'ok'){
-            //redirije a la vista de detalle pedido como ruta absoluta y no relativa
+            // redirige a la vista de detalle pedido como ruta absoluta y no relativa
             window.location.href = urlEnviarPedido;
         }
         if (data.status === 'error'){

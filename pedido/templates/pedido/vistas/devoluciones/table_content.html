@@ -1,11 +1,12 @@
 {% extends 'pedido/elementos/elemento_tabla.html'%}
+
 {% block table_head %}
     <tr>
         <th>id</th>
         <th>Proveedor</th>
         <th>Ítem</th>
         <th>Cantidad</th>
-        <th>Ya se devolvio?</th>
+        <th>¿Ya se devolvió?</th>
     </tr>
 {% endblock %}
 
@@ -18,17 +19,23 @@
         <td>
             <input 
                 type="number" 
-                class="quantity-input" 
+                class="form-control form-control-sm quantity-input w-auto d-inline-block" 
                 data-id="devolver-{{ articulo.id }}" 
                 value="{{ articulo.cantidad }}" 
                 step="0.01">
         </td>
         <td>
-            <input 
-                type="checkbox" 
-                id="devolver-devolver{{ articulo.id }}" 
-                onclick="eliminarDevolucion({{ articulo.id}},{{articulo.proveedor.id}},{{ articulo.item.id }})"
-            >
+            <div class="form-check m-0">
+                <input 
+                    type="checkbox" 
+                    class="form-check-input js-eliminar-devolucion"
+                    data-devolucion-id="{{ articulo.id }}"
+                    id="eliminar-devolucion-{{ articulo.id }}"
+                >
+                <label class="form-check-label" for="eliminar-devolucion-{{ articulo.id }}">
+                    Ya se devolvió
+                </label>
+            </div>
         </td>
     </tr>
 {% endfor %}

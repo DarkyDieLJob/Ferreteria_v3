@@ -8,16 +8,10 @@
 {% block cuerpo %}
     <h2>Pedido: {{ proveedor }}</h2>
     <label>LLegó el pedido??:</label>
-    <button class='btn btn-primary' onclick="controlarPedido()">ControlarPedido</button>
+    <a class="btn btn-primary" href="{% url 'pedido:controlar-pedido' pedido.id %}">Controlar Pedido</a>
+    <a class="btn btn-outline-secondary ms-2" href="{% url 'pedido:pedido-pdf' pedido.id %}">Descargar PDF</a>
 
     {% include 'pedido/vistas/detalle_pedido/table_content.html' %}
 {% endblock %}
 
-{% block script %}
-    <script>
-        function controlarPedido(){
-            //redirije a la vista de controlar pedido
-            window.location.href = "{% url 'pedido:controlar-pedido' pedido.id %}";
-        }
-    </script>
-{% endblock %}
+{% block script %}{% endblock %}

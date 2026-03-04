@@ -1,0 +1,96 @@
+/* Base de estilos app Pedido */
+
+/* Reset/normalize mínimo */
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+
+/* Tipografía y layout base */
+body { line-height: 1.5; }
+
+/* Inputs de ancho completo donde aplique */
+#id_item { width: 100%; }
+
+/* Navbar: asegurar contraste según fondo */
+.navbar.bg-info { /* info es claro => usar navbar-light para íconos y toggler */ }
+
+/* Tablas comunes: mejora de legibilidad, espaciado y estados */
+.table { 
+  font-size: 0.92rem; 
+  border-collapse: separate;
+  border-spacing: 0;
+  background: transparent; /* dejar ver el color del card */
+}
+.table thead th { 
+  vertical-align: bottom; 
+  text-transform: none; 
+  letter-spacing: .01em; 
+}
+.table td, .table th { 
+  vertical-align: middle; 
+  padding: .5rem .75rem; 
+  border-top: 1px solid rgba(0,0,0,.06);
+}
+.table tbody tr:hover { 
+  background: rgba(0,0,0,.03); 
+}
+.table.table-striped > tbody > tr:nth-of-type(odd) > * { 
+  background-color: rgba(0,0,0,.03); 
+}
+.table thead.sticky-top { 
+  z-index: 2; 
+  box-shadow: 0 1px 0 rgba(0,0,0,.05); 
+}
+.table .quantity-input { 
+  text-align: right; 
+  min-width: 5.5rem; 
+}
+.table .form-check { 
+  min-height: auto; 
+  margin: 0; 
+}
+.table .form-check-input { 
+  cursor: pointer; 
+}
+.table .w-auto { 
+  width: auto !important; 
+}
+
+/* Contenedor de tablas con scroll (coincide con elemento_tabla.html) */
+.overflow-auto.h-100.border.border-2 { 
+  border-radius: .5rem; 
+  background: #fff; 
+  border-color: rgba(0,0,0,.125) !important;
+}
+
+/* Utilidades simples de espaciado */
+.mt-2 { margin-top: .5rem; }
+.mb-2 { margin-bottom: .5rem; }
+.mt-3 { margin-top: 1rem; }
+.mb-3 { margin-bottom: 1rem; }
+
+/* Paleta suave para diferenciar secciones - usar variables Bootstrap */
+.card-form {
+  --bs-card-bg: #c6ebbb; /* verde pálido */
+}
+.card-pedido {
+  --bs-card-bg: #9cbce0; /* azul pálido */
+}
+.card-faltantes {
+  --bs-card-bg: #e7bc83; /* naranja pálido */
+}
+
+/* Encabezado de cards levemente marcado */
+.card-form .card-header,
+.card-pedido .card-header,
+.card-faltantes .card-header {
+  background: rgba(0,0,0,.03);
+  font-weight: 500;
+}
+
+/* Dentro de cards de color, el wrapper no debe tapar el fondo */
+.card-pedido .overflow-auto.h-100.border.border-2,
+.card-faltantes .overflow-auto.h-100.border.border-2,
+.card-form .overflow-auto.h-100.border.border-2 {
+  background: transparent;
+  border-color: rgba(0,0,0,.15) !important;
+}

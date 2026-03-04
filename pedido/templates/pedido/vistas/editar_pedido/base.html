@@ -5,16 +5,42 @@
     {% load static %}
 {% endblock %}
 
-
 {% block cuerpo %}
-    <button class='btn btn-primary' onclick="enviarPedido({{ pedido.id }})">Enviar Pedido</button>
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h2 class="h5 mb-0">Editar pedido: {{ proveedor }}</h2>
+        <a href="#" class="btn btn-success btn-sm js-enviar-pedido">
+            Enviar pedido
+        </a>
+    </div>
 
-    {% include 'pedido/vistas/editar_pedido/form_content.html' %}
-    {% include 'pedido/vistas/editar_pedido/table_content_articulos_pedidos.html' %}
-    {% include 'pedido/vistas/editar_pedido/table_content_articulos_faltantes.html' %}
+    <div class="col-12 col-lg-5">
+        <div class="card card-form">
+            <div class="card-header py-2">Agregar artículo al pedido</div>
+            <div class="card-body">
+            {% include 'pedido/vistas/editar_pedido/form_content.html' %}
+            </div>
+        </div>
+        </div>
+
+        <div class="col-12">
+        <div class="card card-pedido">
+            <div class="card-header py-2">Artículos en el pedido</div>
+            <div class="card-body p-0">
+            {% include 'pedido/vistas/editar_pedido/table_content_articulos_pedidos.html' %}
+            </div>
+        </div>
+        </div>
+
+        <div class="col-12">
+        <div class="card card-faltantes">
+            <div class="card-header py-2">Artículos faltantes</div>
+            <div class="card-body p-0">
+            {% include 'pedido/vistas/editar_pedido/table_content_articulos_faltantes.html' %}
+            </div>
+        </div>
+        </div>
+    </div>
 {% endblock %}
-
-
 
 {% block script %}
     <script>
@@ -25,5 +51,4 @@
     </script>
     <script src="{% static 'js/pedido/nuevo_stock.js' %}"></script>
     <script src="{% static 'js/pedido/vistas/editar_pedido.js' %}"></script>
-
 {% endblock %}

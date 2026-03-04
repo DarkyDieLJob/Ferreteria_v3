@@ -119,3 +119,13 @@ Notas:
 - Notas de despliegue:
   - Asegurarse que el proceso tenga permisos de escritura en LOG_DIR.
   - En entornos con poco espacio (ej. Raspberry Pi), se recomienda LOG_MAX_BYTES=1048576 y LOG_BACKUP_COUNT=5.
+
+## Generación de PDF de Pedidos
+
+- Dependencia: `reportlab` (se incluye en requirements.txt).
+- Endpoint: `pedidos/pedido/<pedido_id>/pdf/`
+- En la vista de detalle del pedido se muestra un botón “Descargar PDF”.
+- Contenido del PDF:
+  - Encabezado con proveedor y fecha del pedido.
+  - Tabla con columnas: Ítem y Cantidad (sin datos extra).
+- Nombre del archivo: `pedido_{proveedor}_{fecha}.pdf` (proveedor en formato slug).
