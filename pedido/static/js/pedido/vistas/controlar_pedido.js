@@ -1,5 +1,14 @@
-function agregarDevolucion(articulo_id, proveedor_id, item_id){
-    var devolver = document.getElementById('devolver-devolver' + articulo_id).checked;
+function agregarDevolucion(articulo_id, proveedor_id, item_id, checkboxEl){
+    if (!checkboxEl) {
+        checkboxEl = document.getElementById('devolver-devolver' + articulo_id);
+    }
+    if (!checkboxEl) return;
+
+    if (checkboxEl.dataset.loading === '1') return; // evitar dobles envíos
+    checkboxEl.dataset.loading = '1';
+    checkboxEl.disabled = true;
+
+    var devolver = checkboxEl.checked;
     var url = '/pedidos/agregar_devolucion/';
     var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
     var data = {
@@ -10,7 +19,6 @@ function agregarDevolucion(articulo_id, proveedor_id, item_id){
         'devolver': devolver,
         'csrfmiddlewaretoken': csrftoken
     };
-    console.log(url, csrftoken, data);
     fetch(url, {
         method: 'POST',
         headers: {
@@ -20,8 +28,18 @@ function agregarDevolucion(articulo_id, proveedor_id, item_id){
         body: JSON.stringify(data)
     })
     .then(response => response.json())
-    .then(data => {
-        location.reload();
+    .then(resp => {
+        // Remover la fila del DOM al confirmar devolución para evitar estados residuales
+        var row = checkboxEl.closest('tr');
+        if (row) row.remove();
+    })
+    .catch(() => {
+        // En caso de error, re-habilitar y revertir estado visual
+        checkboxEl.checked = false;
+    })
+    .finally(() => {
+        checkboxEl.disabled = false;
+        delete checkboxEl.dataset.loading;
     });
 }
 
@@ -41,11 +59,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const devolver = e.target.closest('.js-devolver');
         if (devolver) {
+            e.preventDefault();
             const articuloId = devolver.getAttribute('data-articulo-id');
             const proveedorId = devolver.getAttribute('data-proveedor-id');
             const itemId = devolver.getAttribute('data-item-id');
             if (articuloId && proveedorId && itemId) {
-                agregarDevolucion(articuloId, proveedorId, itemId);
+                agregarDevolucion(articuloId, proveedorId, itemId, devolver);
             }
         }
     });

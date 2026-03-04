@@ -129,3 +129,29 @@ Notas:
   - Encabezado con proveedor y fecha del pedido.
   - Tabla con columnas: Ítem y Cantidad (sin datos extra).
 - Nombre del archivo: `pedido_{proveedor}_{fecha}.pdf` (proveedor en formato slug).
+## Carritos en Buscador: Roles, Visibilidad y Colores
+
+- **Modelo de roles (Django Groups)**
+  - **cajeros**: usuarios con carrito personal. Verán y operarán únicamente su propio carrito.
+  - **caja_general**: usuarios autorizados para ver y operar todos los carritos de los usuarios en el grupo `cajeros`.
+  - El usuario con `username="Caja"` también es tratado como caja general.
+
+- **Reglas de visibilidad**
+  - Si el usuario pertenece a `caja_general`, o es `superuser`, o su `username` es `Caja`:
+    - Puede visualizar y operar todos los carritos de los usuarios del grupo `cajeros`.
+    - Puede filtrar por usuario con `GET /consultar_carrito/?usuario=<username>`.
+  - Si no, solo accede a su propio carrito.
+
+- **Metadatos de color**
+  - Las respuestas del backend incluyen un campo `color` por usuario para diferenciar visualmente carritos en UI.
+  - Paleta: mapeo fijo para algunos usuarios (ej. `Mati`, `Carlos`) y fallback determinístico para cualquier otro usuario.
+
+- **Requisitos de configuración**
+  - Crear grupos en admin:
+    - `cajeros`: asignar aquí a los cajeros que deben tener carrito personal.
+    - `caja_general`: asignar aquí al usuario “Caja” (o dejar al usuario con `username="Caja"`), y a operadores autorizados.
+  - Verificar que existan los usuarios reales (por ejemplo, “Mati” y “Carlos” si se quieren colores fijos).
+
+- **Notas de seguridad**
+  - Endpoints que permiten operar carritos ajenos (por ejemplo, agregar artículos indicando `usuario_caja`) validan pertenencia a `caja_general`.
+  - Se recomienda revisar permisos en cualquier endpoint que reciba `carrito_id` o IDs de artículos para mantener la coherencia.
