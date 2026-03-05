@@ -122,6 +122,11 @@ function agregarAlStock(articulo_id, proveedor_id, item_id){
     })
     .then(response => response.json())
     .then(data => {
-        location.reload();
+        // Feedback inmediato: eliminar la fila del artículo controlado sin recargar
+        if (data && (data.status === 'ok' || !data.error)) {
+            const qtyInput = document.querySelector(`.quantity-input[data-id="llego-${articulo_id}"]`);
+            const row = qtyInput ? qtyInput.closest('tr') : null;
+            if (row) row.remove();
+        }
     });
 }
