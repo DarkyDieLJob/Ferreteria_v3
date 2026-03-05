@@ -54,6 +54,17 @@ def calcular_total(datos):
         logger.error(f"calcular_total esperaba un dict, pero recibió {type(datos)}")
         return datos  # Devolver sin modificar o lanzar error
 
+    def _to_decimal_qty(val):
+        """Convierte cantidades a Decimal, aceptando números o strings con ',' o '.'"""
+        try:
+            if isinstance(val, str):
+                val = val.replace(',', '.')
+                return Decimal(val)
+            # Para floats/ints u otros tipos numéricos, usar representación en string
+            return Decimal(str(val))
+        except (InvalidOperation, TypeError, ValueError):
+            return Decimal('0')
+
     for nombre_carrito, carrito_data in datos.items():
         if not isinstance(carrito_data, dict):
             logger.warning(
@@ -77,7 +88,7 @@ def calcular_total(datos):
                 # Los precios vienen como string desde articulo_to_dict
                 precio = Decimal(articulo.get("precio", "0"))
                 precio_efectivo = Decimal(articulo.get("precio_efectivo", "0"))
-                cantidad = int(articulo.get("cantidad", 0))
+                cantidad = _to_decimal_qty(articulo.get("cantidad", 0))
 
                 if cantidad < 0:
                     logger.warning(
@@ -109,7 +120,7 @@ def calcular_total(datos):
             try:
                 # Precio viene como string, usarlo para ambos totales
                 precio = Decimal(articulo_sr.get("precio", "0"))
-                cantidad = int(articulo_sr.get("cantidad", 0))
+                cantidad = _to_decimal_qty(articulo_sr.get("cantidad", 0))
 
                 if cantidad < 0:
                     logger.warning(
