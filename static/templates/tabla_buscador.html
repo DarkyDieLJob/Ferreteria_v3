@@ -127,34 +127,34 @@
         
                 // Llenar el formulario en el modal con el id del artículo
                 document.getElementById('id_articulo').value = id;
-        
-                // Si el usuario es 'darkydiel', agrega botones de opción para los usuarios "caja".
-                if (esDarkydiel) {
-                    fetch('/usuarios_caja/')
-                        .then(response => response.json())
-                        .then(usuarios_caja => {
-                            var formulario = document.getElementById('miFormularioCarrito');
-        
-                            // Elimina los botones de opción existentes.
-                            var existingOptions = formulario.querySelectorAll('input[type="radio"]');
-                            existingOptions.forEach(option => option.parentElement.remove());
-        
-                            // Agrega nuevos botones de opción.
-                            usuarios_caja.forEach(usuario => {
-                                var label = document.createElement('label');
-                                label.textContent = usuario.nombre;  // Asegúrate de que 'nombre' es la propiedad correcta para el nombre del usuario.
-                                var radio = document.createElement('input');
-                                radio.type = 'radio';
-                                radio.name = 'usuario_caja';
-                                radio.value = usuario.id;  // Asegúrate de que 'id' es la propiedad correcta para el ID del usuario.
-                                label.appendChild(radio);
-                                formulario.appendChild(label);
-                            });
+                
+                // Cargar siempre las opciones de usuarios de caja y preseleccionar la primera
+                fetch('/usuarios_caja/')
+                    .then(response => (response.ok ? response.json() : []))
+                    .then(usuarios_caja => {
+                        var formulario = document.getElementById('miFormularioCarrito');
+                        // Elimina opciones previas agregadas por este bloque
+                        var existingLabels = formulario.querySelectorAll('label[data-usuario-caja]');
+                        existingLabels.forEach(lbl => lbl.remove());
+
+                        usuarios_caja.forEach((usuario, idx) => {
+                            var label = document.createElement('label');
+                            label.setAttribute('data-usuario-caja', '1');
+                            label.style.display = 'block';
+                            label.textContent = usuario.nombre + ' ';
+                            var radio = document.createElement('input');
+                            radio.type = 'radio';
+                            radio.name = 'usuario_caja';
+                            radio.value = usuario.id;
+                            if (idx === 0) radio.checked = true;
+                            label.appendChild(radio);
+                            formulario.appendChild(label);
                         });
-                }
-        
-                // Mostrar el modal
-                document.getElementById('ModalCarrito').style.display = 'block';
+                    })
+                    .finally(() => {
+                        // Mostrar el modal
+                        document.getElementById('ModalCarrito').style.display = 'block';
+                    });
             });
         });
 
@@ -380,8 +380,8 @@
             event.preventDefault();
             var id_articulo = document.getElementById('id_articulo').value;
             var cantidad = document.getElementById('cantidad_agregar').value;
-            var usuario_caja = esDarkydiel ? Number(document.querySelector('input[name="usuario_caja"]:checked').value) + 1 : null;
-            console.log(usuario_caja)
+            var selected = document.querySelector('input[name="usuario_caja"]:checked');
+            var usuario_caja = selected ? Number(selected.value) : null;
             fetch('/agregar_articulo_a_carrito/'+ id_articulo + '/', {
                 method: 'POST',
                 body: JSON.stringify({id_articulo: id_articulo, cantidad: cantidad, usuario_caja: usuario_caja}),
