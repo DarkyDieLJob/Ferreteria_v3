@@ -299,7 +299,7 @@ function cancelarArticuloPedido(articulo_id, proveedor_id, item_id) {
     .then(response => response.json())
     .then(data => {
         if (data.status === 'ok'){
-            location.reload();
+            // mantener sin recargar
         }
     });
 }
