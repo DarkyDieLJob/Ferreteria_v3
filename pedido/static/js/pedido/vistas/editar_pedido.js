@@ -241,9 +241,14 @@ function agregarAlPedido(articulo_id, proveedor_id, item_id) {
     .then(response => response.json())
     .then(data => {
         if (data.status === 'ok'){
-            const btnEl = document.querySelector(`.js-cancelar[data-articulo-id="${articulo_id}"]`);
-            const row = btnEl ? btnEl.closest('tr') : null;
-            if (row) row.remove();
+            // Reemplazar el botón "Agregar al pedido" por un badge "Artículo pedido"
+            const btn = document.querySelector(`.js-agregar-al-pedido[data-articulo-id="${articulo_id}"]`);
+            if (btn) {
+                const td = btn.closest('td');
+                if (td) {
+                    td.innerHTML = '<span class="badge bg-secondary">Artículo pedido</span>';
+                }
+            }
         }
     });
 }
