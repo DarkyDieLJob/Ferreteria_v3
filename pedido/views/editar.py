@@ -165,7 +165,24 @@ def agregar_al_pedido(request):
     pedido = Pedido.objects.get(id=pedido_id)
     pedido.articulo_pedido.add(articulo_pedido)
     pedido.save()
-    return JsonResponse({"status": "ok"})
+    # Devolver datos mínimos para actualizar la UI sin recargar
+    # Serializar fecha de forma segura (puede ser datetime o string según el modelo)
+    ap_fecha = getattr(articulo_pedido, "fecha", None)
+    ap_fecha_str = str(ap_fecha) if ap_fecha else ""
+
+    return JsonResponse(
+        {
+            "status": "ok",
+            "articulo": {
+                "id": articulo_pedido.id,
+                "fecha": ap_fecha_str,
+                "item_str": str(articulo_pedido.item),
+                "proveedor_id": articulo_pedido.proveedor_id,
+                "item_id": articulo_pedido.item_id,
+                "cantidad": articulo_pedido.cantidad,
+            },
+        }
+    )
 
 
 def cancelar_articulo_pedido(request):
