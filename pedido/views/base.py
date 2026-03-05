@@ -4,6 +4,7 @@ from bdd.models import Item, Proveedor, Lista_Pedidos
 from django.http import JsonResponse
 import json
 from pedido.models import ArticuloPedido
+from django.db.models import Q
 
 
 class GeneralPedidoView(TemplateView):
@@ -42,10 +43,14 @@ class ItemAutocomplete(Select2QuerySetView):
         proveedor_id = self.request.GET.get("proveedor_id")
         print(f"codigo: {codigo}, proveedor_id: {proveedor_id}")
 
-        # Búsqueda flexible: texto contenido en el código (case-insensitive)
+        # Restringir por proveedor si viene informado
+        if proveedor_id:
+            qs = qs.filter(proveedor_id=proveedor_id)
+
+        # Búsqueda flexible: coincidencia en código o descripción (case-insensitive)
         if codigo:
-            print(f"Filtering items with codigo containing {codigo}")
-            qs = qs.filter(codigo__icontains=codigo)
+            print(f"Filtering items with codigo/descripcion containing {codigo}")
+            qs = qs.filter(Q(codigo__icontains=codigo) | Q(descripcion__icontains=codigo))
         print(f"Returning {len(qs)} items")
         print(qs)
         return qs
