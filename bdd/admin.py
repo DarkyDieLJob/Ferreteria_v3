@@ -46,6 +46,25 @@ class BaseModelAdmin(admin.ModelAdmin):
 
         return display_method
 
+    # --- Admin action: marcar hay_csv_pendiente=True cuando el modelo posee ese campo ---
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        try:
+            field_names = [f.name for f in self.model._meta.get_fields()]
+            if "hay_csv_pendiente" in field_names:
+                actions["marcar_csv_pendiente"] = (
+                    BaseModelAdmin.marcar_csv_pendiente,
+                    "marcar_csv_pendiente",
+                    "Marcar CSV pendiente (hay_csv_pendiente=True)",
+                )
+        except Exception:
+            pass
+        return actions
+
+    def marcar_csv_pendiente(self, request, queryset):
+        # Marca el flag hay_csv_pendiente=True en lote
+        queryset.update(hay_csv_pendiente=True)
+
 
 import inspect
 from . import models as my_models
