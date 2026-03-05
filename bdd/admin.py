@@ -57,6 +57,11 @@ class BaseModelAdmin(admin.ModelAdmin):
                     "marcar_csv_pendiente",
                     "Marcar CSV pendiente (hay_csv_pendiente=True)",
                 )
+                actions["alternar_csv_pendiente"] = (
+                    BaseModelAdmin.alternar_csv_pendiente,
+                    "alternar_csv_pendiente",
+                    "Alternar CSV pendiente (cambiar True/False)",
+                )
         except Exception:
             pass
         return actions
@@ -64,6 +69,17 @@ class BaseModelAdmin(admin.ModelAdmin):
     def marcar_csv_pendiente(self, request, queryset):
         # Marca el flag hay_csv_pendiente=True en lote
         queryset.update(hay_csv_pendiente=True)
+
+    def alternar_csv_pendiente(self, request, queryset):
+        # Alterna el valor de hay_csv_pendiente por fila seleccionada
+        for obj in queryset:
+            try:
+                current = bool(getattr(obj, "hay_csv_pendiente", False))
+                setattr(obj, "hay_csv_pendiente", not current)
+                obj.save(update_fields=["hay_csv_pendiente"])
+            except Exception:
+                # En caso de error en algún objeto, continuar con el resto
+                continue
 
 
 import inspect
