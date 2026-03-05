@@ -169,7 +169,14 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
+// Flag por artículo para evitar solicitudes concurrentes que provoquen duplicados o estados inconsistentes
+const _actualizarBusy = {};
+
 function actualizarCantidad(id, cantidad){
+    if (_actualizarBusy[id]) {
+        return;
+    }
+    _actualizarBusy[id] = true;
     var url = '/pedidos/actualizar_cantidad/'+id;
     var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
     var data = {
@@ -192,6 +199,12 @@ function actualizarCantidad(id, cantidad){
         if (data.status === 'ok'){
             location.reload();
         }
+    })
+    .catch(err => {
+        console.error('Error actualizando cantidad', err);
+    })
+    .finally(() => {
+        _actualizarBusy[id] = false;
     });
 }
 
