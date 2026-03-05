@@ -377,7 +377,14 @@ def agregar_articulo_a_carrito(request, id_articulo):
 
     try:
         data = json.loads(request.body)
-        cantidad_a_agregar = int(data.get("cantidad", 0))
+        # Permitir cantidades decimales (soportar coma como separador)
+        raw_qty = data.get("cantidad", 0)
+        if isinstance(raw_qty, str):
+            raw_qty = raw_qty.replace(",", ".")
+        try:
+            cantidad_a_agregar = float(raw_qty)
+        except (TypeError, ValueError):
+            cantidad_a_agregar = 0.0
         usuario_caja_id = data.get("usuario_caja")
 
         if cantidad_a_agregar <= 0:

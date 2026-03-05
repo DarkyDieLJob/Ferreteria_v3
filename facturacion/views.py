@@ -193,6 +193,10 @@ def agregar_articulo_sin_registro(request):
             return JsonResponse({"error": "Faltan datos"}, status=400)
 
         try:
+            if isinstance(cantidad_str, str):
+                cantidad_str = cantidad_str.replace(",", ".")
+            if isinstance(precio_str, str):
+                precio_str = precio_str.replace(",", ".")
             cantidad = float(cantidad_str)  # Use DecimalField in model?
             precio = float(precio_str)  # Use DecimalField in model?
             carrito = Carrito.objects.get(id=carrito_id)

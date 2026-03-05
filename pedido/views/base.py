@@ -40,16 +40,12 @@ class ItemAutocomplete(Select2QuerySetView):
 
         codigo = self.request.GET.get("q", None)
         proveedor_id = self.request.GET.get("proveedor_id")
-        proveedor = Proveedor.objects.get(id=proveedor_id)
         print(f"codigo: {codigo}, proveedor_id: {proveedor_id}")
 
+        # Búsqueda flexible: texto contenido en el código (case-insensitive)
         if codigo:
-            print(f"Filtering items with codigo starting with {codigo}")
-            qs = qs.filter(
-                codigo__istartswith=codigo,
-                codigo__endswith=proveedor.identificador.abreviatura,
-            )
-            print("abreviatura:", proveedor.identificador.abreviatura)
+            print(f"Filtering items with codigo containing {codigo}")
+            qs = qs.filter(codigo__icontains=codigo)
         print(f"Returning {len(qs)} items")
         print(qs)
         return qs
