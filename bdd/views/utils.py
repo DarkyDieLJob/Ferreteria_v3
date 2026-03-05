@@ -1,5 +1,5 @@
 # tu_app/views/utils.py
-from decimal import Decimal, InvalidOperation  # Para manejar precios de forma segura
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP  # Para manejar precios de forma segura
 
 # Importa los modelos necesarios si las funciones dependen de ellos directamente
 # (en este caso, parece que operan sobre diccionarios ya extraídos)
@@ -140,9 +140,11 @@ def calcular_total(datos):
                     exc_info=True,
                 )
 
-        # Guardar totales como string para consistencia JSON
-        carrito_data["total"] = str(total)
-        carrito_data["total_efectivo"] = str(total_efectivo)
+        # Guardar totales redondeados a 2 decimales como string para consistencia JSON
+        total_rd = total.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        total_ef_rd = total_efectivo.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        carrito_data["total"] = str(total_rd)
+        carrito_data["total_efectivo"] = str(total_ef_rd)
         logger.debug(
             f"Totales para '{nombre_carrito}': Normal={total}, Efectivo={total_efectivo}"
         )
