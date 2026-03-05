@@ -167,6 +167,9 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     });
+
+    // Inicializar contadores
+    if (typeof __updatePedidoCounts === 'function') __updatePedidoCounts();
 });
 
 // Flag por artículo para evitar solicitudes concurrentes que provoquen duplicados o estados inconsistentes
@@ -239,8 +242,8 @@ function agregarAlPedido(articulo_id, proveedor_id, item_id) {
         body: JSON.stringify(data)
     })
     .then(response => response.json())
-    .then(data => {
-        if (data.status === 'ok'){
+    .then(dataResp => {
+        if (dataResp.status === 'ok'){
             // Reemplazar el botón "Agregar al pedido" por un badge "Artículo pedido"
             const btn = document.querySelector(`.js-agregar-al-pedido[data-articulo-id="${articulo_id}"]`);
             if (btn) {
@@ -248,7 +251,42 @@ function agregarAlPedido(articulo_id, proveedor_id, item_id) {
                 if (td) {
                     td.innerHTML = '<span class="badge bg-secondary">Artículo pedido</span>';
                 }
+                // Actualizar la celda de "Cantidad vendida" restando lo pedido
+                const row = td.closest('tr');
+                if (row) {
+                    const qtyCell = row.querySelector('td:nth-child(3)');
+                    if (qtyCell) {
+                        const current = parseFloat((qtyCell.textContent || '0').replace(',', '.')) || 0;
+                        const delta = parseFloat(String(data.cantidad).replace(',', '.')) || 0;
+                        const next = Math.max(0, current - delta);
+                        qtyCell.textContent = next.toFixed(2);
+                    }
+                }
             }
+
+            // Insertar fila en la tabla "Artículos en el pedido" sin recargar
+            if (dataResp.articulo) {
+                const pedidosTbody = document.querySelector('.card-pedido tbody');
+                if (pedidosTbody) {
+                    const tr = document.createElement('tr');
+                    const fechaText = dataResp.articulo.fecha ? dataResp.articulo.fecha : '';
+                    tr.innerHTML = `
+                        <td class="d-none">${dataResp.articulo.id}</td>
+                        <td>${fechaText}</td>
+                        <td>${dataResp.articulo.item_str}</td>
+                        <td>
+                            <input type="number" class="form-control form-control-sm quantity-input w-auto d-inline-block" data-articulo-id="${dataResp.articulo.id}" value="${dataResp.articulo.cantidad}" step="0.01">
+                        </td>
+                        <td>
+                            <button class="btn btn-outline-danger btn-sm js-cancelar" type="button" data-articulo-id="${dataResp.articulo.id}" data-proveedor-id="${dataResp.articulo.proveedor_id}" data-item-id="${dataResp.articulo.item_id}">Cancelar</button>
+                        </td>
+                    `;
+                    pedidosTbody.appendChild(tr);
+                }
+            }
+
+            // Actualizar contadores
+            if (typeof __updatePedidoCounts === 'function') __updatePedidoCounts();
         }
     });
 }
@@ -306,7 +344,28 @@ function cancelarArticuloPedido(articulo_id, proveedor_id, item_id) {
     .then(response => response.json())
     .then(data => {
         if (data.status === 'ok'){
-            // mantener sin recargar
+            // Remover la fila del artículo cancelado sin recargar
+            const btnEl = document.querySelector(`.js-cancelar[data-articulo-id="${articulo_id}"]`);
+            const row = btnEl ? btnEl.closest("tr") : null;
+            if (row) row.remove();
+            if (typeof __updatePedidoCounts === "function") __updatePedidoCounts();
         }
     });
+}
+
+// Helper para actualizar contadores de filas en headers
+function __updatePedidoCounts() {
+    try {
+        const pedidosTbody = document.querySelector('.card-pedido tbody');
+        const faltantesTbody = document.querySelector('.card-faltantes tbody');
+        const pedidosCount = pedidosTbody ? pedidosTbody.querySelectorAll('tr').length : 0;
+        const faltantesCount = faltantesTbody ? faltantesTbody.querySelectorAll('tr').length : 0;
+
+        const pedidosHeader = document.querySelector('.card-pedido .card-header');
+        const faltantesHeader = document.querySelector('.card-faltantes .card-header');
+        if (pedidosHeader) pedidosHeader.textContent = `Artículos en el pedido (${pedidosCount})`;
+        if (faltantesHeader) faltantesHeader.textContent = `Artículos faltantes (${faltantesCount})`;
+    } catch (e) {
+        console.warn('No se pudieron actualizar los contadores de tablas', e);
+    }
 }
