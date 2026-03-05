@@ -241,7 +241,9 @@ function agregarAlPedido(articulo_id, proveedor_id, item_id) {
     .then(response => response.json())
     .then(data => {
         if (data.status === 'ok'){
-            // mantener sin recargar
+            const btnEl = document.querySelector(`.js-cancelar[data-articulo-id="${articulo_id}"]`);
+            const row = btnEl ? btnEl.closest('tr') : null;
+            if (row) row.remove();
         }
     });
 }
