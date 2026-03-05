@@ -40,6 +40,7 @@ function pedidoControlado(pedido_id){
             'Content-Type': 'application/json',
             'X-CSRFToken': csrftoken
         },
+        credentials: 'same-origin',
         body: JSON.stringify(data)
     })
     .then(response => response.json())
@@ -74,6 +75,7 @@ function agregarAlStock(articulo_id, proveedor_id, item_id){
             'Content-Type': 'application/json',
             'X-CSRFToken': csrftoken
         },
+        credentials: 'same-origin',
         body: JSON.stringify(data)
     })
     .then(response => response.json())
@@ -98,6 +100,7 @@ function actualizarLlego(id){
             'Content-Type': 'application/json',
             'X-CSRFToken': csrftoken
         },
+        credentials: 'same-origin',
         body: JSON.stringify(data)
     })
     .then(response => response.json())
@@ -108,13 +111,18 @@ function actualizarLlego(id){
 
 // Delegación de eventos para inputs y botones (sin inline handlers)
 document.addEventListener('DOMContentLoaded', function () {
+    // Debounce por articuloId para evitar múltiples POST rápidos en Chrome
+    const qtyDebounce = {};
     // Cambio de cantidad en inputs (Artículos en el pedido)
     document.body.addEventListener('change', function (e) {
         const target = e.target;
         if (target && target.classList && target.classList.contains('quantity-input')) {
             const articuloId = target.getAttribute('data-articulo-id');
             if (articuloId) {
-                actualizarCantidad(articuloId, target.value);
+                clearTimeout(qtyDebounce[articuloId]);
+                qtyDebounce[articuloId] = setTimeout(function () {
+                    actualizarCantidad(articuloId, target.value);
+                }, 250);
             }
         }
     });
@@ -123,6 +131,8 @@ document.addEventListener('DOMContentLoaded', function () {
     document.body.addEventListener('click', function (e) {
         const btn = e.target.closest('.js-cancelar');
         if (btn) {
+            if (btn.dataset.busy === '1') return;
+            btn.dataset.busy = '1';
             const articuloId = btn.getAttribute('data-articulo-id');
             const proveedorId = btn.getAttribute('data-proveedor-id');
             const itemId = btn.getAttribute('data-item-id');
@@ -137,6 +147,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const btnEnviar = e.target.closest('.js-enviar-pedido');
         if (btnEnviar) {
             e.preventDefault();
+            if (btnEnviar.dataset.busy === '1') return;
+            btnEnviar.dataset.busy = '1';
             enviarPedido(pedidoId);
         }
     });
@@ -145,6 +157,8 @@ document.addEventListener('DOMContentLoaded', function () {
     document.body.addEventListener('click', function (e) {
         const btn = e.target.closest('.js-agregar-al-pedido');
         if (btn) {
+            if (btn.dataset.busy === '1') return;
+            btn.dataset.busy = '1';
             const articuloId = btn.getAttribute('data-articulo-id');
             const proveedorId = btn.getAttribute('data-proveedor-id');
             const itemId = btn.getAttribute('data-item-id');
@@ -170,6 +184,7 @@ function actualizarCantidad(id, cantidad){
             'Content-Type': 'application/json',
             'X-CSRFToken': csrftoken
         },
+        credentials: 'same-origin',
         body: JSON.stringify(data)
     })
     .then(response => response.json())
@@ -207,6 +222,7 @@ function agregarAlPedido(articulo_id, proveedor_id, item_id) {
             'Content-Type': 'application/json',
             'X-CSRFToken': csrftoken
         },
+        credentials: 'same-origin',
         body: JSON.stringify(data)
     })
     .then(response => response.json())
@@ -231,6 +247,7 @@ function enviarPedido(pedido_id) {
             'Content-Type': 'application/json',
             'X-CSRFToken': csrftoken
         },
+        credentials: 'same-origin',
         body: JSON.stringify(data)
     })
     .then(response => response.json())
@@ -263,6 +280,7 @@ function cancelarArticuloPedido(articulo_id, proveedor_id, item_id) {
             'Content-Type': 'application/json',
             'X-CSRFToken': csrftoken
         },
+        credentials: 'same-origin',
         body: JSON.stringify(data)
     })
     .then(response => response.json())
