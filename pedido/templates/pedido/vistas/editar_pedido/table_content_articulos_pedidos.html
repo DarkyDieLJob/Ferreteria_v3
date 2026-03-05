@@ -1,4 +1,5 @@
 {% extends 'pedido/elementos/elemento_tabla.html'%}
+{% load l10n %}
 
 {% block table_head %}
     <tr>
@@ -21,7 +22,7 @@
                     type="number" 
                     class="form-control form-control-sm quantity-input w-auto d-inline-block" 
                     data-articulo-id="{{ articulo.id }}"
-                    value="{{ articulo.cantidad }}" 
+                    value="{{ articulo.cantidad|unlocalize }}" 
                     step="0.01">
             </td>
             <td>

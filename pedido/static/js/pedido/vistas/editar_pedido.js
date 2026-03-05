@@ -17,6 +17,7 @@ function agregarDevolucion(articulo_id, proveedor_id, item_id){
             'Content-Type': 'application/json',
             'X-CSRFToken': csrftoken
         },
+        credentials: 'same-origin',
         body: JSON.stringify(data)
     })
     .then(response => response.json())
