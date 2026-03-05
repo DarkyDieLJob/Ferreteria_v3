@@ -21,7 +21,7 @@
                     type="number" 
                     class="form-control form-control-sm quantity-input w-auto d-inline-block" 
                     data-id="llego-{{ articulo.id }}" 
-                    value="{{ articulo.cantidad }}" 
+                    value="{{ articulo.cantidad|unlocalize }}" 
                     step="0.01">
             </td>
             <td>

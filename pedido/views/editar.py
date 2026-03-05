@@ -109,7 +109,14 @@ def actualizar_cantidad(request, articulo_id):
     articulo_pedido = ArticuloPedido.objects.get(id=articulo_id)
     data = json.loads(request.body)
 
-    cantidad = float(data.get("cantidad"))
+    # Permitir coma como separador decimal y manejar valores no numéricos
+    raw = data.get("cantidad")
+    if isinstance(raw, str):
+        raw = raw.replace(",", ".")
+    try:
+        cantidad = float(raw)
+    except (TypeError, ValueError):
+        cantidad = 0.0
 
     if articulo_pedido.cantidad > cantidad:
         articulo_faltante, _ = Lista_Pedidos.objects.get_or_create(
