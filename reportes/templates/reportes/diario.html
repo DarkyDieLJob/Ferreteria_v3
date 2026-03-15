@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Reportes - Diario{% endblock %}
+
+{% block form_content %}
+  <h2>Procesar planilla diaria</h2>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Procesar</button>
+  </form>
+{% endblock %}
+
+{% block base_content %}
+  {% if media_urls or drive_file_ids %}
+    <hr>
+    <h3>Resultados</h3>
+    <ul>
+      {% if media_urls.xlsx %}<li>Salida XLSX (local): <a href="{{ media_urls.xlsx }}" target="_blank">{{ media_urls.xlsx }}</a></li>{% endif %}
+      {% if media_urls.ods %}<li>Salida ODS (local): <a href="{{ media_urls.ods }}" target="_blank">{{ media_urls.ods }}</a></li>{% endif %}
+      {% if drive_file_ids.xlsx %}<li>Drive XLSX ID: {{ drive_file_ids.xlsx }}</li>{% endif %}
+      {% if drive_file_ids.ods %}<li>Drive ODS ID: {{ drive_file_ids.ods }}</li>{% endif %}
+    </ul>
+  {% endif %}
+{% endblock %}

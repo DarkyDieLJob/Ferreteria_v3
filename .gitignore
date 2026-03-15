@@ -88,3 +88,12 @@ media/
 # Ignorar logs y archivos temporales
 logs/
 *.swp
+
+# Salida de collectstatic
+static_root/
+staticfiles/
+**/static_root/
+**/staticfiles/
+
+# Manifiestos de staticfiles
+*.manifest

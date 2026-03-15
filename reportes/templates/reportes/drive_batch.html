@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Reportes - Control desde Drive{% endblock %}
+
+{% block form_content %}
+  <h2>Control de planillas en Drive</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-secondary" name="submit" value="sync" onclick="document.getElementById('id_action').value='sync'">Sincronizar lista</button>
+    <hr>
+    {% if input_folder_url %}
+      <p>
+        <strong>Carpeta explorada:</strong>
+        <a href="{{ input_folder_url }}" target="_blank">Abrir en Drive</a>
+        <br>
+        <small>{{ input_folder_url }}</small>
+      </p>
+      <hr>
+    {% endif %}
+    <h4>Archivos detectados</h4>
+    <table class="table table-sm table-striped">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Nombre</th>
+          <th>Año</th>
+          <th>Allowed</th>
+          <th>Processed</th>
+          <th>Actualizado</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in entries %}
+        <tr>
+          <td>
+            <input type="checkbox" name="selected" value="{{ e.pk }}" {% if e.processed %}disabled{% endif %}>
+          </td>
+          <td>{{ e.name }}</td>
+          <td>{{ e.year }}</td>
+          <td>{{ e.allowed }}</td>
+          <td>{{ e.processed }}</td>
+          <td>{{ e.updated_at }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5">No hay entradas en el control. Presiona “Sincronizar lista”.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <button type="submit" class="btn btn-primary" name="submit" value="process" onclick="document.getElementById('id_action').value='process'">Procesar seleccionados</button>
+  </form>
+{% endblock %}
+
+{% block base_content %}
+  {% if batch_results %}
+    <hr>
+    <h3>Resultados</h3>
+    <ul>
+      {% for r in batch_results %}
+        <li>
+          <strong>{{ r.name }}</strong>
+          {% if r.error %}
+            - Error: {{ r.error }}
+          {% else %}
+            {% if r.media_urls.xlsx %} | XLSX: <a href="{{ r.media_urls.xlsx }}" target="_blank">{{ r.media_urls.xlsx }}</a>{% endif %}
+            {% if r.media_urls.ods %} | ODS: <a href="{{ r.media_urls.ods }}" target="_blank">{{ r.media_urls.ods }}</a>{% endif %}
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endblock %}
