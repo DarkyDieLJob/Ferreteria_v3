@@ -259,8 +259,9 @@ def registrar_articulos_vendidos(request_dict):
                 articulo_vendido = ArticuloVendido(
                     sin_registrar=articulo_carrito,  # Link to the ArticuloSinRegistro instance
                     cantidad=articulo_carrito.cantidad,
-                    # Add precio_unitario_momento_venta if needed
-                    # precio_unitario = articulo_carrito.precio
+                    is_sin_registro=True,
+                    descripcion_sin_registro=getattr(articulo_carrito, "descripcion", None),
+                    precio_unitario_al_vender=float(getattr(articulo_carrito, "precio", 0) or 0),
                 )
                 logger.debug(
                     f"Creando ArticuloVendido para ArticuloSinRegistro ID {articulo_carrito.id} (Cant: {articulo_carrito.cantidad})"

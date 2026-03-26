@@ -1,0 +1,14 @@
+{% extends "admin/change_list.html" %}
+
+{% block object-tools-items %}
+  {{ block.super }}
+  <li>
+    <a href="{% url 'admin:reportes_weekly_generate_week' %}" class="addlink">Generar semana cerrada (L–S)</a>
+  </li>
+  <li>
+    <a href="{% url 'admin:reportes_weekly_regenerate_week' %}" class="historylink">Regenerar semana cerrada</a>
+  </li>
+  <li>
+    <a href="{% url 'admin:reportes_weekly_download_csv' %}" class="viewsitelink">Descargar CSV (última semana)</a>
+  </li>
+{% endblock %}

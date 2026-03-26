@@ -103,9 +103,12 @@ class Cliente(models.Model):
 class ArticuloVendido(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE, null=True, blank=True)
     sin_registrar = models.ForeignKey(
-        ArticuloSinRegistro, on_delete=models.CASCADE, null=True, blank=True
+        ArticuloSinRegistro, on_delete=models.SET_NULL, null=True, blank=True
     )
     cantidad = models.FloatField()
+    is_sin_registro = models.BooleanField(default=False)
+    descripcion_sin_registro = models.CharField(max_length=300, null=True, blank=True)
+    precio_unitario_al_vender = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         text = "{}".format(self.item if self.item else self.sin_registrar)
@@ -118,9 +121,14 @@ class ArticuloVendido(models.Model):
             importe = self.item.final
             importe_efectivo = self.item.final_efectivo
         else:
-            ds = self.sin_registrar.descripcion
-            importe = self.sin_registrar.precio
-            importe_efectivo = self.sin_registrar.precio
+            if self.sin_registrar is not None:
+                ds = self.sin_registrar.descripcion
+                importe = self.sin_registrar.precio
+                importe_efectivo = self.sin_registrar.precio
+            else:
+                ds = self.descripcion_sin_registro or "Sin registro"
+                importe = self.precio_unitario_al_vender or 0
+                importe_efectivo = self.precio_unitario_al_vender or 0
         data = {
             "ds": ds,
             "importe": round(importe, 2),
