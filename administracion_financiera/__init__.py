@@ -1,0 +1,1 @@
+default_app_config = "administracion_financiera.apps.AdministracionFinancieraConfig"

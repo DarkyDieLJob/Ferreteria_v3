@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Generar Ticket</title>
+</head>
+<body>
+  <h1>Generar Ticket de Pago</h1>
+  <p><a href="{% url 'administracion_financiera:dashboard' %}">Volver al dashboard</a></p>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Generar</button>
+  </form>
+</body>
+</html>

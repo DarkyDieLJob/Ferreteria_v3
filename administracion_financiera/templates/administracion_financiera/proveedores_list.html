@@ -1,0 +1,36 @@
+{% extends "administracion_financiera/base.html" %}
+{% block title %}Proveedores · Administración Financiera{% endblock %}
+{% block content %}
+  <div class="flex flex-wrap gap-2 mb-4">
+    <form method="get" action="{% url 'administracion_financiera:dashboard' %}"><button class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 hover:bg-slate-50" type="submit">Volver</button></form>
+  </div>
+  <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <h2 class="text-lg font-semibold text-slate-800 mb-3">Proveedores - Configuración Financiera</h2>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-slate-200">
+        <thead class="bg-slate-50">
+          <tr>
+            <th class="px-3 py-2 text-left text-xs font-semibold text-slate-600">Proveedor</th>
+            <th class="px-3 py-2 text-left text-xs font-semibold text-slate-600">Plazo</th>
+            <th class="px-3 py-2 text-left text-xs font-semibold text-slate-600">Punto de venta</th>
+            <th class="px-3 py-2 text-left text-xs font-semibold text-slate-600">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200">
+          {% for p in proveedores %}
+          <tr>
+            <td class="px-3 py-2 text-sm text-slate-800">{{ p }}</td>
+            <td class="px-3 py-2 text-sm text-slate-600">{% if p.financiero %}{{ p.financiero.plazo_unidad }} {{ p.financiero.plazo_valor }}{% else %}-{% endif %}</td>
+            <td class="px-3 py-2 text-sm text-slate-600">{% if p.financiero %}{{ p.financiero.punto_venta }}{% else %}-{% endif %}</td>
+            <td class="px-3 py-2">
+              <form method="get" action="{% url 'administracion_financiera:proveedor_financiero_edit' p.id %}"><button class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-800 hover:bg-slate-50" type="submit">Editar</button></form>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td class="px-3 py-3 text-sm text-slate-500" colspan="4">Sin proveedores.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}

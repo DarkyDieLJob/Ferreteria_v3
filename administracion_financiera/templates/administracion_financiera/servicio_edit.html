@@ -1,0 +1,17 @@
+{% extends "administracion_financiera/base.html" %}
+{% block title %}{% if servicio %}Editar{% else %}Nuevo{% endif %} Servicio · Administración Financiera{% endblock %}
+{% block content %}
+  <div class="nav-actions" style="margin-bottom:12px;">
+    <form method="get" action="{% url 'administracion_financiera:servicios_list' %}"><button class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 hover:bg-slate-50" type="submit">Volver</button></form>
+  </div>
+  <div class="card">
+    <h2 class="text-lg font-semibold text-slate-800 mb-3">{% if servicio %}Editar{% else %}Nuevo{% endif %} Servicio</h2>
+    <form class="space-y-3" method="post">
+      {% csrf_token %}
+      {% include "administracion_financiera/_form_fields.html" with form=form %}
+      <div class="flex gap-2">
+        <button class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-500" type="submit">Guardar</button>
+      </div>
+    </form>
+  </div>
+{% endblock %}
