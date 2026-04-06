@@ -1,4 +1,5 @@
 import os
+import sys
 import logging
 import threading  # Para identificar el hilo si es necesario
 from django.apps import AppConfig
@@ -29,6 +30,24 @@ class ActualizadorConfig(AppConfig):
             logger.debug(
                 "RUNNING_ACTUALIZADOR_SCRIPT=1: omitiendo inicio de ColaTareasWorker en ready()."
             )
+            return
+
+        # Evitar iniciar el worker durante comandos de gestión que disparan configuración de apps
+        # (p.ej., makemigrations/migrate), para no provocar 'populate() isn't reentrant'
+        mgmt_cmds = {
+            "makemigrations",
+            "migrate",
+            "collectstatic",
+            "test",
+            "shell",
+            "createsuperuser",
+            "loaddata",
+            "dumpdata",
+            "check",
+            "compilemessages",
+        }
+        if any(cmd in sys.argv for cmd in mgmt_cmds):
+            logger.debug("Comando de gestión detectado en sys.argv; no se inicia ColaTareasWorker.")
             return
 
         global _worker_inicializado

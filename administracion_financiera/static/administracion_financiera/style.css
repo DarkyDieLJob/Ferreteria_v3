@@ -1,0 +1,63 @@
+/* Minimal, clean styles for administracion_financiera */
+:root {
+  --bg: #0b1020;
+  --panel: #121a2b;
+  --muted: #1b2740;
+  --text: #e6eefc;
+  --text-dim: #b5c3dc;
+  --primary: #5b8cff;
+  --accent: #7ee787;
+  --warn: #ffcc66;
+  --danger: #ff6b6b;
+  --border: #223056;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, sans-serif;
+  color: var(--text);
+  background: radial-gradient(1200px 1200px at 20% -10%, #0d1530 0%, #0b1020 40%, #0a0e1a 100%);
+}
+
+.container { max-width: 1100px; margin: 0 auto; padding: 16px; }
+
+.af-header { background: linear-gradient(180deg, rgba(18,26,43,.9), rgba(18,26,43,.7)); border-bottom: 1px solid var(--border); position: sticky; top: 0; backdrop-filter: blur(10px); z-index: 10; }
+.af-title { margin: 0; font-size: 20px; letter-spacing: .5px; }
+.af-title a { color: var(--text); text-decoration: none; }
+.af-topnav { margin-top: 6px; display: flex; gap: 12px; flex-wrap: wrap; }
+.af-topnav a { color: var(--text-dim); text-decoration: none; padding: 6px 10px; border-radius: 6px; border: 1px solid transparent; }
+.af-topnav a:hover { color: var(--text); border-color: var(--border); background: #0f1730; }
+
+.af-footer { border-top: 1px solid var(--border); color: var(--text-dim); background: #0b1226; margin-top: 24px; }
+
+h1, h2, h3 { color: var(--text); }
+
+.card { background: linear-gradient(180deg, rgba(27,39,64,.7), rgba(18,26,43,.7)); border: 1px solid var(--border); border-radius: 12px; padding: 16px; box-shadow: 0 0 0 1px rgba(255,255,255,.02) inset, 0 8px 24px rgba(0,0,0,.25); }
+
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: #0f1730; color: var(--text); text-decoration: none; cursor: pointer; transition: .15s ease-in-out; }
+.btn:hover { transform: translateY(-1px); box-shadow: 0 6px 14px rgba(0,0,0,.2); }
+.btn-primary { background: linear-gradient(180deg, #5b8cff, #3b6ef0); border-color: #4a79ff; color: white; }
+.btn-danger { background: linear-gradient(180deg, #ff6b6b, #e15757); border-color: #e15757; color: white; }
+.btn-ghost { background: transparent; }
+
+.table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); overflow: hidden; border-radius: 10px; }
+.table th, .table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+.table thead th { background: #101a33; color: var(--text-dim); text-align: left; font-weight: 600; }
+.table tbody tr:nth-child(even) { background: rgba(255,255,255,.02); }
+
+.form { display: grid; gap: 12px; }
+.form p { margin: 0; }
+.form input, .form select, .form textarea { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background: #0e1630; color: var(--text); }
+
+.nav-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.kpi { padding: 14px; border-radius: 12px; border: 1px solid var(--border); background: linear-gradient(180deg, rgba(16,26,51,.7), rgba(12,18,34,.7)); }
+.kpi h3 { margin: 0 0 6px; font-size: 14px; color: var(--text-dim); }
+.kpi .value { font-size: 22px; font-weight: 700; color: var(--accent); }
+
+.notice { padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background: #0f1730; color: var(--text-dim); }
+.alert { border-color: #664343; background: rgba(255,107,107,.12); color: #ffb3b3; }
+.success { border-color: #2d5b3a; background: rgba(126,231,135,.12); color: #7ee787; }

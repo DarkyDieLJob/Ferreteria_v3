@@ -1,0 +1,55 @@
+{% extends "administracion_financiera/base.html" %}
+{% block title %}Impuestos · Administración Financiera{% endblock %}
+{% block content %}
+  <div class="flex flex-wrap gap-2 mb-4">
+    <form method="get" action="{% url 'administracion_financiera:dashboard' %}"><button class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 hover:bg-slate-50" type="submit">Volver</button></form>
+    <form method="get" action="{% url 'administracion_financiera:impuesto_new' %}"><button class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-500" type="submit">Nuevo Impuesto</button></form>
+  </div>
+  <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <h2 class="text-lg font-semibold text-slate-800 mb-3">Impuestos</h2>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-slate-200">
+        <thead class="bg-slate-50">
+          <tr>
+            <th class="px-3 py-2 text-left text-xs font-semibold text-slate-600">Nombre</th>
+            <th class="px-3 py-2 text-left text-xs font-semibold text-slate-600">Tipo</th>
+            <th class="px-3 py-2 text-left text-xs font-semibold text-slate-600">Jurisdicción</th>
+            <th class="px-3 py-2 text-left text-xs font-semibold text-slate-600">Sujeto Pasivo</th>
+            <th class="px-3 py-2 text-left text-xs font-semibold text-slate-600">Periodo</th>
+            <th class="px-3 py-2 text-left text-xs font-semibold text-slate-600">Últ. Fecha</th>
+            <th class="px-3 py-2 text-left text-xs font-semibold text-slate-600">Últ. Monto</th>
+            <th class="px-3 py-2 text-left text-xs font-semibold text-slate-600">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200">
+          {% for i in impuestos %}
+          <tr>
+            <td class="px-3 py-2 text-sm text-slate-800">{{ i.nombre }}</td>
+            <td class="px-3 py-2 text-sm text-slate-600">{{ i.get_tipo_display }}</td>
+            <td class="px-3 py-2 text-sm text-slate-600">{{ i.jurisdiccion }}</td>
+            <td class="px-3 py-2 text-sm text-slate-600">{{ i.sujeto_pasivo }}</td>
+            <td class="px-3 py-2 text-sm text-slate-600">{{ i.periodo }}</td>
+            <td class="px-3 py-2 text-sm text-slate-600">{{ i.ult_fecha }}</td>
+            <td class="px-3 py-2 text-sm text-slate-600">{{ i.ult_monto }}</td>
+            <td class="px-3 py-2">
+              <div class="flex flex-wrap gap-2">
+                <form method="get" action="{% url 'administracion_financiera:impuesto_edit' i.id %}"><button class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-800 hover:bg-slate-50" type="submit">Editar</button></form>
+                <form method="post" action="{% url 'administracion_financiera:impuesto_delete' i.id %}">
+                  {% csrf_token %}
+                  <button class="rounded-md bg-rose-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-rose-500" type="submit" onclick="return confirm('¿Eliminar impuesto?')">Eliminar</button>
+                </form>
+                <form method="post" action="{% url 'administracion_financiera:impuesto_ticket_actual' i.id %}">
+                  {% csrf_token %}
+                  <button class="rounded-md bg-slate-100 px-3 py-1.5 text-sm text-slate-800 hover:bg-slate-200" type="submit">Generar ticket mes actual</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td class="px-3 py-3 text-sm text-slate-500" colspan="8">Sin impuestos</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}

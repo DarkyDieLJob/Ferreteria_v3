@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}Administración Financiera{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+  <header class="sticky top-0 z-30 border-b border-slate-200/60 bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/40">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-2">
+      <div class="flex items-center justify-between gap-3">
+        <form method="get" action="{% url 'administracion_financiera:dashboard' %}">
+          <button type="submit" class="inline-flex items-center rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white shadow hover:bg-slate-800">
+            Administración Financiera
+          </button>
+        </form>
+        <div class="flex flex-wrap items-center gap-2">
+          <form method="get" action="{% url 'administracion_financiera:dashboard' %}"><button class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50" type="submit">Dashboard</button></form>
+          <form method="get" action="{% url 'administracion_financiera:liquidacion' %}"><button class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50" type="submit">Liquidación</button></form>
+          <form method="get" action="{% url 'administracion_financiera:servicios_list' %}"><button class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50" type="submit">Servicios</button></form>
+          <form method="get" action="{% url 'administracion_financiera:impuestos_list' %}"><button class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50" type="submit">Impuestos</button></form>
+          <form method="get" action="{% url 'administracion_financiera:cuentas_list' %}"><button class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50" type="submit">Cuentas</button></form>
+          <form method="get" action="{% url 'administracion_financiera:tarjetas_list' %}"><button class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50" type="submit">Tarjetas</button></form>
+        </div>
+      </div>
+    </div>
+  </header>
+  <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="border-t border-slate-200/60 bg-white/70">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4 text-xs text-slate-500">&copy; {% now 'Y' %} Administración Financiera</div>
+  </footer>
+</body>
+</html>

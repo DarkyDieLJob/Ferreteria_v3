@@ -35,6 +35,7 @@ urlpatterns = [
     path("", include("core_index.urls")),
     path("", include("actualizador.urls")),
     path("", include("reportes.urls")),
+    path("administracion_financiera/", include("administracion_financiera.urls")),
     path("", RedirectView.as_view(url="/bienbenida/"), name="index"),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
