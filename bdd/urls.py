@@ -29,6 +29,9 @@ from .models import NavBar, Armador
 from django.utils.module_loading import import_string
 
 from pedido.views.externo import agregar_al_pedido
+import logging
+
+logger = logging.getLogger(__name__)
 
 try:
     # Generamos una lista de objetos path a partir de la información almacenada en el modelo Armador
@@ -52,14 +55,18 @@ try:
         except:
             pass
     # print('3')
-    print("armador_paths: \n")
-    for p in armador_paths:
-        print(p)
+    try:
+        logger.debug(
+            "armador_paths generados: total=%s, rutas=%s",
+            len(armador_paths),
+            [getattr(p, 'pattern', p) for p in armador_paths],
+        )
+    except Exception:
+        # En caso de que no se pueda serializar el objeto path para logging
+        logger.debug("armador_paths generados: total=%s", len(armador_paths))
 except Exception as e:
     armador_paths = []
-    print("'Error en urls.py; se establecera 'armador_paths = []'")
-    print("Error:")
-    print(e)
+    logger.exception("Error en urls.py; se establecera armador_paths = []")
 # Definimos nuestros patrones de URL
 urlpatterns = [
     # Incluimos los patrones de URL generados dinámicamente

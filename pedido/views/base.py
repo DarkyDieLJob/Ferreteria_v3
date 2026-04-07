@@ -5,6 +5,7 @@ from django.http import JsonResponse
 import json
 from pedido.models import ArticuloPedido
 from django.db.models import Q
+import logging
 
 
 class GeneralPedidoView(TemplateView):
@@ -32,16 +33,17 @@ class GeneralPedidoView(TemplateView):
 
 class ItemAutocomplete(Select2QuerySetView):
     def get_queryset(self):
-        print("get_queryset called")
+        logger = logging.getLogger(__name__)
+        logger.debug("get_queryset called")
         if not self.request.user.is_authenticated:
-            print("User is not authenticated")
+            logger.info("User is not authenticated")
             return Item.objects.none()
 
         qs = Item.objects.all()
 
         codigo = self.request.GET.get("q", None)
         proveedor_id = self.request.GET.get("proveedor_id")
-        print(f"codigo: {codigo}, proveedor_id: {proveedor_id}")
+        logger.debug(f"codigo: {codigo}, proveedor_id: {proveedor_id}")
 
         # Restringir por proveedor si viene informado
         if proveedor_id:
@@ -49,10 +51,10 @@ class ItemAutocomplete(Select2QuerySetView):
 
         # Búsqueda flexible: coincidencia en código o descripción (case-insensitive)
         if codigo:
-            print(f"Filtering items with codigo/descripcion containing {codigo}")
+            logger.debug(f"Filtering items with codigo/descripcion containing {codigo}")
             qs = qs.filter(Q(codigo__icontains=codigo) | Q(descripcion__icontains=codigo))
-        print(f"Returning {len(qs)} items")
-        print(qs)
+        logger.debug(f"Returning {len(qs)} items")
+        logger.debug(qs)
         return qs
 
     def render_to_response(self, context):
@@ -69,7 +71,8 @@ class ItemAutocomplete(Select2QuerySetView):
 def agregar_al_stock(request):
     # Código para agregar un artículo al stock
     data = json.loads(request.body)
-    print("Agregando al stock", data)
+    logger = logging.getLogger(__name__)
+    logger.info("Agregando al stock %s", data)
     articulo_pedido = ArticuloPedido.objects.get(id=data.get("articulo_id"))
     articulo_pedido.llego = data.get("llego")
     articulo_pedido.item.stock = articulo_pedido.item.stock + articulo_pedido.cantidad

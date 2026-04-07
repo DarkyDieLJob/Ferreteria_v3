@@ -131,7 +131,7 @@ class MyForm(forms.Form):
                 continue
             formfield = field.formfield()
             if formfield is None:
-                print(f"El campo {field.name} no tiene un campo de formulario válido")
+                logger.warning("El campo %s no tiene un campo de formulario válido", field.name)
             else:
                 self.fields[field.name] = formfield
         for field_name in self.fields:
@@ -177,8 +177,8 @@ class MiVista(TemplateView):
         ruta_completa = self.request.get_full_path()
         arm = Armador.objects.all()
         armador = Armador.objects.filter(url=ruta_actual).first()
-        print(ruta_actual)
-        print(armador)
+        logger.debug("Ruta actual: %s", ruta_actual)
+        logger.debug("Armador seleccionado: %s", armador)
         context["armador"] = armador
         try:
             if armador.busqueda:
@@ -206,7 +206,7 @@ class MiVista(TemplateView):
 
         formulario_campos = armador.formulario_campos.values_list("nombre", flat=True)
         lista_formulario_campos = list(formulario_campos)
-        print("lista: ", lista_formulario_campos)
+        logger.debug("Campos de formulario: %s", lista_formulario_campos)
         context["lista_formulario_campos"] = lista_formulario_campos
         formulario = MyForm(
             model_name=model_name, fields_to_show=lista_formulario_campos
@@ -240,15 +240,15 @@ class MiVista(TemplateView):
             if valor == None:
                 break
             template_name = f"{valor}.html"
-            print("valor: ", template_name)
+            logger.debug("Template a evaluar: %s", template_name)
             try:
                 template = select_template([template_name])
             except Exception as e:
                 template = None
-                print(e)
+                logger.exception("Error seleccionando template %s", template_name)
             if template:
                 lista_html.append(template_name)
-                print("lista_html: ", lista_html)
+                logger.debug("Lista de templates acumulados: %s", lista_html)
         context["lista_html"] = lista_html
 
         # --------------------------------------------------------------------------------------
@@ -330,7 +330,7 @@ class MiVista(TemplateView):
                         )
                     payment_data.reverse()
                 else:
-                    print("Error al buscar pagos:", result["response"])
+                    logger.error("Error al buscar pagos: %s", result["response"])
 
                 context["payments"] = payment_data
 
@@ -371,7 +371,7 @@ class MiVista(TemplateView):
                                     date_string, "%Y-%m-%dT%H:%M:%SZ"
                                 )
                             except ValueError:
-                                print("Formato de fecha desconocido: ", date_string)
+                                logger.warning("Formato de fecha desconocido: %s", date_string)
                         hour = date.strftime("%H:%M:%S")
                         total_paid_amount = py["transaction_details"][
                             "total_paid_amount"
@@ -387,7 +387,7 @@ class MiVista(TemplateView):
                         )
                     payment_data.reverse()
                 else:
-                    print("Error al buscar pagos:", result["response"])
+                    logger.error("Error al buscar pagos: %s", result["response"])
 
                 context["tabla_mp"] = payment_data
                 context["today"] = datetime.now().strftime("%Y-%m-%d")
@@ -395,7 +395,7 @@ class MiVista(TemplateView):
                 context["payments"] = []
 
         except Exception as e:
-            print(e)
+            logger.exception("Error construyendo contexto en MiVista")
 
         context["tabla_link_pedidos"] = [
             {
@@ -435,7 +435,7 @@ class MiVista(TemplateView):
             form_data = form.cleaned_data
             # Eliminamos los campos vacíos del formulario
             form_data = {k: v for k, v in form_data.items() if v}
-            print(form_data)
+            logger.debug("Formulario GET datos: %s", form_data)
             try:
                 model = apps.get_model("bdd", context["model_name"])
             except:
@@ -462,14 +462,14 @@ class MiVista(TemplateView):
             if form_data == {}:
                 context["datos"] = []
             else:
-                print("Formulario Validado y con datos")
+                logger.debug("Formulario validado y con datos")
                 context["datos"] = model.objects.filter(**form_data).values()
 
                 if context["model_name"] == "Item":
-                    print("Modelo Item")
+                    logger.debug("Modelo Item")
                     # Filtrar datos para incluir solo aquellos cuyo campo "actualizado" sea verdadero
                     if isinstance(context["datos"], QuerySet):
-                        print("QuerySet")
+                        logger.debug("QuerySet")
                         context["datos"] = context["datos"].annotate(
                             tiene_pedido=Exists(
                                 Lista_Pedidos.objects.filter(
@@ -615,8 +615,7 @@ class Imprimir(TemplateView):
         context = super().get_context_data(**kwargs)
         context["barra_de_navegacion"] = NavBar.objects.all()
         self.ruta_actual = self.request.path
-
-        print(self.ruta_actual)
+        logger.debug("Ruta imprimir: %s", self.ruta_actual)
         if self.ruta_actual == "/imprimir/":
             context["muro"] = "muro_simple.html"
             context["lista_html"] = ["plantilla_formulario.html"]
@@ -697,8 +696,7 @@ class Imprimir(TemplateView):
 
                 # Actualizamos los datos en el contexto
                 context["datos"] = ordered_data
-
-                print(context["datos"])
+                logger.debug("Datos preparados para imprimir: %s", context["datos"])
 
         return self.render_to_response(context)
 
@@ -742,7 +740,7 @@ def crear_modificar_lista_pedidos(request, proveedor_id=1):
         abreviatura = "/" + codigo.split("/")[-1]
 
         # Buscar el objeto ListaProveedores correspondiente a la abreviatura
-        print(abreviatura)
+        logger.debug("Abreviatura detectada: %s", abreviatura)
         lista_proveedores = ListaProveedores.objects.get(abreviatura=abreviatura)
 
         # Buscar el objeto Proveedor correspondiente al objeto ListaProveedores
@@ -779,11 +777,11 @@ def seleccionar_proveedor(request):
 
 
 def cambiar_cantidad_pedido(request, id_articulo, cantidad):
-    print(request)
+    logger.debug("cambiar_cantidad_pedido request: %s", request)
     if request.method == "POST":
         # Aquí puedes buscar el artículo por ID y actualizar la cantidad
         # ...
-        print(id_articulo, cantidad)
+        logger.debug("Actualizar id=%s cantidad=%s", id_articulo, cantidad)
 
         pedido = Lista_Pedidos.objects.get(id=id_articulo)
         pedido.cantidad = cantidad
@@ -847,7 +845,7 @@ def editar_item(request, id_articulo):
         # Obtén el objeto Cajon correspondiente al ID y asigna este objeto al campo cajon de tu artículo
         cajon_id = data.get("cajon")
         if cajon_id and cajon_id != "null":
-            print("cajon_id: ", cajon_id)
+            logger.debug("cajon_id: %s", cajon_id)
             cajon = Cajon.objects.get(id=cajon_id)
             articulo.cajon = cajon
         else:
@@ -860,13 +858,13 @@ def editar_item(request, id_articulo):
 def agregar_articulo_a_carrito(request, id_articulo):
     if request.method == "POST":
         data = json.loads(request.body)
-        print(data)
-        print(data.get("cantidad"))
+        logger.debug("Payload agregar_articulo_a_carrito: %s", data)
+        logger.debug("Cantidad solicitada: %s", data.get("cantidad"))
         if request.user.is_authenticated:
             item = Item.objects.get(id=id_articulo)
 
             usuario_caja_id = data.get("usuario_caja")
-            print(usuario_caja_id)
+            logger.debug("usuario_caja_id: %s", usuario_caja_id)
             if usuario_caja_id:
                 usuario_caja = User.objects.get(id=usuario_caja_id)
             else:
@@ -881,7 +879,7 @@ def agregar_articulo_a_carrito(request, id_articulo):
                     "precio_efectivo": item.final_efectivo,
                 },
             )
-            print("carrito: ", carrito)
+            logger.debug("Carrito destino: %s", carrito)
             if not created:
                 articulo.cantidad = F("cantidad") + data.get("cantidad")
                 articulo.save()
@@ -894,8 +892,8 @@ def agregar_articulo_a_carrito(request, id_articulo):
                     "cantidad": data.get("cantidad"),
                 },
             )
-            print("pedido creado: ", pedido_created)
-            print(pedido)
+            logger.debug("Pedido creado nuevo? %s", pedido_created)
+            logger.debug("Pedido asociado: %s", pedido)
             if not pedido_created:
                 pedido.cantidad = F("cantidad") + data.get("cantidad")
                 pedido.save()
@@ -937,7 +935,7 @@ class ListadoPedidos(MiVista):
             form_data = form.cleaned_data
             # Eliminamos los campos vacíos del formulario
             form_data = {k: v for k, v in form_data.items() if v}
-            print(form_data)
+            logger.debug("ListarCarteles GET form_data inicial: %s", form_data)
             model = apps.get_model("bdd", context["model_name"])
             armador = context["armador"]
             # armador.formulario_campos_contiene
@@ -966,14 +964,14 @@ class ListadoPedidos(MiVista):
             if form_data == {}:
                 context["datos"] = []
             else:
-                print(form_data)
+                logger.debug("ListarCarteles GET form_data procesado: %s", form_data)
                 context["datos"] = list(
                     model.objects.filter(**form_data).values(
                         "id", "item__codigo", "item__descripcion", "cantidad", "pedido"
                     )
                 )
 
-                print("contexto: ", context["datos"])
+                logger.debug("ListarCarteles GET contexto datos: %s", context["datos"])
                 if context["model_name"] == "Item":
                     # Filtrar datos para incluir solo aquellos cuyo campo "actualizado" sea verdadero
                     context["datos"] = [
@@ -1093,9 +1091,7 @@ def usuarios_caja(request):
 
 def eliminar_articulo_pedido(request):
     if request.method == "POST":
-        print("id: ", request.POST.get("id"))
-        print("quantity: ", request.POST.get("quantity"))
-        print("confirmed: ", request.POST.get("confirmed"))
+        logger.debug("Eliminar pedido id=%s quantity=%s confirmed=%s", request.POST.get("id"), request.POST.get("quantity"), request.POST.get("confirmed"))
 
         pedido = Lista_Pedidos.objects.get(id=request.POST.get("id"))
         if request.POST.get("confirmed"):
@@ -1118,8 +1114,7 @@ class ListarCarteles(TemplateView):
         context = super().get_context_data(**kwargs)
         context["barra_de_navegacion"] = NavBar.objects.all()
         self.ruta_actual = self.request.path
-
-        print(self.ruta_actual)
+        logger.debug("Ruta listar_carteles: %s", self.ruta_actual)
         if self.ruta_actual == "/listar_carteles/":
             context["muro"] = "muro_doble.html"
             context["lista_html"] = [
@@ -1170,10 +1165,10 @@ class ListarCarteles(TemplateView):
         for cajon in cajones:
             cajon.items = Item.objects.filter(cajon=cajon.id)
             for item in cajon.items:
-                print("")
-                print(item.descripcion)
+                logger.debug("")
+                logger.debug("Item: %s", item.descripcion)
                 if item.carteles_set.first():
-                    print(item.carteles_set.first().revisar)
+                    logger.debug("Revisar: %s", item.carteles_set.first().revisar)
                 item.url = f"/x_cartel/imprimir/{item.id}"
 
         items_sin_cajon = Item.objects.filter(
@@ -1222,7 +1217,7 @@ def reportar_item(request, articulo_id):
         "modal_detalles": detalles,
         "estado_actual": estado_actual,
     }
-    print(data)
+    logger.debug("reportar_item data para articulo_id=%s: %s", articulo_id, data)
     return JsonResponse(data)
 
 
@@ -1238,9 +1233,7 @@ def enviar_reporte(request, articulo_id):
             detalles = data.get("detalles")
 
             # Aquí puedes procesar los datos recibidos (estado y detalles)
-            print(f"Artículo ID: {articulo_id},")
-            print(f"Estado: {estado},")
-            print(f"Detalles: {detalles}")
+            logger.info("Reporte recibido articulo_id=%s estado=%s detalles=%s", articulo_id, estado, detalles)
 
             return HttpResponse("Reporte enviado correctamente")
         except json.JSONDecodeError:

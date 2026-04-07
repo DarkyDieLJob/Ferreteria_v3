@@ -4,6 +4,9 @@ from django.http import JsonResponse
 from pedido.models import ArticuloPedido, Pedido, ArticuloDevolucion
 from bdd.models import Lista_Pedidos
 from pedido.forms import ArticuloPedidoForm
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ControlarPedidoView(GeneralPedidoView):
@@ -29,7 +32,7 @@ class ControlarPedidoView(GeneralPedidoView):
         data = json.loads(request.body)
         pedido_id = data.get("pedido_id")
         context = self.get_context_data(pedido_id=pedido_id)
-        print("Controlando pedido", data)
+        logger.info("Controlando pedido con datos %s", data)
         pedido_controlado = Pedido.objects.get(id=pedido_id)
         pedido_controlado.estado = "Co"
         context["lista_articulo_que_no_llegaron"] = ArticuloPedido.objects.filter(
@@ -48,7 +51,7 @@ class ControlarPedidoView(GeneralPedidoView):
 def agregar_devolucion(request):
     # Código para agregar un artículo a una devolución
     data = json.loads(request.body)
-    print("Agregando devolución", data)
+    logger.info("Agregando devolución con datos %s", data)
     # se desvincula el articulo del pedido y se vincula a la lista de devolucion
     articulo_pedido = ArticuloPedido.objects.get(id=data.get("articulo_id"))
 
@@ -77,7 +80,7 @@ def agregar_devolucion(request):
 
 def actualizar_llego(request, articulo_id):
     # Código para actualizar el campo llego de un pedido
-    print("Actualizando llego de articulo", articulo_id)
+    logger.info("Actualizando llego de articulo %s", articulo_id)
     articulo_pedido = ArticuloPedido.objects.get(id=articulo_id)
     data = json.loads(request.body)
     articulo_pedido.llego = data.get("llego")

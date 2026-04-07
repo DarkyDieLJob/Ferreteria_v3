@@ -1,0 +1,171 @@
+{% load static %}
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Descarga de Logs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      :root { --bg:#0b0f19; --panel:#151c2f; --text:#e6e8ee; --muted:#aab2c8; --primary:#6ea8fe; --accent:#5eead4; }
+      body { background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji","Segoe UI Emoji"; margin:0; }
+      .container { max-width: 720px; margin: 40px auto; padding: 24px; background: var(--panel); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+      h1 { margin-top:0; font-size: 28px; }
+      .subtitle { color: var(--muted); margin-bottom: 20px; }
+      form .row { display:flex; gap:12px; align-items:center; margin: 10px 0; }
+      label { min-width: 140px; color: var(--muted); }
+      select, input[type="datetime-local"], input[type="number"] { flex:1; background:#0f1524; color:var(--text); border:1px solid #223055; padding:8px 10px; border-radius:8px; }
+      .checks { display:flex; gap:18px; margin: 14px 0; }
+      .btns { display:flex; gap:10px; margin: 16px 0 6px; }
+      .btn, button[type="submit"] { appearance:none; border:none; padding:10px 14px; border-radius:8px; cursor:pointer; font-weight:600; }
+      .btn { background:#1f2a48; color:var(--primary); border:1px solid #2b3a66; }
+      .btn:hover { filter:brightness(1.1); }
+      button[type="submit"] { background: linear-gradient(135deg, var(--primary), var(--accent)); color:#0a0f1e; }
+      .message { margin-top: 12px; color: var(--muted); }
+      /* grid para checkboxes de apps (render custom con id=apps) */
+      #apps { list-style:none; padding:0; margin: 8px 0 0; display:flex; flex-wrap:wrap; gap:12px; }
+      #apps li { padding:0; margin:0; flex:0 0 auto; }
+      #apps label { display:inline-block; box-sizing:border-box; cursor:pointer; color: var(--text); text-align:center; padding:8px 12px; border-radius:14px; background:#0f1524; border:2px solid #223055; user-select:none; transition: all .12s ease; line-height:1.25; }
+      #apps label .app-name { display:inline; white-space: normal; overflow-wrap:anywhere; word-break: break-word; word-wrap: break-word; hyphens: auto; }
+      #apps label:hover { border-color:#2b3a66; filter:brightness(1.05); }
+      #apps label.active { background:#1f2a48; border-color: var(--primary); }
+      #apps input[type="checkbox"] { display:none; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Descargar Logs</h1>
+      <p class="subtitle">Solo para usuarios staff. Elegí la app y el rango de fechas para generar un ZIP.</p>
+      <form method="post">
+        {% csrf_token %}
+        <div class="row" style="align-items:flex-start;">
+          <label for="id_apps">Apps</label>
+          <div style="flex:1;">
+            <div class="btns" style="margin:0 0 8px;">
+              <button class="btn" type="button" id="apps-select-all">Seleccionar todos</button>
+              <button class="btn" type="button" id="apps-clear">Limpiar</button>
+              <button class="btn" type="button" id="apps-invert">Invertir</button>
+            </div>
+            <ul id="apps">
+              {% for cb in form.apps %}
+                <li role="button" tabindex="0" aria-pressed="false">
+                  <label>
+                    {{ cb.tag }} <span class="app-name">{{ cb.choice_label }}</span>
+                  </label>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+
+        <div class="row">
+          <label for="id_from_date">From</label>
+          {{ form.from_date }}
+        </div>
+        <div class="row">
+          <label for="id_to_date">To</label>
+          {{ form.to_date }}
+        </div>
+
+        <div class="btns">
+          <button class="btn" type="button" id="preset-2h">Últimas 2 h</button>
+          <button class="btn" type="button" id="preset-6h">Últimas 6 h</button>
+          <button class="btn" type="button" id="preset-24h">Últimas 24 h</button>
+          <button class="btn" type="button" id="preset-7d">Últimos 7 días</button>
+        </div>
+
+        <div class="checks">
+          <label><input type="checkbox" name="include_info" id="id_include_info" {% if form.initial.include_info or form.include_info.value %}checked{% endif %}> Include info</label>
+          <label><input type="checkbox" name="include_error" id="id_include_error" {% if form.initial.include_error or form.include_error.value %}checked{% endif %}> Include error</label>
+          <label><input type="checkbox" name="include_rotated" id="id_include_rotated" {% if form.initial.include_rotated or form.include_rotated.value %}checked{% endif %}> Include rotated</label>
+        </div>
+
+        <div class="row">
+          <label for="id_max_size_mb">Max size (MB)</label>
+          {{ form.max_size_mb }}
+        </div>
+
+        <button type="submit">Descargar ZIP</button>
+      </form>
+      {% if message %}
+        <p class="message">{{ message }}</p>
+      {% endif %}
+    </div>
+
+    <script>
+      function pad(n){ return n.toString().padStart(2,'0'); }
+      function fmt(dt){
+        const y = dt.getFullYear();
+        const m = pad(dt.getMonth()+1);
+        const d = pad(dt.getDate());
+        const hh = pad(dt.getHours());
+        const mm = pad(dt.getMinutes());
+        return `${y}-${m}-${d}T${hh}:${mm}`;
+      }
+      const fromI = document.getElementById('id_from_date');
+      const toI = document.getElementById('id_to_date');
+      // Select all / clear para apps (ul#apps con inputs type=checkbox)
+      const appsList = document.getElementById('apps');
+      const btnAll = document.getElementById('apps-select-all');
+      const btnClear = document.getElementById('apps-clear');
+      const btnInvert = document.getElementById('apps-invert');
+      function setAllApps(checked){
+        if(!appsList) return;
+        const inputs = appsList.querySelectorAll('input[type="checkbox"]');
+        inputs.forEach(i => i.checked = checked);
+        refreshPills();
+      }
+      btnAll && btnAll.addEventListener('click', ()=> setAllApps(true));
+      btnClear && btnClear.addEventListener('click', ()=> setAllApps(false));
+      btnInvert && btnInvert.addEventListener('click', ()=>{
+        if(!appsList) return;
+        const inputs = appsList.querySelectorAll('input[type="checkbox"]');
+        inputs.forEach(i => i.checked = !i.checked);
+        refreshPills();
+      });
+      function refreshPills(){
+        if(!appsList) return;
+        const labels = appsList.querySelectorAll('label');
+        labels.forEach(lab => {
+          const input = lab.querySelector('input[type="checkbox"]');
+          if(!input) return;
+          lab.classList.toggle('active', !!input.checked);
+        });
+      }
+      // Inicializar estado visual y toggle al click
+      if(appsList){
+        appsList.querySelectorAll('label').forEach(lab => {
+          const input = lab.querySelector('input[type="checkbox"]');
+          if(!input) return;
+          // Estado inicial visual
+          lab.classList.toggle('active', !!input.checked);
+          // Al cambiar el checkbox (por click en label), refrescar estilos
+          input.addEventListener('change', refreshPills);
+        });
+        // Reemplazar '_' por espacio solo para visualización
+        appsList.querySelectorAll('label .app-name').forEach(span => {
+          span.textContent = span.textContent.replace(/_/g, ' ');
+        });
+      }
+      document.getElementById('preset-2h').addEventListener('click', ()=>{
+        const now = new Date(); now.setSeconds(0,0);
+        const from = new Date(now); from.setHours(now.getHours()-2);
+        fromI.value = fmt(from); toI.value = fmt(now);
+      });
+      document.getElementById('preset-6h').addEventListener('click', ()=>{
+        const now = new Date(); now.setSeconds(0,0);
+        const from = new Date(now); from.setHours(now.getHours()-6);
+        fromI.value = fmt(from); toI.value = fmt(now);
+      });
+      document.getElementById('preset-24h').addEventListener('click', ()=>{
+        const now = new Date(); now.setSeconds(0,0);
+        const from = new Date(now); from.setDate(now.getDate()-1);
+        fromI.value = fmt(from); toI.value = fmt(now);
+      });
+      document.getElementById('preset-7d').addEventListener('click', ()=>{
+        const now = new Date(); now.setSeconds(0,0);
+        const from = new Date(now); from.setDate(now.getDate()-7);
+        fromI.value = fmt(from); toI.value = fmt(now);
+      });
+    </script>
+  </body>
+</html>

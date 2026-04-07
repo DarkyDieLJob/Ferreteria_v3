@@ -7,6 +7,9 @@ from googleapiclient.http import MediaIoBaseUpload
 from datetime import datetime, timedelta
 from django.conf import settings as const
 import base64
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def armar_tabla(id_carpeta_inbox, id_carpeta_plantillas, credentials):
@@ -43,13 +46,13 @@ def armar_tabla(id_carpeta_inbox, id_carpeta_plantillas, credentials):
     ]
     for item_inbox in items_inbox:
         # Mostrar las opciones de plantillas disponibles
-        print(
-            f'Selecciona la plantilla que deseas usar para el archivo {item_inbox["name"]}:'
+        logger.info(
+            "Selecciona la plantilla que deseas usar para el archivo %s:", item_inbox["name"]
         )
         for i, item_plantilla in enumerate(items_plantillas):
             if item_plantilla["name"] in lista_exclusion:
                 continue
-            print(f'{i+1}. {item_plantilla["name"]}')
+            logger.debug("%s. %s", i + 1, item_plantilla["name"]) 
 
         # Obtener la selección del usuario
         seleccion = int(input("Ingresa el número de la plantilla: "))
@@ -67,11 +70,11 @@ def armar_tabla(id_carpeta_inbox, id_carpeta_plantillas, credentials):
         archivo_proveedor = pd.read_excel(archivo_inbox, sheet_name=None)
 
         # Mostrar las opciones de hojas disponibles
-        print(
-            f'Selecciona la hoja que deseas procesar para el archivo {item_inbox["name"]}:'
+        logger.info(
+            "Selecciona la hoja que deseas procesar para el archivo %s:", item_inbox["name"]
         )
         for i, hoja in enumerate(archivo_proveedor.keys()):
-            print(f"{i+1}. {hoja}")
+            logger.debug("%s. %s", i + 1, hoja)
 
         # Obtener la selección del usuario
         seleccion = int(input("Ingresa el número de la hoja: "))
@@ -107,7 +110,7 @@ def get_emails(gmail_service, drive_service):
 
     messages = result.get("messages")
     if messages is None:
-        print("No se encontraron mensajes")
+        logger.info("No se encontraron mensajes")
     else:
         for msg in messages:
             txt = (
@@ -163,7 +166,7 @@ def get_emails(gmail_service, drive_service):
 
                         try:
                             # Buscar archivos con el mismo nombre en la carpeta especificada
-                            print(f"Nombre: {file_name} e ID de carpeta: {folder_id}")
+                            logger.debug("Verificando existencia previa: nombre=%s, folder_id=%s", file_name, folder_id)
                             results = (
                                 drive_service.files()
                                 .list(
@@ -173,17 +176,17 @@ def get_emails(gmail_service, drive_service):
                             )
                             items = results.get("files", [])
                         except Exception as e:
-                            print(
-                                f"No se encontro el archivo: {file_name}, en la carpeta Inbox de Google Drive"
+                            logger.warning(
+                                "No se encontro el archivo en Inbox de Drive: nombre=%s, error=%s",
+                                file_name,
+                                e,
                             )
-                            print(e)
                             items = False
 
                         # Si se encuentra un archivo con el mismo nombre, eliminarlo
                         if items:
                             for item in items:
-                                print(item)
-                                print(f"Eliminando archivo con ID: {item['id']}")
+                                logger.info("Archivo duplicado detectado id=%s name=%s (no eliminado)", item.get('id'), item.get('name'))
                                 # drive_service.files().delete(fileId=item['id']).execute()
                                 # plantilla = Listado_Planillas.objects.filter(identificador=item['id']).delete()
                         else:
@@ -199,5 +202,4 @@ def get_emails(gmail_service, drive_service):
                                 userId="me", id=msg["id"]
                             ).execute()
                         except Exception as e:
-                            print("error al querer borar el email")
-                            print(e)
+                            logger.error("Error al querer borrar el email: %s", e)

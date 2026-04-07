@@ -1,7 +1,9 @@
 from django.db import models
+import logging
 
 # Create your models here.
 
+logger = logging.getLogger(__name__)
 
 class GenericaLista(models.Model):
     abreviatura = models.CharField(max_length=3)
@@ -103,10 +105,10 @@ class Condiciones(models.Model):
         c_ordenado = sorted(col)
 
         for c in c_ordenado:
-            print(c)
-            print("columnas: ", columnas)
+            logger.debug("Columna detectada cruda: %s", c)
+            logger.debug("Estado columnas actual: %s", columnas)
             item = self.detectar_columna(c)
-            print("items: ", item)
+            logger.debug("Item mapeado: %s", item)
             columnas.append(item)
 
         return columnas
