@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Proveedor ID: ' + proveedorId);
-    console.log('Inicializando Select2');
+    console.debug('Proveedor ID: ' + proveedorId);
+    console.debug('Inicializando Select2');
 
     $('#id_item').select2({
         ajax: {
@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             processResults: function (data, params) {
                 params.page = params.page || 1;
-                console.log(data.items);
+                console.debug('Autocomplete items', data.items);
                 return {
                     results: data.items,
                     pagination: {

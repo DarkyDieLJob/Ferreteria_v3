@@ -11,13 +11,11 @@ logger = logging.getLogger(__name__)
 
 def medir_tiempo(func):
     def wrapper(*args, **kwargs):
-        inicio = time.time()  # Tiempo de inicio
-        print(f"Se va a ejecutar la función '{func.__name__}'.")
-        print(f"Los argumentos son: {args}.")
-        print(f"Los argumentos clave son: {kwargs}.")
+        inicio = time.perf_counter()  # Tiempo de inicio de alta resolución
+        logger.debug("Ejecutando función %s args=%s kwargs=%s", func.__name__, args, kwargs)
         resultado = func(*args, **kwargs)  # Ejecutar la función original
-        fin = time.time()  # Tiempo de finalización
-        print(f"La función '{func.__name__}' tardó {fin - inicio:.4f} segundos.")
+        fin = time.perf_counter()  # Tiempo de finalización
+        logger.info("Función %s completada en %.4f s", func.__name__, (fin - inicio))
         return resultado
 
     return wrapper

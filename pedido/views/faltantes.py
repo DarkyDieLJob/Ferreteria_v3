@@ -1,5 +1,8 @@
 from bdd.models import Lista_Pedidos
 from .base import GeneralPedidoView
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ListarArticulosFaltantesView(GeneralPedidoView):
@@ -12,5 +15,5 @@ class ListarArticulosFaltantesView(GeneralPedidoView):
         context["lista_articulos_faltantes"] = Lista_Pedidos.objects.filter(
             proveedor=proveedor_id
         ).order_by("item")
-        print("Lista de artículos faltantes:", context["lista_articulos_faltantes"])
+        logger.debug("Lista de artículos faltantes: %s", list(context["lista_articulos_faltantes"]))
         return context

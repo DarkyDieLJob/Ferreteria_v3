@@ -23,7 +23,7 @@ class Inicio(MiVista):
     # Hereda get_context_data, get y post de MiVista
     # Puedes sobreescribirlos si Inicio necesita lógica adicional
     def get_context_data(self, **kwargs):
-        logger.info("Accediendo a la vista Inicio (get_context_data).")
+        logger.debug("Accediendo a la vista Inicio (get_context_data).")
         context = super().get_context_data(**kwargs)
         # Añadir contexto específico para Inicio si es necesario
         # context['mensaje_bienvenida'] = "Bienvenido a la página principal"
@@ -31,15 +31,15 @@ class Inicio(MiVista):
         return context
 
     def get(self, request, *args, **kwargs):
-        logger.info("Procesando GET request en Inicio.")
+        logger.debug("Procesando GET request en Inicio.")
         response = super().get(request, *args, **kwargs)
-        logger.info("Finalizado GET request en Inicio.")
+        logger.debug("Finalizado GET request en Inicio.")
         return response
 
     def post(self, request, *args, **kwargs):
-        logger.info("Procesando POST request en Inicio.")
+        logger.debug("Procesando POST request en Inicio.")
         response = super().post(request, *args, **kwargs)
-        logger.info("Finalizado POST request en Inicio.")
+        logger.debug("Finalizado POST request en Inicio.")
         return response
 
 
@@ -47,19 +47,19 @@ class Prueba(MiVista):
     # Similar a Inicio, hereda todo de MiVista.
     # Sobrescribe si necesitas comportamiento específico para /prueba/
     def get_context_data(self, **kwargs):
-        logger.info("Accediendo a la vista Prueba (get_context_data).")
+        logger.debug("Accediendo a la vista Prueba (get_context_data).")
         context = super().get_context_data(**kwargs)
         # Contexto específico para Prueba
         context["titulo_prueba"] = "Página de Prueba"
         return context
 
     def get(self, request, *args, **kwargs):
-        logger.info("Procesando GET request en Prueba.")
+        logger.debug("Procesando GET request en Prueba.")
         # Puedes añadir lógica antes o después de llamar al padre
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        logger.info("Procesando POST request en Prueba.")
+        logger.debug("Procesando POST request en Prueba.")
         # Puedes añadir lógica antes o después de llamar al padre
         return super().post(request, *args, **kwargs)
 
@@ -78,7 +78,7 @@ class BusquedaView(FormView):
         """
         Obtiene el contexto para la plantilla. Agrega todos los sectores al contexto.
         """
-        logger.info("Preparando contexto para BusquedaView (GET inicial).")
+        logger.debug("Preparando contexto para BusquedaView (GET inicial).")
         context = super().get_context_data(**kwargs)
         context["sectores"] = Sector.objects.all()
         logger.debug(f"Sectores añadidos al contexto: {context['sectores'].count()}")
@@ -89,7 +89,7 @@ class BusquedaView(FormView):
         Procesa el formulario cuando es válido (enviado por POST o GET si se configura).
         Filtra los elementos en función de los campos del formulario y agrega los elementos filtrados al contexto.
         """
-        logger.info("Formulario de búsqueda válido recibido.")
+        logger.debug("Formulario de búsqueda válido recibido.")
         marca = form.cleaned_data.get("marca")
         cajon = form.cleaned_data.get("cajon")
         cajonera = form.cleaned_data.get("cajonera")
@@ -108,7 +108,7 @@ class BusquedaView(FormView):
         if sector:
             items = items.filter(cajon__cajonera__sector=sector)
 
-        logger.info(f"Búsqueda encontró {items.count()} items.")
+        logger.debug(f"Búsqueda encontró {items.count()} items.")
 
         context = self.get_context_data(
             form=form
@@ -127,11 +127,11 @@ class BusquedaView(FormView):
 # Asumiendo que es AJAX basado en el JsonResponse original.
 class ItemsView(View):
     def get(self, request, cajon_id):
-        logger.info(f"Solicitud GET para ItemsView, cajon_id={cajon_id}")
+        logger.debug(f"Solicitud GET para ItemsView, cajon_id={cajon_id}")
         try:
             cajon = Cajon.objects.get(id=cajon_id)
             items = Item.objects.filter(cajon=cajon)
-            logger.info(
+            logger.debug(
                 f"Encontrados {items.count()} items para el cajón {cajon.codigo}."
             )
 
@@ -172,7 +172,7 @@ class Imprimir(TemplateView):
             NavBar.objects.all()
         )  # Necesario si no hereda de MiVista
         self.ruta_actual = self.request.path
-        logger.info(f"Preparando contexto para Imprimir en ruta: {self.ruta_actual}")
+        logger.debug(f"Preparando contexto para Imprimir en ruta: {self.ruta_actual}")
 
         # Lógica condicional basada en la ruta exacta
         if self.ruta_actual == "/imprimir/":
@@ -231,7 +231,7 @@ class Imprimir(TemplateView):
 
     def get(self, request, *args, **kwargs):
         # El GET a /imprimir/ simplemente muestra el formulario inicial
-        logger.info(f"Procesando GET request en Imprimir para ruta: {request.path}")
+        logger.debug(f"Procesando GET request en Imprimir para ruta: {request.path}")
         context = self.get_context_data()
         # Si es /imprimir/tabla/ y se accede por GET, ¿qué mostramos?
         # Podríamos requerir parámetros GET o mostrarla vacía.
@@ -245,7 +245,7 @@ class Imprimir(TemplateView):
 
     def post(self, request, *args, **kwargs):
         # El POST probablemente va a /imprimir/ y luego muestra /imprimir/tabla/
-        logger.info(f"Procesando POST request en Imprimir para ruta: {request.path}")
+        logger.debug(f"Procesando POST request en Imprimir para ruta: {request.path}")
         # Determinar qué formulario procesar basado en la ruta o un campo oculto
         # Asumiendo que el POST siempre viene de /imprimir/ hacia /imprimir/tabla/
         lista_campos = ["sub_carpeta", "sub_titulo"]  # Campos esperados
@@ -253,7 +253,7 @@ class Imprimir(TemplateView):
         datos_filtrados = []
 
         if form.is_valid():
-            logger.info("Formulario POST de Imprimir válido.")
+            logger.debug("Formulario POST de Imprimir válido.")
             form_data = form.cleaned_data
             # Filtrar campos vacíos (¿seguro que quieres esto?)
             form_data = {k: v for k, v in form_data.items() if v}
@@ -265,7 +265,7 @@ class Imprimir(TemplateView):
                 # Sería más seguro construir el filtro explícitamente
                 # ej: queryset = modelo.objects.filter(campo_modelo1=form_data.get('sub_carpeta'), ...)
                 queryset = modelo.objects.filter(**form_data)
-                logger.info(
+                logger.debug(
                     f"Consulta de Items para imprimir encontró {queryset.count()} resultados."
                 )
 
@@ -320,7 +320,7 @@ class Imprimir(TemplateView):
         context = self.get_context_data(
             datos=datos_filtrados
         )  # Recalcular contexto para la tabla
-        logger.info("Renderizando plantilla de tabla de impresión.")
+        logger.debug("Renderizando plantilla de tabla de impresión.")
         return self.render_to_response(context)
 
 
@@ -328,7 +328,7 @@ class Imprimir(TemplateView):
 # Hereda de MiVista, principalmente sobreescribe GET para filtrar
 class ListadoPedidos(MiVista):
     def get(self, request, *args, **kwargs):
-        logger.info("Procesando GET request en ListadoPedidos.")
+        logger.debug("Procesando GET request en ListadoPedidos.")
         # Llama al get_context_data de MiVista para obtener el contexto base
         # (armador, modelo, etc.)
         context = super().get_context_data(**kwargs)
@@ -413,7 +413,7 @@ class ListadoPedidos(MiVista):
                         "item"
                     )  # Optimizar FK
                     datos_filtrados = list(queryset.values(*campos_a_mostrar))
-                    logger.info(
+                    logger.debug(
                         f"Búsqueda en Lista_Pedidos encontró {len(datos_filtrados)} resultados."
                     )
                     # Asegurarse que los títulos coincidan con los campos seleccionados
@@ -430,7 +430,7 @@ class ListadoPedidos(MiVista):
                     )
                     datos_filtrados = []
             else:
-                logger.info("No se proporcionaron filtros para ListadoPedidos.")
+                logger.debug("No se proporcionaron filtros para ListadoPedidos.")
                 # Podrías mostrar todos los pedidos o ninguno si no hay filtro
                 # queryset = model.objects.all().select_related('item')
                 # datos_filtrados = list(queryset.values(...))
@@ -461,7 +461,7 @@ class ListarCarteles(TemplateView):
         # Configuración específica de esta vista (difiere de MiVista)
         context["barra_de_navegacion"] = NavBar.objects.all()
         self.ruta_actual = self.request.path
-        logger.info(
+        logger.debug(
             f"Preparando contexto para ListarCarteles en ruta: {self.ruta_actual}"
         )
 
@@ -506,7 +506,7 @@ class ListarCarteles(TemplateView):
         return context
 
     def get(self, request, *args, **kwargs):
-        logger.info("Procesando GET request en ListarCarteles.")
+        logger.debug("Procesando GET request en ListarCarteles.")
         proveedor_id = request.GET.get("proveedor")
         revisar_param = request.GET.get("revisar", "false").lower()  # Default a 'false'
         # Convertir 'revisar' a booleano de forma segura
@@ -602,7 +602,7 @@ class ListarCarteles(TemplateView):
         for item in items_sin_cajon_list:
             item.url = f"/x_cartel/imprimir/{item.id}/"
             item.needs_review = item.carteles_set.filter(revisar=True).exists()
-        logger.info(
+        logger.debug(
             f"Encontrados {len(items_sin_cajon_list)} items sin cajón que cumplen criterios."
         )
 

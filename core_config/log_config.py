@@ -40,6 +40,7 @@ def generate_app_logging_config(
             "maxBytes": max_bytes or 1024 * 1024 * 5,  # default 5 MB si no se pasa
             "backupCount": backup_count or 5,
             "formatter": base_formatter,
+            "filters": ["request_context"],
             "encoding": "utf-8",
         }
 
@@ -52,6 +53,7 @@ def generate_app_logging_config(
             "maxBytes": max_bytes or 1024 * 1024 * 5,  # usa el mismo tamaño
             "backupCount": backup_count or 5,
             "formatter": base_formatter,
+            "filters": ["request_context"],
             "encoding": "utf-8",
         }
 

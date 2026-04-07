@@ -3,6 +3,9 @@ import json
 from django.http import JsonResponse
 from pedido.models import ArticuloPedido, ArticuloDevolucion
 from bdd.models import Lista_Pedidos
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ListarDevolucionesView(GeneralPedidoView):
@@ -24,7 +27,7 @@ class ListarDevolucionesView(GeneralPedidoView):
 
 def actualizar_cantidad(request, articulo_id):
     # Código para actualizar la cantidad de un pedido
-    print("Actualizando cantidad de articulo", articulo_id)
+    logger.info("Actualizando cantidad de articulo %s", articulo_id)
     articulo_pedido = ArticuloPedido.objects.get(id=articulo_id)
     data = json.loads(request.body)
 

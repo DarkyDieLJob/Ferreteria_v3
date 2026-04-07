@@ -34,7 +34,7 @@ class MiVista(TemplateView):
     ruta_actual = ""
 
     def get_context_data(self, **kwargs):
-        logger.info(
+        logger.debug(
             f"[{self.__class__.__name__}] Iniciando get_context_data para ruta: {self.request.path}"
         )
         context = super().get_context_data(**kwargs)
@@ -66,7 +66,7 @@ class MiVista(TemplateView):
             armador = Armador.objects.filter(url=self.ruta_actual).first()
             context["armador"] = armador
             if armador:
-                logger.info(f"Armador encontrado para la ruta: {armador.url}")
+                logger.debug(f"Armador encontrado para la ruta: {armador.url}")
                 context["metodo"] = "GET" if armador.busqueda else "POST"
                 context["muro"] = armador.muro.muro_html + ".html"
                 contenedor = armador.contenedor
@@ -240,7 +240,7 @@ class MiVista(TemplateView):
                 with open(mp_token_file, "r") as f:
                     mp_token = f.read().strip()
                 sdk = mercadopago.SDK(mp_token)
-                logger.info("SDK de MercadoPago inicializado.")
+                logger.debug("SDK de MercadoPago inicializado.")
 
                 # Función auxiliar para buscar pagos
                 def buscar_pagos_mp(begin_date, end_date):
@@ -295,7 +295,7 @@ class MiVista(TemplateView):
                 end_date_30m = datetime.now()
                 begin_date_30m = end_date_30m - timedelta(minutes=30)
                 context["payments"] = buscar_pagos_mp(begin_date_30m, end_date_30m)
-                logger.info(
+                logger.debug(
                     f"Se encontraron {len(context['payments'])} pagos en los últimos 30 min."
                 )
 
@@ -303,7 +303,7 @@ class MiVista(TemplateView):
                 end_date_1d = datetime.now()
                 begin_date_1d = end_date_1d - timedelta(days=1)
                 context["tabla_mp"] = buscar_pagos_mp(begin_date_1d, end_date_1d)
-                logger.info(
+                logger.debug(
                     f"Se encontraron {len(context['tabla_mp'])} pagos en las últimas 24 horas."
                 )
                 context["today"] = datetime.now().strftime("%Y-%m-%d")
@@ -322,7 +322,7 @@ class MiVista(TemplateView):
                 context["payments"] = []
                 context["tabla_mp"] = []
         else:
-            logger.info(
+            logger.debug(
                 "La integración con MercadoPago está desactivada o no hay conexión a internet (según settings)."
             )
             context["payments"] = []
@@ -332,11 +332,11 @@ class MiVista(TemplateView):
         context["tabla_link_pedidos"] = getattr(settings, "TABLA_LINK_PEDIDOS", [])
         logger.debug(f"Links de pedidos cargados: {len(context['tabla_link_pedidos'])}")
 
-        logger.info(f"[{self.__class__.__name__}] Finalizando get_context_data.")
+        logger.debug(f"[{self.__class__.__name__}] Finalizando get_context_data.")
         return context
 
     def post(self, request, *args, **kwargs):
-        logger.info(
+        logger.debug(
             f"[{self.__class__.__name__}] Recibida solicitud POST en ruta: {request.path}"
         )
         context = self.get_context_data()
@@ -358,7 +358,7 @@ class MiVista(TemplateView):
         form = MyForm(request.POST, model_name=model_name, fields_to_show=lista_campos)
 
         if form.is_valid():
-            logger.info(
+            logger.debug(
                 f"Formulario POST válido para modelo '{model_name}'. Datos: {form.cleaned_data}"
             )
             saved_object = form.save(model_name=model_name)
@@ -388,7 +388,7 @@ class MiVista(TemplateView):
         return self.render_to_response(context)
 
     def get(self, request, *args, **kwargs):
-        logger.info(
+        logger.debug(
             f"[{self.__class__.__name__}] Recibida solicitud GET en ruta: {request.path}"
         )
         context = self.get_context_data()
@@ -409,7 +409,7 @@ class MiVista(TemplateView):
         # Vamos a asumir que el Armador indica si es una búsqueda (GET) y los campos a usar
         armador = context.get("armador")
         if armador and armador.busqueda:
-            logger.info("Procesando solicitud GET como búsqueda.")
+            logger.debug("Procesando solicitud GET como búsqueda.")
             # Usar request.GET directamente para filtrar
             search_params = request.GET.copy()
             logger.debug(f"Parámetros GET recibidos: {search_params}")
@@ -465,7 +465,7 @@ class MiVista(TemplateView):
                 if filter_kwargs:
                     try:
                         queryset = model.objects.filter(**filter_kwargs)
-                        logger.info(
+                        logger.debug(
                             f"Búsqueda en modelo '{model_name}' con filtros {filter_kwargs} encontró {queryset.count()} resultados."
                         )
 
@@ -497,7 +497,7 @@ class MiVista(TemplateView):
                         context["datos"] = []
                         context["search_error"] = "Error al realizar la búsqueda."
                 else:
-                    logger.info(
+                    logger.debug(
                         "No se proporcionaron filtros válidos para la búsqueda GET."
                     )
                     context["datos"] = []
