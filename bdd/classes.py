@@ -15,6 +15,9 @@ from django.conf import settings
 import requests
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
+import logging
+
+logger = logging.getLogger(__name__)
 
 SCOPES = [
     "https://www.googleapis.com/auth/drive",
@@ -32,7 +35,7 @@ class Patoba:
         if self.request == None:
             social_token = SocialToken.objects.get(account__user=1)
         else:
-            print("Usuario: ", self.request.user)
+            logger.debug("Usuario: %s", self.request.user)
             social_token = SocialToken.objects.get(account__user=self.request.user)
         self.credenciales = Credentials(
             token=social_token.token,
@@ -81,7 +84,7 @@ class Patoba:
                 fileId=file_id, media_body=media
             )
             file = request.execute()
-            print(f'Archivo SQLite3 actualizado en Drive, ID: {file.get("id")}')
+            logger.info("Archivo SQLite3 actualizado en Drive, id=%s", file.get("id"))
         else:
             # Crear un nuevo archivo
             file_metadata = {"name": nombre_archivo, "parents": [carpeta_id]}
@@ -89,7 +92,7 @@ class Patoba:
                 body=file_metadata, media_body=media
             )
             file = request.execute()
-            print(f'Archivo SQLite3 subido a Drive, ID: {file.get("id")}')
+            logger.info("Archivo SQLite3 subido a Drive, id=%s", file.get("id"))
 
     def descargar_sqlite3_de_drive(self, nombre_archivo, carpeta_id, ruta_destino):
         """
@@ -115,10 +118,10 @@ class Patoba:
             done = False
             while done is False:
                 status, done = downloader.next_chunk()
-                print(f"Descargando {int(status.progress() * 100)}%.")
-            print(f"Archivo SQLite3 descargado a: {ruta_destino}")
+                logger.debug("Descargando %s%%", int(status.progress() * 100))
+            logger.info("Archivo SQLite3 descargado a: %s", ruta_destino)
         else:
-            print(f'No se encontró el archivo SQLite3 "{nombre_archivo}" en Drive.')
+            logger.warning("No se encontró el archivo SQLite3 '%s' en Drive.", nombre_archivo)
 
     def crear_hoja_google_drive(self, nombre_libro, datos, libro_id=None):
         if libro_id is None:
@@ -255,7 +258,7 @@ class Patoba:
         time.sleep(0.07)
 
     def listar(self, cant, id_carpeta):
-        print("listar")
+        logger.debug("Listar archivos en carpeta %s (cant=%s)", id_carpeta, cant)
         query = f"'{id_carpeta}' in parents and trashed = false"
         resultado = (
             self.drive_service.files()
@@ -278,10 +281,11 @@ class Patoba:
             self.desaturar()
             return items[0]["id"]
         except Exception as e:
-            print(
-                f"No se encontró un archivo con el nombre {nombre_archivo} en la carpeta especificada"
+            logger.warning(
+                "No se encontró un archivo con el nombre %s en la carpeta especificada",
+                nombre_archivo,
             )
-            print(e)
+            logger.debug("Detalle de error en obtener_id_por_nombre: %s", e)
             return None
 
     def copiar_reemplazable(
@@ -407,7 +411,7 @@ class Patoba:
             )
             self.desaturar()
         except:
-            print(f"No se encontro un archivo con el ID: {id_archivo_plantilla}")
+            logger.warning("No se encontro un archivo con el ID: %s", id_archivo_plantilla)
             g_sheet = None
         return g_sheet
 
@@ -539,7 +543,7 @@ class Patoba:
         ).execute()
 
     def crear_hoja_por_nombre(self, id_hoja, nombre):
-        print("nombre: ", nombre)
+        logger.debug("Crear hoja por nombre: %s en archivo %s", nombre, id_hoja)
         nueva_hoja = (
             self.sheet_service.spreadsheets()
             .batchUpdate(
@@ -662,7 +666,7 @@ class Patoba:
                 # Cargar el archivo .xls con pandas
                 xls_buffer.seek(0)
                 xls_data = pd.read_excel(xls_buffer, sheet_name=None)
-                print("Cargar el archivo .xls con pandas")
+                logger.debug("Cargar el archivo .xls con pandas")
 
                 xls_buffer.seek(0)
 
@@ -771,8 +775,10 @@ class Patoba:
             sp.link_descarga_ods = f"media/descargas/{output_ods_file_name}"
             sp.descargar = True
             sp.save()
-            print(
-                f"Enlaces de descarga actualizados para {output_xlsx_file_name} y {output_ods_file_name}"
+            logger.info(
+                "Enlaces de descarga actualizados para %s y %s",
+                output_xlsx_file_name,
+                output_ods_file_name,
             )
 
             # --- Limpieza: conservar solo la última pareja fechada por proveedor ---
@@ -802,17 +808,22 @@ class Patoba:
                     default_storage.delete(os.path.join(dir_rel, fname))
                     removed.append(fname)
                 if removed:
-                    print(
-                        f"Archivos antiguos eliminados para proveedor '{spreadsheets['properties']['title']}': {removed}"
+                    logger.info(
+                        "Archivos antiguos eliminados para proveedor '%s': %s",
+                        spreadsheets['properties']['title'],
+                        removed,
                     )
             except Exception as clean_e:
-                print(
-                    f"Advertencia: fallo al limpiar archivos antiguos de descargas: {clean_e}"
+                logger.warning(
+                    "Advertencia: fallo al limpiar archivos antiguos de descargas: %s",
+                    clean_e,
                 )
         except Exception as e:
             # Captura la excepción para depuración
-            print(
-                f"Error al actualizar enlaces en Listado_Plantillas para {spreadsheets['spreadsheetId']}: {e}"
+            logger.error(
+                "Error al actualizar enlaces en Listado_Plantillas para %s: %s",
+                spreadsheets.get('spreadsheetId'),
+                e,
             )
 
     def borrar_por_id(self, id):

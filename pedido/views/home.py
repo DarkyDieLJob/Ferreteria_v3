@@ -2,6 +2,9 @@ from django.shortcuts import redirect
 from .base import GeneralPedidoView
 from bdd.models import Proveedor
 from pedido.models import Pedido
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class HomeView(GeneralPedidoView):
@@ -17,7 +20,7 @@ class HomeView(GeneralPedidoView):
 
         context["proveedores"] = proveedores
         context["pedidos_activos"] = pedidos_activos  # Añade el diccionario al contexto
-        print("Pedidos activos:", pedidos_activos)
+        logger.debug("Pedidos activos: %s", {str(k): list(v.values_list('id', flat=True)) for k, v in pedidos_activos.items()})
         return context
 
 

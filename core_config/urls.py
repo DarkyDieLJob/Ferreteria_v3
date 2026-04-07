@@ -22,6 +22,7 @@ from django.views.static import serve
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic.base import RedirectView
+from core_config.views import logs as logs_views
 
 urlpatterns = [
     path("", include("carga_archivo.urls")),
@@ -43,6 +44,7 @@ urlpatterns += [
     # path('',include(urls_pruebas_conexion_api)),
     path("admin/doc/", include("django.contrib.admindocs.urls")),
     path("admin/", admin.site.urls),
+    path("_admin/logs/download/", logs_views.download_logs, name="download_logs"),
 ]
 
 

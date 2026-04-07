@@ -345,7 +345,6 @@ def recolectar_procesar():
 def actualizador():
     # Esta función usa HiloManager local y su método BLOQUEANTE agregar_proceso.
     logger.info("Ejecutando actualizador (puede bloquear)...")
-    print("Se envio a actualizar via csv...")  # Evitar prints directos, usar logger
     logger.info("Se envio a actualizar via csv...")
     hiloManager = HiloManager()
     hiloManager.nuevo_hilo("principal_csv", principal_csv)  # Asume que existe

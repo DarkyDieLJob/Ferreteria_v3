@@ -1,10 +1,15 @@
 from django.http import JsonResponse
 from pedido.models import ArticuloPedido, Pedido
 from bdd.models import Lista_Pedidos, Item
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def agregar_al_pedido(request, articulo_id):
     item = Item.objects.get(id=articulo_id)
+    if getattr(item, 'proveedor', None) is None:
+        logger.error("Item %s no tiene proveedor asociado", articulo_id)
     proveedor_id = item.proveedor.id
     articulo_pedido = ArticuloPedido.objects.create(
         proveedor_id=proveedor_id, item_id=articulo_id, cantidad=1, llego=False

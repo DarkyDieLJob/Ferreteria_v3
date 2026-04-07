@@ -1,5 +1,8 @@
 from .base import GeneralPedidoView
 from pedido.models import Pedido
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class DetallePedidoView(GeneralPedidoView):
@@ -11,6 +14,7 @@ class DetallePedidoView(GeneralPedidoView):
         pedido_id = self.kwargs.get("pedido_id")
         context["pedido"] = Pedido.objects.get(id=pedido_id)
         context["articulos"] = context["pedido"].articulo_pedido.all()
+        logger.info("Render detalle de pedido %s con %s articulos", pedido_id, context["articulos"].count())
         return context
 
     def get(self, request, pedido_id):

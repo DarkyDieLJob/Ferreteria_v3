@@ -104,7 +104,7 @@ def _hsl_to_hex(h, s, l) -> str:
 
 def crear_modificar_lista_pedidos(request, proveedor_id=None):
     if request.method == "GET":
-        logger.info(f"GET request para lista de pedidos, proveedor_id={proveedor_id}")
+        logger.debug(f"GET request para lista de pedidos, proveedor_id={proveedor_id}")
 
         try:
             proveedor_filter = {}
@@ -152,7 +152,7 @@ def crear_modificar_lista_pedidos(request, proveedor_id=None):
             return JsonResponse({"error": "Error interno"}, status=500)
 
     elif request.method == "POST":
-        logger.info("POST request para crear/modificar lista de pedidos.")
+        logger.debug("POST request para crear/modificar lista de pedidos.")
         try:
             data = json.loads(request.body)
             codigo = data.get("codigo")
@@ -201,13 +201,13 @@ def crear_modificar_lista_pedidos(request, proveedor_id=None):
             )
 
             if created:
-                logger.info(
+                logger.debug(
                     f"Creado nuevo registro en Lista_Pedidos para Item ID {item.id}."
                 )
             else:
                 lista_pedido.cantidad = F("cantidad") + 1
                 lista_pedido.save()
-                logger.info(
+                logger.debug(
                     f"Incrementada cantidad en Lista_Pedidos para ID {lista_pedido.id}."
                 )
 
@@ -215,7 +215,7 @@ def crear_modificar_lista_pedidos(request, proveedor_id=None):
                 item.trabajado = True
                 item.proveedor = proveedor
                 item.save(update_fields=["trabajado", "proveedor"])
-                logger.info(f"Item ID {item.id} actualizado.")
+                logger.debug(f"Item ID {item.id} actualizado.")
 
             return JsonResponse(
                 {
@@ -238,7 +238,7 @@ def crear_modificar_lista_pedidos(request, proveedor_id=None):
 
 
 def seleccionar_proveedor(request):
-    logger.info("Accediendo a seleccionar_proveedor.")
+    logger.debug("Accediendo a seleccionar_proveedor.")
     if request.accepts("application/json"):
         try:
             proveedores = Proveedor.objects.all().values("id", "nombre")
@@ -259,7 +259,7 @@ def seleccionar_proveedor(request):
 
 def cambiar_cantidad_pedido(request, id_articulo, cantidad):
     if request.method == "POST":
-        logger.info(f"POST cambiar cantidad: id={id_articulo}, cant={cantidad}")
+        logger.debug(f"POST cambiar cantidad: id={id_articulo}, cant={cantidad}")
         try:
             nueva_cantidad = int(cantidad)
             if nueva_cantidad < 0:
@@ -433,7 +433,7 @@ def agregar_articulo_a_carrito(request, id_articulo):
 def carrito(request):
     """Devuelve info básica del carrito del usuario actual."""
     if request.method == "GET":
-        logger.info("GET request para obtener información del carrito.")
+        logger.debug("GET request para obtener información del carrito.")
         if not request.user.is_authenticated:
             logger.warning("Intento de ver carrito por usuario no autenticado.")
             return JsonResponse({"error": "Usuario no autenticado"}, status=401)
@@ -442,7 +442,7 @@ def carrito(request):
             # Obtener carrito (crearlo si no existe para este usuario)
             carrito_obj, created = Carrito.objects.get_or_create(usuario=request.user)
             if created:
-                logger.info(f"Carrito creado para el usuario {request.user.username}")
+                logger.debug(f"Carrito creado para el usuario {request.user.username}")
 
             # Usar el helper para convertir a dict
             carrito_dict = carrito_to_dict(carrito_obj)
@@ -462,7 +462,7 @@ def carrito(request):
 def consultar_carrito(request):
     """Devuelve el contenido detallado de uno o más carritos."""
     if request.method == "GET":
-        logger.info("GET request para consultar contenido del carrito.")
+        logger.debug("GET request para consultar contenido del carrito.")
         datos = {}
 
         if not request.user.is_authenticated:
@@ -497,7 +497,7 @@ def consultar_carrito(request):
                             "color": _user_color(u.username),
                         }
             else:
-                logger.info(
+                logger.debug(
                     f"Usuario '{request.user.username}' consultando su propio carrito."
                 )
                 carrito, _ = Carrito.objects.get_or_create(usuario=request.user)
@@ -530,7 +530,7 @@ def consultar_carrito(request):
 def usuarios_caja(request):
     """Devuelve lista de usuarios que pueden ser seleccionados como 'caja'."""
     if request.method == "GET":
-        logger.info("GET request para obtener usuarios caja.")
+        logger.debug("GET request para obtener usuarios caja.")
         try:
             usuarios = _get_cajeros_queryset().values("id", "username")
             resp = [
@@ -604,7 +604,7 @@ def eliminar_articulo_pedido(request):
 
 def descargar_archivo(request):
     """Ofrece un archivo específico para descargar."""
-    logger.info("Solicitud GET para descargar archivo.")
+    logger.debug("Solicitud GET para descargar archivo.")
     nombre_del_archivo = "script_pyinstaller.py"
 
     try:
@@ -628,7 +628,7 @@ def descargar_archivo(request):
 def reportar_item(request, articulo_id):
     """Devuelve datos iniciales para un modal de reporte."""
     if request.method == "GET":
-        logger.info(f"GET reporte item ID: {articulo_id}")
+        logger.debug(f"GET reporte item ID: {articulo_id}")
         try:
             estados = getattr(
                 settings,
@@ -656,7 +656,7 @@ def reportar_item(request, articulo_id):
 def enviar_reporte(request, articulo_id):
     """Recibe los datos del reporte (POST)."""
     if request.method == "POST":
-        logger.info(f"POST enviar reporte item ID: {articulo_id}")
+        logger.debug(f"POST enviar reporte item ID: {articulo_id}")
         try:
             data = json.loads(request.body)
             estado = data.get("estado")

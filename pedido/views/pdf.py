@@ -7,12 +7,16 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib.styles import getSampleStyleSheet
 
 from pedido.models import Pedido
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def descargar_pedido_pdf(request, pedido_id):
     try:
         pedido = Pedido.objects.get(id=pedido_id)
     except Pedido.DoesNotExist:
+        logger.warning("Pedido %s no encontrado al generar PDF", pedido_id)
         raise Http404("Pedido no encontrado")
 
     proveedor_name = str(pedido.proveedor)
@@ -65,4 +69,5 @@ def descargar_pedido_pdf(request, pedido_id):
     story.append(table)
 
     doc.build(story)
+    logger.info("PDF de pedido generado para pedido %s (proveedor=%s, articulos=%s)", pedido_id, proveedor_name, articulos.count())
     return response
