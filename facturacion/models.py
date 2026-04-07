@@ -1,9 +1,12 @@
 from django.db import models
 from bdd.models import Item, ArticuloSinRegistro
 from django.conf import settings
+import logging
 
 
 # Create your models here.
+logger = logging.getLogger(__name__)
+
 class Cliente(models.Model):
     razon_social = models.CharField(max_length=45)
     cuit_dni = models.CharField(max_length=11)
@@ -113,7 +116,7 @@ class ArticuloVendido(models.Model):
 
     def get_item(self):
         if isinstance(self.item, Item):
-            print(self.item)
+            logger.debug("ArticuloVendido.get_item item registrado=%s", self.item)
             ds = self.item.descripcion
             importe = self.item.final
             importe_efectivo = self.item.final_efectivo

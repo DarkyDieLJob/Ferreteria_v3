@@ -1,0 +1,27 @@
+{% load static %}
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Descarga de Logs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <h1>Descargar Logs</h1>
+    <p>Solo para usuarios staff. Ingrese rango de fechas con formato: YYYY-MM-DD HH:MM</p>
+    <form method="post">
+      {% csrf_token %}
+      <p>{{ form.app.label_tag }} {{ form.app }}</p>
+      <p>{{ form.from_date.label_tag }} {{ form.from_date }}</p>
+      <p>{{ form.to_date.label_tag }} {{ form.to_date }}</p>
+      <p>{{ form.include_info }} {{ form.include_info.label_tag }}</p>
+      <p>{{ form.include_error }} {{ form.include_error.label_tag }}</p>
+      <p>{{ form.include_rotated }} {{ form.include_rotated.label_tag }}</p>
+      <p>{{ form.max_size_mb.label_tag }} {{ form.max_size_mb }}</p>
+      <button type="submit">Descargar ZIP</button>
+    </form>
+    {% if message %}
+      <p>{{ message }}</p>
+    {% endif %}
+  </body>
+</html>

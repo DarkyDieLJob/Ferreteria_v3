@@ -21,8 +21,8 @@ from .conf import (
 )
 from .models import ReportControlEntry
 
-# Logger para la app 'reportes'
-logger = logging.getLogger('reportes')
+# Logger del módulo (hereda configuración del paquete 'reportes')
+logger = logging.getLogger(__name__)
 
 
 class StaffRequiredMixin(UserPassesTestMixin):

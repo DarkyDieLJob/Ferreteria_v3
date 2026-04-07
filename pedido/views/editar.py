@@ -6,6 +6,9 @@ from bdd.models import Proveedor, Lista_Pedidos
 from pedido.forms import ArticuloPedidoForm
 from .base import GeneralPedidoView
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 class EditarPedidoView(GeneralPedidoView):
     template_name = "pedido/vistas/editar_pedido/base.html"
@@ -38,7 +41,7 @@ class EditarPedidoView(GeneralPedidoView):
         context["Lista_articulos_faltantes"] = Lista_Pedidos.objects.filter(
             proveedor=context["proveedor"]
         ).order_by("item")
-        print("Listado_articulos_pedido:", context["Lista_articulos_pedidos"])
+        logger.debug("Listado_articulos_pedido: %s", list(context["Lista_articulos_pedidos"]))
 
         context["form"] = ArticuloPedidoForm()
         return self.render_to_response(context)
@@ -48,7 +51,7 @@ class EditarPedidoView(GeneralPedidoView):
         pedido = Pedido.objects.get(id=pedido_id)
 
         if form.is_valid():
-            print(form.cleaned_data)
+            logger.info("Agregar articulo al pedido %s con datos %s", pedido_id, form.cleaned_data)
             articulo_pedido = ArticuloPedido(
                 proveedor=pedido.proveedor,
                 item=form.cleaned_data["item"],
@@ -66,10 +69,10 @@ class EditarPedidoView(GeneralPedidoView):
             pedido.articulo_pedido.add(articulo_pedido)
             pedido.save()
             # form.save()
-            print("Formulario válido, pedido guardado.")
+            logger.info("Formulario válido, pedido %s guardado con articulo %s", pedido.id, articulo_pedido.id)
         else:
-            print("Formulario no válido.")
-            print(form.errors)
+            logger.warning("Formulario no válido para pedido %s", pedido_id)
+            logger.debug("Errores de formulario: %s", form.errors)
 
         context = self.get_context_data()
 
@@ -93,7 +96,7 @@ class EditarPedidoView(GeneralPedidoView):
         context["Lista_articulos_faltantes"] = Lista_Pedidos.objects.filter(
             proveedor=context["proveedor"]
         ).order_by("item")
-        print("Listado_articulos_pedido:", context["Lista_articulos_pedidos"])
+        logger.debug("Listado_articulos_pedido: %s", list(context["Lista_articulos_pedidos"]))
 
         context["form"] = ArticuloPedidoForm()
         url_destino = request.POST.get("url_destino")
@@ -105,7 +108,7 @@ class EditarPedidoView(GeneralPedidoView):
 
 def actualizar_cantidad(request, articulo_id):
     # Código para actualizar la cantidad de un pedido
-    print("Actualizando cantidad de articulo", articulo_id)
+    logger.info("Actualizando cantidad de articulo %s", articulo_id)
     articulo_pedido = ArticuloPedido.objects.get(id=articulo_id)
     data = json.loads(request.body)
 
@@ -143,7 +146,7 @@ def actualizar_cantidad(request, articulo_id):
 def agregar_al_pedido(request):
     # Código para agregar un artículo a un pedido
     data = json.loads(request.body)
-    print("Agregando al pedido", data)
+    logger.info("Agregando al pedido con datos %s", data)
     articulo_pedido = ArticuloPedido.objects.create(
         proveedor_id=data.get("proveedor_id"),
         item_id=data.get("item_id"),
@@ -188,13 +191,13 @@ def agregar_al_pedido(request):
 def cancelar_articulo_pedido(request):
     # Código para cancelar un artículo de un pedido proceso inverso al de agregar_al_pedido
     data = json.loads(request.body)
-    print("Cancelando artículo de pedido", data)
+    logger.info("Cancelando artículo de pedido con datos %s", data)
     articulo_pedido = ArticuloPedido.objects.get(id=data.get("articulo_id"))
 
     articulo_faltante, _ = Lista_Pedidos.objects.get_or_create(
         proveedor=articulo_pedido.proveedor, item=articulo_pedido.item
     )
-    print("Articulo faltante:", articulo_faltante)
+    logger.debug("Articulo faltante: %s", articulo_faltante)
     articulo_faltante.pedido = False
     articulo_faltante.cantidad = articulo_faltante.cantidad + articulo_pedido.cantidad
     articulo_faltante.save()
@@ -209,7 +212,7 @@ def cancelar_articulo_pedido(request):
 def enviar_pedido(request):
     # Código para enviar un pedido
     data = json.loads(request.body)
-    print("Enviando pedido", data)
+    logger.info("Enviando pedido con datos %s", data)
     # Si el pedido no tiene articulos no se puede enviar
     if not Pedido.objects.get(id=data.get("pedido_id")).articulo_pedido.all():
         return JsonResponse(

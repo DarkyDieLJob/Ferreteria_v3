@@ -13,6 +13,9 @@ from reportlab.platypus import (
 from reportlab.lib.styles import getSampleStyleSheet
 
 from pedido.models import ArticuloDevolucion
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def _parse_date(param_value):
@@ -58,6 +61,10 @@ def _apply_filters(qs, request, proveedor_id=None):
         ) | qs.filter(
             item__descripcion__icontains=q
         )
+    logger.debug(
+        "Filtros devoluciones aplicados: proveedor_id=%s, fecha_desde=%s, fecha_hasta=%s, q=%s, total=%s",
+        proveedor_id, fecha_desde, fecha_hasta, q, qs.count()
+    )
     return qs, fecha_desde, fecha_hasta
 
 
@@ -157,8 +164,12 @@ def descargar_devoluciones_pdf(request):
         story.extend(_render_totales(qs, styles))
     else:
         story.append(Paragraph("No hay devoluciones para los filtros seleccionados.", styles["Normal"]))
-
+    
     doc.build(story)
+    logger.info(
+        "PDF devoluciones global generado (desde=%s, hasta=%s, total=%s)",
+        fecha_desde, fecha_hasta, qs.count()
+    )
     return response
 
 
@@ -197,6 +208,10 @@ def descargar_devoluciones_por_proveedor_pdf(request, proveedor_id: int):
         story.append(Paragraph(f"Total: {total:.2f}", styles["Heading4"]))
     else:
         story.append(Paragraph("No hay devoluciones para los filtros seleccionados.", styles["Normal"]))
-
+    
     doc.build(story)
+    logger.info(
+        "PDF devoluciones por proveedor generado (proveedor_id=%s, total=%s)",
+        proveedor_id, qs.count()
+    )
     return response
