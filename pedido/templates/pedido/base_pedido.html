@@ -21,8 +21,10 @@
 <body>
     <script src="{% static 'cookies/js-cookies3.min.js' %}"></script>
     <script src="{% static 'bootstrap/js/bootstrap.bundle.js' %}"></script>
-    {# Carga diferida de QuaggaJS: solo al activar el escaner.
-       Evita warnings asm.js de Firefox y reduce el parse JS inicial. #}
+    {% comment %}
+        Carga diferida de QuaggaJS: solo al activar el escaner.
+        Evita warnings asm.js de Firefox y reduce el parse JS inicial.
+    {% endcomment %}
     <script>
         (function() {
             var quaggaPromise = null;

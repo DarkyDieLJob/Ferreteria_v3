@@ -57,9 +57,11 @@
     <body data-usuario="{{ user.get_username }}">
         <script src="{% static 'cookies/js-cookies3.min.js' %}"></script>
         <script src="{% static 'bootstrap/js/bootstrap.bundle.js' %}"></script>
-        {# Carga diferida de QuaggaJS: solo cuando el usuario invoca el escaner.
-           Evita el warning de Firefox 'asm.js optimizer disabled because debugger
-           is active' en paginas que no usan scanner, y reduce el parse JS inicial. #}
+        {% comment %}
+            Carga diferida de QuaggaJS: solo cuando el usuario invoca el escaner.
+            Evita el warning de Firefox 'asm.js optimizer disabled because debugger
+            is active' en paginas que no usan scanner, y reduce el parse JS inicial.
+        {% endcomment %}
         <script>
             (function() {
                 var quaggaPromise = null;
