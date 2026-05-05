@@ -423,6 +423,10 @@ function updateCart(nombre) {
         data: (window.selectedUser && typeof window.selectedUser === 'string') ? { usuario: window.selectedUser } : {},
         dataType: 'json',
         success: function(data) {
+            // Actualizar badges de cantidad en los botones de carrito
+            if (typeof window.actualizarBadgesBotonesCarrito === 'function') {
+                window.actualizarBadgesBotonesCarrito(data);
+            }
             // Verificar si hay cambios antes de actualizar
             const currentData = JSON.stringify(data);
             if (lastCartData !== currentData) {
@@ -605,6 +609,9 @@ $(document).ready(function(){
             dataType: 'json',
             success: function(data) {
                 lastCartData = JSON.stringify(data); // Actualizar los datos del carrito
+                if (typeof window.actualizarBadgesBotonesCarrito === 'function') {
+                    window.actualizarBadgesBotonesCarrito(data);
+                }
                 var tbody = $("#tablaCarrito table tbody");
                 tbody.empty();
                 
@@ -728,7 +735,46 @@ $(document).ready(function(){
     function getColorSeguro(color) {
         return color || 'white';
     }
-    
+
+    // Cuenta total de lineas de articulos (registrados + sin registro)
+    function contarArticulos(info) {
+        if (!info) return 0;
+        var a = Array.isArray(info.articulos) ? info.articulos.length : 0;
+        var b = Array.isArray(info.articulos_sin_registro) ? info.articulos_sin_registro.length : 0;
+        return a + b;
+    }
+
+    // HTML de un boton de carrito con badge de cantidad (similar al navbar)
+    window.buildBotonCarritoHTML = function(nombre, info) {
+        var color = getColorSeguro(info.color);
+        var tcolor = getTextColorForBg(color);
+        var count = contarArticulos(info);
+        var badge = count > 0
+            ? '<span class="badge-carrito position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">' + count + '<span class="visually-hidden">articulos</span></span>'
+            : '';
+        return '<button id="botonCarrito' + nombre + '" class="btn me-2 mb-2 position-relative" style="background-color:' + color + '; color:' + tcolor + '; border-color:' + tcolor + ';">Carrito de ' + nombre + badge + '</button>';
+    };
+
+    // Actualiza badges de los botones existentes a partir de data de /consultar_carrito/
+    window.actualizarBadgesBotonesCarrito = function(data) {
+        if (!data) return;
+        for (var nombre in data) {
+            var btn = $('#botonCarrito' + nombre);
+            if (!btn.length) continue;
+            var count = contarArticulos(data[nombre]);
+            var badge = btn.find('.badge-carrito');
+            if (count > 0) {
+                if (badge.length) {
+                    badge.contents().filter(function(){ return this.nodeType === 3; }).first().replaceWith(document.createTextNode(count));
+                } else {
+                    btn.append('<span class="badge-carrito position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">' + count + '<span class="visually-hidden">articulos</span></span>');
+                }
+            } else if (badge.length) {
+                badge.remove();
+            }
+        }
+    };
+
     function crearControlador(nombre) {
         return function() {
             mostrarCarrito(nombre);
@@ -742,9 +788,7 @@ $(document).ready(function(){
         dataType: 'json',
         success: function(data) {
             for (var nombre in data) {
-                let color = getColorSeguro(data[nombre].color);
-                let tcolor = getTextColorForBg(color);
-                $("#botonesCarrito").append('<button id="botonCarrito' + nombre + '" class="btn me-2 mb-2" style="background-color:' + color + '; color:' + tcolor + '; border-color:' + tcolor + ';">Carrito de ' + nombre + '</button>');
+                $("#botonesCarrito").append(window.buildBotonCarritoHTML(nombre, data[nombre]));
                 $("#botonCarrito" + nombre).click(crearControlador(nombre));
             }
         }
@@ -774,9 +818,7 @@ $(document).ready(function(){
                         $.get('/consultar_carrito/', function(data) {
                             $("#botonesCarrito").empty();
                             for (var nombre in data) {
-                                let color = getColorSeguro(data[nombre].color);
-                                let tcolor = getTextColorForBg(color);
-                                $("#botonesCarrito").append('<button id="botonCarrito' + nombre + '" class="btn me-2 mb-2" style="background-color:' + color + '; color:' + tcolor + '; border-color:' + tcolor + ';">Carrito de ' + nombre + '</button>');
+                                $("#botonesCarrito").append(window.buildBotonCarritoHTML(nombre, data[nombre]));
                                 $("#botonCarrito" + nombre).click(crearControlador(nombre));
                             }
                         });
