@@ -21,7 +21,31 @@
 <body>
     <script src="{% static 'cookies/js-cookies3.min.js' %}"></script>
     <script src="{% static 'bootstrap/js/bootstrap.bundle.js' %}"></script>
-    <script src="{% static 'quagga/quagga.js' %}"></script>
+    {# Carga diferida de QuaggaJS: solo al activar el escaner.
+       Evita warnings asm.js de Firefox y reduce el parse JS inicial. #}
+    <script>
+        (function() {
+            var quaggaPromise = null;
+            window.loadQuagga = function() {
+                if (quaggaPromise) return quaggaPromise;
+                quaggaPromise = new Promise(function(resolve, reject) {
+                    var s = document.createElement('script');
+                    s.src = "{% static 'quagga/quagga.js' %}";
+                    s.async = true;
+                    s.onload = function() { resolve(window.Quagga); };
+                    s.onerror = function() { quaggaPromise = null; reject(new Error('No se pudo cargar Quagga')); };
+                    document.head.appendChild(s);
+                });
+                return quaggaPromise;
+            };
+            document.addEventListener('click', function(e) {
+                var t = e.target;
+                if (t && t.closest && t.closest('#scan-button')) {
+                    window.loadQuagga();
+                }
+            }, true);
+        })();
+    </script>
     
     {% block cuerpo %}
     {% endblock %}
