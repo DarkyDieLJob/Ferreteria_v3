@@ -17,7 +17,13 @@
 
     <div class="mb-3">
         <label for="destino_id" class="form-label">Cliente destino para las transacciones</label>
-        <select id="destino_id" name="destino_id" class="form-select" required>
+        <div class="input-group input-group-sm mb-2">
+            <span class="input-group-text">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </span>
+            <input type="text" id="destino_buscar" class="form-control" placeholder="Buscar por razón social o CUIT/DNI..." autocomplete="off">
+        </div>
+        <select id="destino_id" name="destino_id" class="form-select" size="6" required>
             {% for destino in destinos %}
                 <option value="{{ destino.id }}" {% if destino.id == default_destino_id %}selected{% endif %}>
                     {{ destino.razon_social }} ({{ destino.cuit_dni }}){% if destino.id == 1 %} — Consumidor Final{% endif %}

@@ -185,6 +185,32 @@
         });
     });
 
+    // Filtro tipo "select2" para el cliente destino del modal de eliminación
+    document.addEventListener('input', function(e) {
+        if (!e.target || e.target.id !== 'destino_buscar') return;
+        const q = (e.target.value || '').toLowerCase().trim();
+        const select = document.getElementById('destino_id');
+        if (!select) return;
+        let firstVisible = null;
+        Array.from(select.options).forEach(opt => {
+            const match = opt.textContent.toLowerCase().indexOf(q) > -1;
+            opt.hidden = !match;
+            opt.disabled = !match;
+            if (match && !firstVisible) firstVisible = opt;
+        });
+        // Si la opción seleccionada quedó oculta, mover selección a la primera visible
+        const selected = select.options[select.selectedIndex];
+        if (selected && selected.hidden && firstVisible) {
+            select.value = firstVisible.value;
+        }
+    });
+
+    // Foco automático al abrir el modal de eliminación
+    modalEliminarEl.addEventListener('shown.bs.modal', function() {
+        const input = document.getElementById('destino_buscar');
+        if (input) input.focus();
+    });
+
     // Submit del form de edición (delegación)
     document.addEventListener('submit', function(e) {
         const form = e.target;
