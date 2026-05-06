@@ -3,7 +3,7 @@
 <div class="row">
     <div class="row">
     
-        <div id="botonesCarrito" style="height: 40px">
+        <div id="botonesCarrito" class="d-flex flex-wrap gap-2 mb-3 px-2">
             <!-- Aquí se añadirán los botones de los carritos -->
         </div>
     </div>
@@ -87,3 +87,27 @@
         {% include "tabla_link_pedidos.html" %}
     </div>
 </div>
+
+{# Select2 para el campo sub_titulo (FK -> Sub_Titulo) #}
+<link href="{% static 'vendor/select2/css/select2.min.css' %}" rel="stylesheet">
+<script src="{% static 'vendor/select2/js/select2.min.js' %}"></script>
+<script>
+    (function() {
+        function initSubtituloSelect2() {
+            if (!window.jQuery || !jQuery.fn || !jQuery.fn.select2) return;
+            var $sel = jQuery('#id_sub_titulo');
+            if ($sel.length && !$sel.hasClass('select2-hidden-accessible')) {
+                $sel.select2({
+                    width: '100%',
+                    placeholder: 'Seleccionar subtítulo...',
+                    allowClear: true
+                });
+            }
+        }
+        if (window.jQuery) {
+            jQuery(initSubtituloSelect2);
+        } else {
+            document.addEventListener('DOMContentLoaded', initSubtituloSelect2);
+        }
+    })();
+</script>

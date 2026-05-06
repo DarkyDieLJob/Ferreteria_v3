@@ -368,9 +368,11 @@
         
         
         // Cuando el usuario hace clic en el botón de cierre del modal, cierra el modal
-        var span = document.getElementsByClassName("close")[0];
-        span.onclick = function() {
-            document.getElementById('ModalCarrito').style.display = "none";  // Oculta el modal
+        var span = document.getElementsByClassName("close_carrito")[0];
+        if (span) {
+            span.onclick = function() {
+                document.getElementById('ModalCarrito').style.display = "none";  // Oculta el modal
+            }
         }
         
         var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;

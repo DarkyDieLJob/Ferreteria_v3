@@ -18,6 +18,13 @@ from facturacion.views import (
     FacturacionMensual,
     consulta_impresora_fiscal_generica,
 )
+from facturacion.views_clientes import (
+    ClientesListView,
+    ClienteNuevoView,
+    ClienteEditarView,
+    ClienteEliminarView,
+    api_crear_cliente,
+)
 
 urlpatterns = [
     path("obtener_metodos_pago/", obtener_metodos_pago, name="obtener_metodos_pago"),
@@ -45,7 +52,34 @@ urlpatterns = [
         name="actualizar_cantidad_articulo_sin_registro",
     ),
     path("vista_cierre_z/", CierreZVieW.as_view(), name="cierres-fiscales"),
-    path("facturacion/clientes/", Clientes.as_view(), name="clientes"),
+    # CRUD de clientes
+    path(
+        "facturacion/clientes/",
+        ClientesListView.as_view(),
+        name="clientes-list",
+    ),
+    path(
+        "facturacion/clientes/nuevo/",
+        ClienteNuevoView.as_view(),
+        name="clientes-nuevo",
+    ),
+    path(
+        "facturacion/clientes/editar/<int:id>/",
+        ClienteEditarView.as_view(),
+        name="clientes-editar",
+    ),
+    path(
+        "facturacion/clientes/eliminar/<int:id>/",
+        ClienteEliminarView.as_view(),
+        name="clientes-eliminar",
+    ),
+    path(
+        "facturacion/clientes/api/crear/",
+        api_crear_cliente,
+        name="clientes-api-crear",
+    ),
+    # Alias legado: mantener la url antigua operativa apuntando al listado
+    path("facturacion/clientes/legacy/", Clientes.as_view(), name="clientes"),
     path("facturacion/", Facturacion.as_view(), name="facturacion"),
     path(
         "facturacion/mensual/", FacturacionMensual.as_view(), name="facturacion-mensual"
