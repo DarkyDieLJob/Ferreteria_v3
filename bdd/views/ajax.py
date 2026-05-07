@@ -11,7 +11,6 @@ import hashlib
 from django.forms.models import model_to_dict
 from django.core import serializers
 from django.views.decorators.csrf import csrf_exempt
-from utils.rounding import round_price
 
 # Importa modelos y utils
 from ..models import (
@@ -23,6 +22,7 @@ from ..models import (
     Articulo,
     Cajon,
     ArticuloSinRegistro,
+    Sub_Titulo,
 )
 from .utils import articulo_to_dict, calcular_total, carrito_to_dict
 
@@ -291,7 +291,9 @@ def cambiar_cantidad_pedido(request, id_articulo, cantidad):
 
 def editar_item(request, id_articulo):
     try:
-        articulo = Item.objects.select_related("cajon").get(id=id_articulo)
+        articulo = Item.objects.select_related("cajon", "proveedor", "sub_titulo").get(
+            id=id_articulo
+        )
     except Item.DoesNotExist:
         return JsonResponse({"error": "Artículo no encontrado"}, status=404)
 
@@ -302,6 +304,18 @@ def editar_item(request, id_articulo):
             cajones_qs = [cajon_vacio_obj] + list(Cajon.objects.all())
             cajones_serialized = serializers.serialize("json", cajones_qs)
 
+            proveedores = list(
+                Proveedor.objects.all().values("id", "text_display")
+            )
+            proveedores_payload = [
+                {"id": p["id"], "nombre": p["text_display"] or f"Proveedor {p['id']}"}
+                for p in proveedores
+            ]
+
+            subtitulos_payload = list(
+                Sub_Titulo.objects.all().values("id", "nombre")
+            )
+
             return JsonResponse(
                 {
                     "status": "ok",
@@ -310,6 +324,15 @@ def editar_item(request, id_articulo):
                     "modal_tiene_cartel": articulo.tiene_cartel,
                     "modal_cajon": cajon_dict,
                     "cajones": cajones_serialized,
+                    "modal_factor_division": articulo.factor_division,
+                    "modal_proveedor_id": (
+                        articulo.proveedor.id if articulo.proveedor else None
+                    ),
+                    "modal_sub_titulo_id": (
+                        articulo.sub_titulo.id if articulo.sub_titulo else None
+                    ),
+                    "proveedores": proveedores_payload,
+                    "subtitulos": subtitulos_payload,
                 }
             )
         except Exception as e:
@@ -341,27 +364,72 @@ def editar_item(request, id_articulo):
             elif cajon_id:
                 articulo.cajon = Cajon.objects.get(id=int(cajon_id))
 
-            # Redondeo de precios
-            is_cartel = bool(articulo.tiene_cartel)
-            fields = ["final", "final_efectivo", "final_rollo", "final_rollo_efectivo"]
-            updated_price_fields = []
+            update_fields = ["stock", "barras", "tiene_cartel", "cajon"]
 
-            for fld in fields:
-                if hasattr(articulo, fld):
-                    val = getattr(articulo, fld)
-                    if val is not None:
-                        setattr(articulo, fld, round_price(val, is_cartel=is_cartel))
-                        updated_price_fields.append(fld)
+            # Proveedor
+            if "proveedor_id" in data:
+                prov_id = data.get("proveedor_id")
+                if prov_id in ["", None, "null"]:
+                    articulo.proveedor = None
+                else:
+                    try:
+                        articulo.proveedor = Proveedor.objects.get(id=int(prov_id))
+                    except Proveedor.DoesNotExist:
+                        return JsonResponse(
+                            {"error": "Proveedor no encontrado"}, status=400
+                        )
+                update_fields.append("proveedor")
 
-            update_fields = [
-                "stock",
-                "barras",
-                "tiene_cartel",
-                "cajon",
-            ] + updated_price_fields
+            # Sub_Titulo
+            if "sub_titulo_id" in data:
+                st_id = data.get("sub_titulo_id")
+                if st_id in ["", None, "null"]:
+                    articulo.sub_titulo = None
+                else:
+                    try:
+                        articulo.sub_titulo = Sub_Titulo.objects.get(id=int(st_id))
+                    except Sub_Titulo.DoesNotExist:
+                        return JsonResponse(
+                            {"error": "Sub_Titulo no encontrado"}, status=400
+                        )
+                update_fields.append("sub_titulo")
+
+            # Factor de división
+            if "factor_division" in data:
+                fd_raw = data.get("factor_division")
+                if fd_raw in ["", None, "null"]:
+                    articulo.factor_division = None
+                else:
+                    try:
+                        fd_val = float(str(fd_raw).replace(",", "."))
+                        articulo.factor_division = fd_val if fd_val > 1 else None
+                    except (TypeError, ValueError):
+                        articulo.factor_division = None
+                update_fields.append("factor_division")
+
+            # Rederivar final/final_efectivo/final_rollo/final_rollo_efectivo
+            # desde sus *_base aplicando factor_division (si > 1) y redondeo.
+            # Se ejecuta siempre porque tanto factor_division como tiene_cartel
+            # afectan la derivación, y es una operación barata.
+            articulo.recompute_finales()
+            update_fields += [
+                "final",
+                "final_efectivo",
+                "final_rollo",
+                "final_rollo_efectivo",
+            ]
             articulo.save(update_fields=update_fields)
 
-            return JsonResponse({"status": "ok", "message": "Artículo actualizado"})
+            return JsonResponse(
+                {
+                    "status": "ok",
+                    "message": "Artículo actualizado",
+                    "final": articulo.final,
+                    "final_efectivo": articulo.final_efectivo,
+                    "final_rollo": articulo.final_rollo,
+                    "final_rollo_efectivo": articulo.final_rollo_efectivo,
+                }
+            )
 
         except Exception as e:
             logger.error(f"Error POST editar_item: {e}", exc_info=True)

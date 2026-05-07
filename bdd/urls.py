@@ -19,8 +19,6 @@ from .views.ajax import (
     crear_modificar_lista_pedidos,
     consultar_carrito,
     usuarios_caja,
-    reportar_item,
-    enviar_reporte,
 )
 from .views_old import ListarCarteles
 
@@ -116,8 +114,6 @@ urlpatterns += [
         agregar_al_pedido,
         name="agregar_articulo_a_pedido",
     ),
-    path("reportar_item/<int:articulo_id>/", reportar_item, name="reportar_item"),
-    path("enviar_reporte/<int:articulo_id>/", enviar_reporte, name="enviar_reporte"),
 ]
 # for url in urlpatterns:
 #     print(url)
