@@ -20,6 +20,7 @@ class ReportControlEntry(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        app_label = 'reportes'
         indexes = [
             models.Index(fields=["folder_id"]),
             models.Index(fields=["allowed", "processed"]),

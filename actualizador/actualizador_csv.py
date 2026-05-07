@@ -13,20 +13,71 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core_config.settings")
 
 import django
 
-django.setup()
+# Lazy setup - se ejecuta solo cuando se llama a las funciones
+_django_setup_done = False
 
-from django.conf import settings as const
+def ensure_django_setup():
+    global _django_setup_done
+    if not _django_setup_done:
+        django.setup()
+        _django_setup_done = True
 
-# Asumiendo que tus modelos están en 'bdd' y 'x_cartel'
-# Ajusta las rutas de importación si es necesario
-from bdd.models import Item, Sub_Carpeta, Sub_Titulo, ListaProveedores, Proveedor
-from x_cartel.models import Carteles, CartelesCajon
-from bdd.classes import Patoba  # Asumiendo que esta clase existe y se usa
-from utils.rounding import round_price
+# Django imports (se cargarán lazy)
+_const = None
+_Item = None
+_Sub_Carpeta = None
+_Sub_Titulo = None
+_ListaProveedores = None
+_Proveedor = None
+_Carteles = None
+_CartelesCajon = None
+_Patoba = None
+_round_price = None
+_transaction = None
+_Q = None
+_User = None
 
-from django.db import transaction
-from django.db.models import Q
-from django.contrib.auth.models import User
+def _load_django_deps():
+    global _const, _Item, _Sub_Carpeta, _Sub_Titulo, _ListaProveedores, _Proveedor
+    global _Carteles, _CartelesCajon, _Patoba, _round_price, _transaction, _Q, _User
+    global const, Item, Sub_Carpeta, Sub_Titulo, ListaProveedores, Proveedor
+    global Carteles, CartelesCajon, Patoba, round_price, transaction, Q, User
+    ensure_django_setup()
+    if _const is None:
+        from django.conf import settings as const
+        from bdd.models import Item, Sub_Carpeta, Sub_Titulo, ListaProveedores, Proveedor
+        from x_cartel.models import Carteles, CartelesCajon
+        from bdd.classes import Patoba
+        from utils.rounding import round_price
+        from django.db import transaction
+        from django.db.models import Q
+        from django.contrib.auth.models import User
+        _const = const
+        _Item = Item
+        _Sub_Carpeta = Sub_Carpeta
+        _Sub_Titulo = Sub_Titulo
+        _ListaProveedores = ListaProveedores
+        _Proveedor = Proveedor
+        _Carteles = Carteles
+        _CartelesCajon = CartelesCajon
+        _Patoba = Patoba
+        _round_price = round_price
+        _transaction = transaction
+        _Q = Q
+        _User = User
+    const = _const
+    Item = _Item
+    Sub_Carpeta = _Sub_Carpeta
+    Sub_Titulo = _Sub_Titulo
+    ListaProveedores = _ListaProveedores
+    Proveedor = _Proveedor
+    Carteles = _Carteles
+    CartelesCajon = _CartelesCajon
+    Patoba = _Patoba
+    round_price = _round_price
+    transaction = _transaction
+    Q = _Q
+    User = _User
 
 # Configuración del logger (ya estaba, aseguramos que esté)
 logger = logging.getLogger(__name__)
@@ -63,6 +114,7 @@ def validar_digitos_str(cadena):
 
 def custom_round(price):
     """Compatibilidad: usa la regla unificada sin modo cartel para preprocesamiento de filas."""
+    _load_django_deps()
     try:
         return round_price(price, is_cartel=False)
     except Exception:
@@ -74,6 +126,7 @@ def custom_round(price):
 
 def get_batch_size(default=1000):
     """Obtiene el tamaño de lote desde settings (ACT_CSV_BATCH_SIZE) o variable de entorno, por defecto 1000."""
+    _load_django_deps()
     try:
         if hasattr(const, "ACT_CSV_BATCH_SIZE") and const.ACT_CSV_BATCH_SIZE:
             return int(const.ACT_CSV_BATCH_SIZE)
@@ -85,6 +138,7 @@ def get_batch_size(default=1000):
 
 def get_efectivo_discount_pct(default=0.0):
     """Obtiene el porcentaje de descuento a aplicar sobre 'final_efectivo' desde settings/env. Por defecto 0%."""
+    _load_django_deps()
     try:
         if (
             hasattr(const, "ACT_CSV_EFECTIVO_DESCUENTO_PCT")
@@ -102,6 +156,7 @@ def get_efectivo_discount_pct(default=0.0):
 
 def crear_o_actualizar_registro(row_original):
     """Intenta crear o actualizar un registro Item basado en una fila de datos."""
+    _load_django_deps()
     # Guardamos una copia para logging en caso de error
     row = row_original.copy()
     codigo_item = row.get("codigo", "N/A")
@@ -156,8 +211,20 @@ def crear_o_actualizar_registro(row_original):
                 )
 
         # 5. Crear o Actualizar Item
-        # Preparamos los defaults quitando 'codigo' y asegurando valores correctos
+        # Preparamos los defaults quitando 'codigo' y asegurando valores correctos.
+        # IMPORTANTE: los precios del CSV (final, final_efectivo, final_rollo,
+        # final_rollo_efectivo) se almacenan en sus campos *_base. Los campos
+        # final/final_efectivo/etc. se rederivan vía Item.recompute_finales()
+        # aplicando factor_division.
         defaults = {k: v for k, v in row.items() if k != "codigo"}
+        for src, dst in (
+            ("final", "final_base"),
+            ("final_efectivo", "final_efectivo_base"),
+            ("final_rollo", "final_rollo_base"),
+            ("final_rollo_efectivo", "final_rollo_efectivo_base"),
+        ):
+            if src in defaults:
+                defaults[dst] = defaults.pop(src)
         # Asegurarse que los campos ForeignKey son instancias o None
         if (
             "sub_carpeta" in defaults
@@ -180,9 +247,22 @@ def crear_o_actualizar_registro(row_original):
 
         # Marcamos como actualizado antes de guardar
         defaults["actualizado"] = True
+        # Nunca sobrescribir factor_division desde el CSV
+        defaults.pop("factor_division", None)
 
         item, created = Item.objects.update_or_create(
             codigo=codigo_item, defaults=defaults
+        )
+
+        # Rederivar final* desde *_base aplicando factor_division.
+        item.recompute_finales()
+        item.save(
+            update_fields=[
+                "final",
+                "final_efectivo",
+                "final_rollo",
+                "final_rollo_efectivo",
+            ]
         )
 
         if created:
@@ -218,6 +298,7 @@ def crear_o_actualizar_registro(row_original):
 
 def crear_o_actualizar_registros_en_lotes(rows, tamaño_lote=1000):
     """Procesa y guarda registros de Item en lotes usando bulk_update."""
+    _load_django_deps()
     logger.info(
         f"Iniciando procesamiento por lotes. Tamaño del lote: {tamaño_lote}. Filas totales: {len(rows)}"
     )
@@ -317,7 +398,10 @@ def crear_o_actualizar_registros_en_lotes(rows, tamaño_lote=1000):
                 )
                 final_efectivo_f = 0
 
-            # Preparar datos para el modelo Item
+            # Preparar datos para el modelo Item.
+            # IMPORTANTE: los precios del CSV se almacenan en *_base. Los
+            # campos final/final_efectivo/etc. se rederivan en Fase 3 vía
+            # Item.recompute_finales() aplicando factor_division.
             item_data = {
                 "codigo": codigo_item,
                 "sub_carpeta": sub_carpeta,
@@ -326,8 +410,8 @@ def crear_o_actualizar_registros_en_lotes(rows, tamaño_lote=1000):
                 "actualizado": True,
                 # Añadir el resto de campos desde 'row', convirtiendo tipos si es necesario
                 "precio_base": row.get("precio_base", 0),  # Asume conversión necesaria
-                "final": final_f if "final" in row else 0,
-                "final_efectivo": final_efectivo_f,
+                "final_base": final_f if "final" in row else 0,
+                "final_efectivo_base": final_efectivo_f,
                 # ... añadir otros campos de tu modelo Item ...
             }
             # Eliminar claves None que no deben ir al modelo
@@ -381,8 +465,11 @@ def crear_o_actualizar_registros_en_lotes(rows, tamaño_lote=1000):
     if mapa_items_para_actualizar:
         items_actualizar_lista = list(mapa_items_para_actualizar.values())
         # Obtener todos los campos excepto la PK para actualizar
+        # Excluir factor_division para preservar el valor configurado por usuario en la UI
         campos_actualizar = [
-            field.name for field in Item._meta.fields if not field.primary_key
+            field.name
+            for field in Item._meta.fields
+            if not field.primary_key and field.name != "factor_division"
         ]
         try:
             with transaction.atomic():
@@ -400,6 +487,27 @@ def crear_o_actualizar_registros_en_lotes(rows, tamaño_lote=1000):
     fin_db = time.time()
     logger.info(f"Fase 2 completada en {fin_db - inicio_db:.2f} seg.")
 
+    # Fase 3: Rederivar final/final_efectivo/final_rollo/final_rollo_efectivo
+    # desde sus *_base aplicando factor_division (si > 1) y redondeo.
+    logger.info(
+        "Fase 3: Rederivando final* desde *_base (aplicando factor_division)..."
+    )
+    inicio_recompute = time.time()
+    codigos_procesados = list(items_existentes.keys()) + [
+        getattr(it, "codigo", None) for it in items_para_crear
+    ]
+    codigos_procesados = [c for c in codigos_procesados if c]
+    if codigos_procesados:
+        try:
+            recompute_finales_para_codigos(codigos_procesados, batch_size=tamaño_lote)
+        except Exception as e:
+            logger.error("Error durante recompute_finales en Fase 3.")
+            logger.exception(e)
+    fin_recompute = time.time()
+    logger.info(
+        f"Fase 3 completada en {fin_recompute - inicio_recompute:.2f} seg."
+    )
+
     # Opcional: Loguear items con error que no se procesaron
     if codigos_con_error:
         logger.warning(
@@ -408,8 +516,104 @@ def crear_o_actualizar_registros_en_lotes(rows, tamaño_lote=1000):
         # Podrías escribir estos códigos/filas a un archivo si es necesario
 
 
+def recompute_finales_para_codigos(codigos, batch_size=1000):
+    """Rederiva final/final_efectivo/final_rollo/final_rollo_efectivo desde
+    sus respectivos *_base aplicando factor_division (si > 1) y redondeo,
+    para los Items cuyo `codigo` esté en `codigos`.
+
+    Procesa por lotes para evitar consumo excesivo de memoria.
+    """
+    _load_django_deps()
+    if not codigos:
+        return
+    logger.info(
+        f"recompute_finales_para_codigos: {len(codigos)} códigos en lotes de {batch_size}"
+    )
+    campos_actualizar = [
+        "final",
+        "final_efectivo",
+        "final_rollo",
+        "final_rollo_efectivo",
+    ]
+    total = len(codigos)
+    procesados = 0
+    for i in range(0, total, batch_size):
+        chunk = codigos[i : i + batch_size]
+        items = list(Item.objects.filter(codigo__in=chunk))
+        for it in items:
+            it.recompute_finales()
+        if items:
+            try:
+                with transaction.atomic():
+                    Item.objects.bulk_update(items, campos_actualizar, batch_size=batch_size)
+                procesados += len(items)
+                logger.debug(
+                    f"recompute_finales: chunk {i // batch_size + 1}: actualizados {len(items)}"
+                )
+            except Exception as e:
+                logger.error(
+                    f"Error en bulk_update de recompute_finales (chunk {i // batch_size + 1})."
+                )
+                logger.exception(e)
+    logger.info(
+        f"recompute_finales_para_codigos: {procesados} items recalculados."
+    )
+
+
+def recompute_finales_todos(batch_size=1000):
+    """Rederiva final* desde *_base para TODOS los items. Util para backfill
+    o para ejecutar como paso post-actualizador completo.
+    """
+    _load_django_deps()
+    logger.info(
+        f"--- Iniciando recompute_finales para todos los items (lote: {batch_size}) ---"
+    )
+    campos_actualizar = [
+        "final",
+        "final_efectivo",
+        "final_rollo",
+        "final_rollo_efectivo",
+    ]
+    qs = Item.objects.all().only(
+        "id",
+        "factor_division",
+        "tiene_cartel",
+        "final_base",
+        "final_efectivo_base",
+        "final_rollo_base",
+        "final_rollo_efectivo_base",
+    )
+    total = qs.count()
+    logger.info(f"Total items a recalcular: {total}")
+    offset = 0
+    procesados = 0
+    while offset < total:
+        items = list(qs[offset : offset + batch_size])
+        if not items:
+            break
+        for it in items:
+            it.recompute_finales()
+        try:
+            with transaction.atomic():
+                Item.objects.bulk_update(items, campos_actualizar, batch_size=batch_size)
+            procesados += len(items)
+            logger.debug(
+                f"recompute_finales_todos: offset {offset}, batch {len(items)}, total procesados {procesados}"
+            )
+        except Exception as e:
+            logger.error(
+                f"Error en bulk_update de recompute_finales_todos (offset {offset})."
+            )
+            logger.exception(e)
+        offset += batch_size
+    logger.info(
+        f"--- Fin recompute_finales_todos. Items recalculados: {procesados} ---"
+    )
+
+
 def desactualizar_anteriores(filtro):
     """Marca items como no actualizados basado en un filtro de código."""
+    _load_django_deps()
     logger.info(
         f"Marcando como no actualizados items con código terminando en: '{filtro}'"
     )
@@ -425,6 +629,7 @@ def desactualizar_anteriores(filtro):
 
 def buscar_modificar_registros(csv_file, filtro):
     """Procesa un CSV registro por registro (menos eficiente)."""
+    _load_django_deps()
     logger.info(
         f"Iniciando procesamiento individual desde CSV: '{csv_file}' para filtro: '{filtro}'"
     )
@@ -491,6 +696,7 @@ def buscar_modificar_registros(csv_file, filtro):
 
 def buscar_modificar_registros_lotes(csv_file, filtro):
     """Carga un CSV y procesa los registros en lotes (más eficiente)."""
+    _load_django_deps()
     batch_size = get_batch_size()
     descuento_pct = get_efectivo_discount_pct()
     logger.info(
@@ -578,6 +784,7 @@ def buscar_modificar_registros_lotes(csv_file, filtro):
 
 def principal_csv():
     """Función principal que procesa CSVs pendientes para cada proveedor."""
+    _load_django_deps()
     patoba = Patoba(None)  # Asumiendo que Patoba no necesita request aquí
     logger.info("--- Iniciando Proceso Principal de Actualización desde CSVs ---")
     try:
@@ -693,76 +900,17 @@ def principal_csv():
 
 
 def apply_custom_round(batch_size=1000):
-    """Aplica la regla unificada a los campos de precio de todos los Items, respetando tiene_cartel."""
-    logger.info(f"--- Iniciando Redondeo Custom por Lotes (Tamaño: {batch_size}) ---")
+    """Compatibilidad: rederiva final* desde *_base para todos los Items."""
+    _load_django_deps()
+    logger.info(f"--- Iniciando Rederivación Custom por Lotes (Tamaño: {batch_size}) ---")
     try:
-        items_qs = Item.objects.all()
-        total_items = items_qs.count()
-        logger.info(f"Total items a redondear: {total_items}")
-        offset = 0
-        updated_count = 0
-
-        while offset < total_items:
-            logger.debug(
-                f"Procesando lote de redondeo: offset={offset}, batch_size={batch_size}"
-            )
-            # Usar iterator para optimizar memoria en querysets grandes
-            batch_items = list(items_qs[offset : offset + batch_size])
-            items_to_update = []
-            for item in batch_items:
-                # Aplicar redondeo y verificar si hubo cambios
-                original_final = item.final
-                original_final_efectivo = item.final_efectivo
-                original_final_rollo = item.final_rollo
-                original_final_rollo_efectivo = item.final_rollo_efectivo
-
-                is_cartel = bool(getattr(item, "tiene_cartel", False))
-                item.final = round_price(item.final, is_cartel=is_cartel)
-                item.final_efectivo = round_price(
-                    item.final_efectivo, is_cartel=is_cartel
-                )
-                item.final_rollo = round_price(item.final_rollo, is_cartel=is_cartel)
-                item.final_rollo_efectivo = round_price(
-                    item.final_rollo_efectivo, is_cartel=is_cartel
-                )
-
-                # Añadir a la lista de actualización solo si algo cambió
-                if (
-                    item.final != original_final
-                    or item.final_efectivo != original_final_efectivo
-                    or item.final_rollo != original_final_rollo
-                    or item.final_rollo_efectivo != original_final_rollo_efectivo
-                ):
-                    items_to_update.append(item)
-
-            if items_to_update:
-                campos_a_actualizar = [
-                    "final",
-                    "final_efectivo",
-                    "final_rollo",
-                    "final_rollo_efectivo",
-                ]
-                Item.objects.bulk_update(
-                    items_to_update, campos_a_actualizar, batch_size=batch_size
-                )
-                logger.debug(
-                    f"Lote de {len(items_to_update)} items redondeados y actualizados."
-                )
-                updated_count += len(items_to_update)
-            else:
-                logger.debug("Lote procesado, sin cambios detectados en redondeo.")
-
-            offset += len(batch_items)  # Avanzar por el tamaño real del lote procesado
-
-        logger.info(
-            f"Redondeo Custom completado. {updated_count} items tuvieron precios actualizados."
-        )
+        recompute_finales_todos(batch_size=batch_size)
 
     except Exception as e:
-        logger.error("Error durante el proceso de redondeo custom.")
+        logger.error("Error durante el proceso de rederivación custom.")
         logger.exception(e)
     finally:
-        logger.info("--- Fin del Redondeo Custom por Lotes ---")
+        logger.info("--- Fin de la Rederivación Custom por Lotes ---")
 
 
 # --- Otras Funciones ---
@@ -784,6 +932,7 @@ def mostrara_boletas(bool_value):
 
 def reset_user_password(username, password):
     """Resetea la contraseña de un usuario."""
+    _load_django_deps()
     logger.warning(f"Intentando resetear contraseña para usuario: '{username}'")
     try:
         user = User.objects.get(username=username)
@@ -799,6 +948,7 @@ def reset_user_password(username, password):
 
 def filtrar_trabajados():
     """Exporta items trabajados a archivos CSV, uno por proveedor."""
+    _load_django_deps()
     logger.info("Iniciando exportación de items trabajados por proveedor a CSV.")
     try:
         proveedores = Proveedor.objects.all()
@@ -858,6 +1008,7 @@ def filtrar_trabajados():
 
 def asociar_proveedores():
     """Intenta asociar Items a Proveedores basado en la abreviatura en el código."""
+    _load_django_deps()
     logger.info("--- Iniciando Asociación de Items a Proveedores por Abreviatura ---")
     try:
         items_sin_proveedor = Item.objects.filter(proveedor__isnull=True)

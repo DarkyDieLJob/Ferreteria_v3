@@ -1,0 +1,256 @@
+{% extends 'base2.html' %}
+{% load static %}
+
+{% block title %}Clientes{% endblock %}
+
+{% block form_content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+        <h1 class="mb-0">Clientes</h1>
+        <small class="text-muted">Total: {{ total_count }}</small>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'clientes-nuevo' %}" class="btn btn-success">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nuevo cliente
+        </a>
+        <a href="/buscador/" class="btn btn-outline-secondary">Volver al buscador</a>
+    </div>
+</div>
+
+<form method="get" class="row g-2 mt-3">
+    <div class="col-sm-4">
+        <label class="form-label mb-0 small">Razón social</label>
+        {{ filter_form.q }}
+    </div>
+    <div class="col-sm-3">
+        <label class="form-label mb-0 small">CUIT/DNI</label>
+        {{ filter_form.cuit }}
+    </div>
+    <div class="col-sm-2">
+        <label class="form-label mb-0 small">Resp. IVA</label>
+        {{ filter_form.iva }}
+    </div>
+    <div class="col-sm-2">
+        <label class="form-label mb-0 small">Tipo doc.</label>
+        {{ filter_form.tdoc }}
+    </div>
+    <div class="col-sm-1 d-grid align-items-end">
+        <label class="form-label mb-0 small">&nbsp;</label>
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+    </div>
+    {% if request.GET %}
+    <div class="col-12">
+        <a href="{% url 'clientes-list' %}" class="btn btn-sm btn-link px-0">Limpiar filtros</a>
+    </div>
+    {% endif %}
+</form>
+{% endblock %}
+
+{% block base_content %}
+<div class="table-responsive">
+    <table class="table table-striped table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th style="width:60px;">ID</th>
+                <th>Razón social</th>
+                <th>CUIT/DNI</th>
+                <th>Resp. IVA</th>
+                <th>Tipo doc.</th>
+                <th>Teléfono</th>
+                <th>Domicilio</th>
+                <th class="text-end" style="width:130px;">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cliente in page_obj %}
+            <tr data-cliente-id="{{ cliente.id }}">
+                <td>{{ cliente.id }}</td>
+                <td>{{ cliente.razon_social }}</td>
+                <td>{{ cliente.cuit_dni }}</td>
+                <td>{{ cliente.get_responsabilidad_iva_display }}</td>
+                <td>{{ cliente.get_tipo_documento_display }}</td>
+                <td>{{ cliente.telefono|default:"—" }}</td>
+                <td>{{ cliente.domicilio|default:"—" }}</td>
+                <td class="text-end">
+                    <button class="btn btn-sm btn-outline-primary btn-editar-cliente"
+                            data-id="{{ cliente.id }}"
+                            title="Editar" aria-label="Editar">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger btn-eliminar-cliente"
+                            data-id="{{ cliente.id }}"
+                            {% if cliente.id == 1 %}disabled title="No se puede eliminar Consumidor Final"{% else %}title="Eliminar" aria-label="Eliminar"{% endif %}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>
+                    </button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="8" class="text-center text-muted py-4">Sin resultados</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if page_obj.paginator.num_pages > 1 %}
+<nav aria-label="Paginación" class="d-flex justify-content-between align-items-center">
+    <small class="text-muted">
+        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+    </small>
+    <ul class="pagination mb-0">
+        <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+            {% if page_obj.has_previous %}
+                <a class="page-link" href="?{% if preserved_qs %}{{ preserved_qs }}&{% endif %}page={{ page_obj.previous_page_number }}">Anterior</a>
+            {% else %}
+                <span class="page-link">Anterior</span>
+            {% endif %}
+        </li>
+        <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+            {% if page_obj.has_next %}
+                <a class="page-link" href="?{% if preserved_qs %}{{ preserved_qs }}&{% endif %}page={{ page_obj.next_page_number }}">Siguiente</a>
+            {% else %}
+                <span class="page-link">Siguiente</span>
+            {% endif %}
+        </li>
+    </ul>
+</nav>
+{% endif %}
+
+<!-- Modal: Editar cliente -->
+<div class="modal fade" id="modalEditarCliente" tabindex="-1" aria-labelledby="modalEditarClienteLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalEditarClienteLabel">Editar cliente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body" id="modalEditarClienteBody">
+                <div class="text-center text-muted py-4">Cargando...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Eliminar cliente -->
+<div class="modal fade" id="modalEliminarCliente" tabindex="-1" aria-labelledby="modalEliminarClienteLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalEliminarClienteLabel">Eliminar cliente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body" id="modalEliminarClienteBody">
+                <div class="text-center text-muted py-4">Cargando...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function(){
+    function getCookie(name) {
+        const match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+        return match ? decodeURIComponent(match[1]) : null;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    const modalEditarEl = document.getElementById('modalEditarCliente');
+    const modalEliminarEl = document.getElementById('modalEliminarCliente');
+    const modalEditar = new bootstrap.Modal(modalEditarEl);
+    const modalEliminar = new bootstrap.Modal(modalEliminarEl);
+
+    function loadInto(url, bodyEl) {
+        bodyEl.innerHTML = '<div class="text-center text-muted py-4">Cargando...</div>';
+        return fetch(url, {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+            .then(r => r.text())
+            .then(html => { bodyEl.innerHTML = html; });
+    }
+
+    // Editar
+    document.querySelectorAll('.btn-editar-cliente').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = btn.dataset.id;
+            loadInto(`/facturacion/clientes/editar/${id}/`, document.getElementById('modalEditarClienteBody'))
+                .then(() => modalEditar.show());
+        });
+    });
+
+    // Eliminar
+    document.querySelectorAll('.btn-eliminar-cliente').forEach(btn => {
+        if (btn.disabled) return;
+        btn.addEventListener('click', () => {
+            const id = btn.dataset.id;
+            loadInto(`/facturacion/clientes/eliminar/${id}/`, document.getElementById('modalEliminarClienteBody'))
+                .then(() => modalEliminar.show());
+        });
+    });
+
+    // Filtro tipo "select2" para el cliente destino del modal de eliminación
+    document.addEventListener('input', function(e) {
+        if (!e.target || e.target.id !== 'destino_buscar') return;
+        const q = (e.target.value || '').toLowerCase().trim();
+        const select = document.getElementById('destino_id');
+        if (!select) return;
+        let firstVisible = null;
+        Array.from(select.options).forEach(opt => {
+            const match = opt.textContent.toLowerCase().indexOf(q) > -1;
+            opt.hidden = !match;
+            opt.disabled = !match;
+            if (match && !firstVisible) firstVisible = opt;
+        });
+        // Si la opción seleccionada quedó oculta, mover selección a la primera visible
+        const selected = select.options[select.selectedIndex];
+        if (selected && selected.hidden && firstVisible) {
+            select.value = firstVisible.value;
+        }
+    });
+
+    // Foco automático al abrir el modal de eliminación
+    modalEliminarEl.addEventListener('shown.bs.modal', function() {
+        const input = document.getElementById('destino_buscar');
+        if (input) input.focus();
+    });
+
+    // Submit del form de edición (delegación)
+    document.addEventListener('submit', function(e) {
+        const form = e.target;
+        if (form && form.matches('#formEditarCliente')) {
+            e.preventDefault();
+            const data = new FormData(form);
+            fetch(form.action, {
+                method: 'POST',
+                body: data,
+                headers: {'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': csrftoken},
+            }).then(async r => {
+                if (r.ok) {
+                    modalEditar.hide();
+                    window.location.reload();
+                } else {
+                    const payload = await r.json().catch(() => ({}));
+                    if (payload && payload.html) {
+                        document.getElementById('modalEditarClienteBody').innerHTML = payload.html;
+                    }
+                }
+            });
+        }
+        if (form && form.matches('#formEliminarCliente')) {
+            e.preventDefault();
+            const data = new FormData(form);
+            fetch(form.action, {
+                method: 'POST',
+                body: data,
+                headers: {'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': csrftoken},
+            }).then(async r => {
+                const payload = await r.json().catch(() => ({}));
+                if (r.ok && payload.ok) {
+                    modalEliminar.hide();
+                    window.location.reload();
+                } else {
+                    alert((payload && payload.error) || 'Error al eliminar');
+                }
+            });
+        }
+    });
+})();
+</script>
+{% endblock %}

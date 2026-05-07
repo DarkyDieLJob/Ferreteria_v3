@@ -1,0 +1,40 @@
+{% load static %}
+<form id="formEliminarCliente" method="post" action="{{ action_url }}">
+    {% csrf_token %}
+    <p>
+        ¿Confirmás eliminar al cliente
+        <strong>{{ cliente.razon_social }}</strong>
+        <span class="text-muted">(id={{ cliente.id }}, CUIT/DNI: {{ cliente.cuit_dni }})</span>?
+    </p>
+    {% if transacciones_count %}
+        <div class="alert alert-warning">
+            Este cliente tiene <strong>{{ transacciones_count }}</strong> transacción{{ transacciones_count|pluralize:"es" }} asociada{{ transacciones_count|pluralize }}.
+            Seleccioná el cliente destino al que se reasignarán antes de eliminar.
+        </div>
+    {% else %}
+        <div class="alert alert-info">Este cliente no tiene transacciones asociadas.</div>
+    {% endif %}
+
+    <div class="mb-3">
+        <label for="destino_id" class="form-label">Cliente destino para las transacciones</label>
+        <div class="input-group input-group-sm mb-2">
+            <span class="input-group-text">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </span>
+            <input type="text" id="destino_buscar" class="form-control" placeholder="Buscar por razón social o CUIT/DNI..." autocomplete="off">
+        </div>
+        <select id="destino_id" name="destino_id" class="form-select" size="6" required>
+            {% for destino in destinos %}
+                <option value="{{ destino.id }}" {% if destino.id == default_destino_id %}selected{% endif %}>
+                    {{ destino.razon_social }} ({{ destino.cuit_dni }}){% if destino.id == 1 %} — Consumidor Final{% endif %}
+                </option>
+            {% endfor %}
+        </select>
+        <div class="form-text">Por defecto se reasignan al Consumidor Final (id=1).</div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn btn-danger">Eliminar y reasignar</button>
+    </div>
+</form>

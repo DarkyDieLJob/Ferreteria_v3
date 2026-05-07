@@ -11,7 +11,7 @@
     <link href="{% static 'pedido/css/pedido.css' %}" rel="stylesheet">
     <title>{% block title %}  {% endblock%}</title>
     <link rel="stylesheet" type="text/css" href="{% static 'admin/css/widgets.css' %}">
-    <link rel="shortcut icon" type="image/png" href="/media/imagenes/favicon.ico"/>
+    <link rel="icon" type="image/svg+xml" href="{% static 'imagenes/favicon.svg' %}"/>
     <script src="{% static 'jquery/jquery.js' %}"></script>
     <link href="{% static 'vendor/select2/css/select2.min.css' %}" rel="stylesheet" />
     
@@ -21,7 +21,33 @@
 <body>
     <script src="{% static 'cookies/js-cookies3.min.js' %}"></script>
     <script src="{% static 'bootstrap/js/bootstrap.bundle.js' %}"></script>
-    <script src="{% static 'quagga/quagga.js' %}"></script>
+    {% comment %}
+        Carga diferida de QuaggaJS: solo al activar el escaner.
+        Evita warnings asm.js de Firefox y reduce el parse JS inicial.
+    {% endcomment %}
+    <script>
+        (function() {
+            var quaggaPromise = null;
+            window.loadQuagga = function() {
+                if (quaggaPromise) return quaggaPromise;
+                quaggaPromise = new Promise(function(resolve, reject) {
+                    var s = document.createElement('script');
+                    s.src = "{% static 'quagga/quagga.js' %}";
+                    s.async = true;
+                    s.onload = function() { resolve(window.Quagga); };
+                    s.onerror = function() { quaggaPromise = null; reject(new Error('No se pudo cargar Quagga')); };
+                    document.head.appendChild(s);
+                });
+                return quaggaPromise;
+            };
+            document.addEventListener('click', function(e) {
+                var t = e.target;
+                if (t && t.closest && t.closest('#scan-button')) {
+                    window.loadQuagga();
+                }
+            }, true);
+        })();
+    </script>
     
     {% block cuerpo %}
     {% endblock %}

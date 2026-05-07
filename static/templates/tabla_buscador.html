@@ -11,7 +11,14 @@
 
     <tbody>
         {% for dato in datos %}
-            <tr class="card-row" tabindex="0" data-id="{{ dato.id }}" data-codigo="{{ dato.codigo }}" data-descripcion="{{ dato.descripcion }}" data-final-rollo="{{ dato.final_rollo }}" data-final="{{ dato.final }}" data-final-efectivo="{{ dato.final_efectivo }}" data-final-rollo-efectivo="{{ dato.final_rollo_efectivo }}">
+            <tr class="card-row" tabindex="0"
+                data-id="{{ dato.id }}"
+                data-codigo="{{ dato.codigo }}"
+                data-descripcion="{{ dato.descripcion }}"
+                data-final-rollo="{{ dato.final_rollo }}"
+                data-final="{{ dato.final }}"
+                data-final-efectivo="{{ dato.final_efectivo }}"
+                data-final-rollo-efectivo="{{ dato.final_rollo_efectivo }}">
                 <td class="{% if not dato.actualizado %}text-danger{% endif %}">  <h6>{{ dato.codigo }}</h6>
                 </td>
                 <td class="{% if not dato.actualizado %}text-danger{% endif %}">  <h6>{{ dato.descripcion }}</h6>
@@ -20,19 +27,18 @@
                     <button class="btn btn-success ver" id="ver-{{ dato.id }}" display="inline-block">Ver</button>
                     <button class="btn btn-success agregar" id="agregar-{{ dato.id }}" style="display: none;">Al carrito</button>
                     <button class="btn btn-primary editar" id="editar-{{ dato.id }}"display="inline-block">Editar</button>
-                    <button class="btn btn-danger reportar" id="reportar-{{ dato.id }}"display="inline-block">Reportar</button>
                     {% if dato.tiene_cartel %}
                         <button class="btn btn-success" id="cartel-{{ dato.id }}" onclick="location.href='/x_cartel/imprimir/{{ dato.id }}';">Cartel</button>
                     {% else %}
                         <button class="btn btn-success" id="cartel-{{ dato.id }}" onclick="location.href='/x_cartel/imprimir/{{ dato.id }}';" style="display: none;">Cartel</button>
                     {% endif %}
-                    
+
                     {% if dato.tiene_pedido %}
                         Articulo Pedido
                     {% else %}
-                        <button class='btn btn-secondary', onclick="agregarAlPedido({{ dato.id}})">Agregar al pedido</button>
+                        <button class='btn btn-secondary' onclick="agregarAlPedido({{ dato.id}})">Agregar al pedido</button>
                     {% endif %}
-            
+
                 </td>
             </tr>
         {% endfor %}
@@ -48,7 +54,7 @@
                 {% csrf_token %}
                 <input type="hidden" id="id_articulo" name="id_articulo">
 
-                <label for="cantidad">Cantidad:</label><br>
+                <label for="cantidad">Cantidad (stock):</label><br>
                 <input type="number" id="cantidad" name="cantidad"><br>
 
                 <label for="barras">Barras:</label><br>
@@ -59,6 +65,19 @@
                     <option value="">Ninguno</option>
                 </select><br>
 
+                <label for="proveedor">Proveedor:</label><br>
+                <select id="proveedor" name="proveedor">
+                    <option value="">Ninguno</option>
+                </select><br>
+
+                <label for="sub_titulo">Subtítulo:</label><br>
+                <select id="sub_titulo" name="sub_titulo">
+                    <option value="">Ninguno</option>
+                </select><br>
+
+                <label for="factor_division">Dividir precio por (factor):</label><br>
+                <input type="number" step="0.01" min="0" id="factor_division" name="factor_division" placeholder="Vacío o 1 = sin división"><br>
+
                 <label for="tiene_cartel">Tiene cartel:</label>
                 <input type="checkbox" id="tiene_cartel" name="tiene_cartel"><br>
 
@@ -68,28 +87,7 @@
     </div>
 </div>
 
-<div id="modalReportar" class="modal">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-light border border-primary rounded shadow-lg p-4">
-            <span class="close_modal_reportar">×</span>
-            <form id="miFormularioReportar" class="d-flex flex-column align-items-center">
-                {% csrf_token %}
-                <input type="hidden" id="id_articulo" name="id_articulo">
-
-                <label for="estado">Estado:</label><br>
-                <select id="estado" name="estado">
-                </select><br>
-
-                <label for="detalles">Detalles:</label><br>
-                <textarea id="detalles" name="detalles" rows="4" cols="50"></textarea><br>
-
-                <input type="submit" value="Enviar">
-            </form>
-        </div>
-    </div>
-</div>
-
-<div id="ModalCarrito" class="modal"> 
+<div id="ModalCarrito" class="modal">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content bg-white border border-secondary rounded shadow p-3">
 
@@ -106,11 +104,49 @@
 </div>
 
 <script>
-    
-</script>
-
-<script>
     let csrftoken = Cookies.get('csrftoken');
+    let pendingAgregarPedidoId = null;
+
+    function abrirModalEdicion(id) {
+        return fetch('/editar_item/' + id + '/')
+            .then(response => response.json())
+            .then(data => {
+                var cajones = JSON.parse(data.cajones);
+
+                document.getElementById('id_articulo').value = id;
+                document.getElementById('cantidad').value = data.modal_stock;
+                document.getElementById('barras').value = data.modal_barras;
+                document.getElementById('tiene_cartel').checked = !!data.modal_tiene_cartel;
+
+                document.getElementById('cajon').innerHTML = cajones.map(function(c) {
+                    var sel = (data.modal_cajon && c.pk === data.modal_cajon.id) ? ' selected' : '';
+                    return '<option value="' + (c.pk === null ? '' : c.pk) + '"' + sel + '>' + c.fields.codigo + '</option>';
+                }).join('');
+
+                var provSel = document.getElementById('proveedor');
+                var provOpts = ['<option value="">Ninguno</option>'];
+                (data.proveedores || []).forEach(function(p) {
+                    var sel = (data.modal_proveedor_id === p.id) ? ' selected' : '';
+                    provOpts.push('<option value="' + p.id + '"' + sel + '>' + (p.nombre || '') + '</option>');
+                });
+                provSel.innerHTML = provOpts.join('');
+
+                var stSel = document.getElementById('sub_titulo');
+                var stOpts = ['<option value="">Ninguno</option>'];
+                (data.subtitulos || []).forEach(function(s) {
+                    var sel = (data.modal_sub_titulo_id === s.id) ? ' selected' : '';
+                    stOpts.push('<option value="' + s.id + '"' + sel + '>' + (s.nombre || '') + '</option>');
+                });
+                stSel.innerHTML = stOpts.join('');
+
+                document.getElementById('factor_division').value =
+                    (data.modal_factor_division !== null && data.modal_factor_division !== undefined)
+                        ? data.modal_factor_division : '';
+
+                document.getElementById('miModal').style.display = 'block';
+            });
+    }
+
     window.addEventListener('load', () => {
 
         var usuarioActual = document.body.getAttribute('data-usuario');
@@ -119,21 +155,14 @@
 
         document.querySelectorAll('.agregar').forEach(boton => {
             boton.addEventListener('click', event => {
-                // Prevenir la acción por defecto del botón
                 event.preventDefault();
-        
-                // Obtener el id del dato
                 const id = boton.id.split('-')[1];
-        
-                // Llenar el formulario en el modal con el id del artículo
                 document.getElementById('id_articulo').value = id;
-                
-                // Cargar siempre las opciones de usuarios de caja y preseleccionar la primera
+
                 fetch('/usuarios_caja/')
                     .then(response => (response.ok ? response.json() : []))
                     .then(usuarios_caja => {
                         var formulario = document.getElementById('miFormularioCarrito');
-                        // Elimina opciones previas agregadas por este bloque
                         var existingLabels = formulario.querySelectorAll('label[data-usuario-caja]');
                         existingLabels.forEach(lbl => lbl.remove());
 
@@ -152,29 +181,23 @@
                         });
                     })
                     .finally(() => {
-                        // Mostrar el modal
                         document.getElementById('ModalCarrito').style.display = 'block';
                     });
             });
         });
 
 
-        // Obtén el elemento con la clase 'close'
         var close = document.querySelector('.close_mimodal');
-
-        // Añade un controlador de eventos de clic
         close.addEventListener('click', function() {
-            // Oculta el modal
             document.getElementById('miModal').style.display = 'none';
+            pendingAgregarPedidoId = null;
         });
 
 
         document.querySelectorAll('.ver').forEach(boton => {
             boton.addEventListener('click', event => {
-                // Prevenir la acción por defecto del botón
                 event.preventDefault();
-    
-                // Obtener la fila que contiene el botón
+
                 const row = boton.parentNode.parentNode;
 
                 const codigo = row.dataset.codigo;
@@ -182,13 +205,7 @@
                 const final = row.dataset.final;
                 const finalEfectivo = row.dataset.finalEfectivo;
                 const finalRolloEfectivo = row.dataset.finalRolloEfectivo;
-
-                
-
-
-                // Verificar si la fila ya tiene la clase "info-shown"
                 if (!row.classList.contains('info-shown')) {
-                    // Crear un nuevo elemento tr para mostrar la información adicional
                     const infoRow = document.createElement('tr');
                     infoRow.innerHTML = `
                         <td colspan="3">
@@ -217,129 +234,33 @@
                         </td>
                 `;
 
-                    // Insertar el nuevo elemento tr después de la fila actual
                     row.parentNode.insertBefore(infoRow, row.nextSibling);
-
-                    // Agregar la clase "info-shown" a la fila para indicar que ya se ha mostrado la información adicional
                     row.classList.add('info-shown');
                 }
 
-                // Ocultar el botón de "Ver"
                 boton.style.display = 'none';
 
-                // Mostrar el botón de "Agregar al carrito"
                 const id = boton.id.split('-')[1];
                 document.getElementById('agregar-' + id).style.display = 'inline-block';
-                console.log('agregar-' + id)
             });
         });
-
-        document.querySelectorAll('.reportar').forEach(boton => {
-            boton.addEventListener('click', event => {
-                event.preventDefault();
-                const id = boton.id.split('-')[1];
-        
-                fetch('/reportar_item/' + id)
-                    .then(response => response.json())
-                    .then(data => {
-                        document.getElementById('id_articulo').value = id;
-        
-                        // Llenar el selector con los valores de estado
-                        var selectEstado = document.getElementById('estado');
-                        selectEstado.innerHTML = ''; // Limpiar opciones anteriores
-        
-                        for (var i = 0; i < data.estado.length; i++) {
-                            var option = document.createElement('option');
-                            option.value = data.estado[i];
-                            option.text = data.estado[i];
-        
-                            // Seleccionar la opción correcta
-                            if (data.estado[i] === data.estado_actual) {
-                                option.selected = true;
-                            }
-        
-                            selectEstado.add(option);
-                        }
-        
-                        document.getElementById('detalles').value = data.modal_detalles;
-                        document.getElementById('modalReportar').style.display = 'block';
-                    });
-            });
-        });
-        
-        var formularioReportar = document.getElementById('miFormularioReportar');
-        formularioReportar.addEventListener('submit', function(event) {
-            event.preventDefault();
-            var id_articulo = document.getElementById('id_articulo').value;
-            var estado = document.getElementById('estado').value;
-            var detalles = document.getElementById('detalles').value;
-
-            fetch('/enviar_reporte/' + id_articulo + '/', {
-                method: 'POST',
-                body: JSON.stringify({estado: estado, detalles: detalles}),
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken
-                }
-            })
-            .catch(error => console.error('Error:', error))
-            .finally(() => {
-                document.getElementById('modalReportar').style.display = 'none';
-            });
-        });
-
-        // Obtén el elemento con la clase 'close'
-        var close = document.querySelector('.close_modal_reportar');
-
-        // Añade un controlador de eventos de clic
-        close.addEventListener('click', function() {
-            // Oculta el modal
-            document.getElementById('modalReportar').style.display = 'none';
-        });
-
 
         document.querySelectorAll('.editar').forEach(boton => {
             boton.addEventListener('click', event => {
-                // Prevenir la acción por defecto del botón
                 event.preventDefault();
-    
-                // Obtener el id del dato
                 const id = boton.id.split('-')[1];
-    
-                // Hacer una solicitud GET a la vista para obtener los datos actuales del artículo
-                fetch('/editar_item/' + id)
-                    .then(response => response.json())
-                    .then(data => {
-                        // Convertir la cadena de texto en un array de objetos
-                        var cajones = JSON.parse(data.cajones);
-
-                        // Llenar el formulario en el modal con los datos actuales del artículo
-                        document.getElementById('id_articulo').value = id;
-                        document.getElementById('cantidad').value = data.modal_cantidad;
-                        document.getElementById('barras').value = data.modal_barras;
-                        
-                        document.getElementById('tiene_cartel').checked = data.modal_tiene_cartel;
-
-                        // Llenar el selector con los valores de cajon
-                        document.getElementById('cajon').innerHTML = cajones.map(c => `<option value="${c.pk}"${data.modal_cajon && c.pk === data.modal_cajon.id ? ' selected' : ''}>${c.fields.codigo}</option>`).join('');
-                        // Mostrar el modal
-                        document.getElementById('miModal').style.display = 'block';
-                    });
+                abrirModalEdicion(id);
             });
         });
-    
-        
-        // Obtén el elemento con la clase 'close'
-        var close_carrito = document.querySelector('.close_carrito');
 
-        // Añade un controlador de eventos de clic
+
+        var close_carrito = document.querySelector('.close_carrito');
         close_carrito.addEventListener('click', function() {
-            // Oculta el modal
             document.getElementById('ModalCarrito').style.display = 'none';
         });
-    
-        var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        // Cuando el usuario envía el formulario, envía los datos al endpoint
+
+        var csrftokenForm = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
         var formulario = document.getElementById('miFormulario');
         formulario.addEventListener('submit', function(event) {
             event.preventDefault();
@@ -348,35 +269,80 @@
             var barras = document.getElementById('barras').value;
             var tiene_cartel = document.getElementById('tiene_cartel').checked;
             var cajon = document.getElementById('cajon').value;
+            var proveedor_id = document.getElementById('proveedor').value;
+            var sub_titulo_id = document.getElementById('sub_titulo').value;
+            var factor_division = document.getElementById('factor_division').value;
+
+            var payload = {
+                id_articulo: id_articulo,
+                stock: cantidad,
+                barras: barras,
+                tiene_cartel: tiene_cartel,
+                cajon: cajon,
+                proveedor_id: proveedor_id === '' ? null : proveedor_id,
+                sub_titulo_id: sub_titulo_id === '' ? null : sub_titulo_id,
+                factor_division: factor_division === '' ? null : factor_division
+            };
+
             fetch('/editar_item/'+ id_articulo + '/', {
                 method: 'POST',
-                body: JSON.stringify({id_articulo: id_articulo, cantidad: cantidad, barras: barras, tiene_cartel: tiene_cartel, cajon: cajon}),
+                body: JSON.stringify(payload),
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken
+                    'X-CSRFToken': csrftokenForm
                 }
             })
-            .catch(error => console.error('Error:', error))
-            .finally(() => {
-                document.getElementById('miModal').style.display = "none";  // Oculta el modal
-                // Muestra u oculta el botón de cartel según el valor de tiene_cartel
-                document.getElementById('cartel-' + id_articulo).style.display = tiene_cartel ? 'block' : 'none';
+            .then(response => response.json().catch(() => ({})))
+            .then(data => {
+                document.getElementById('miModal').style.display = "none";
+                var cartelBtn = document.getElementById('cartel-' + id_articulo);
+                if (cartelBtn) {
+                    cartelBtn.style.display = tiene_cartel ? 'block' : 'none';
+                }
+
+                var row = document.querySelector('tr[data-id="' + id_articulo + '"]');
+                if (row) {
+                    if (data.final !== undefined) row.dataset.final = data.final;
+                    if (data.final_efectivo !== undefined) row.dataset.finalEfectivo = data.final_efectivo;
+                    if (data.final_rollo !== undefined) row.dataset.finalRollo = data.final_rollo;
+                    if (data.final_rollo_efectivo !== undefined) row.dataset.finalRolloEfectivo = data.final_rollo_efectivo;
+                    if (row.classList.contains('info-shown')) {
+                        var next = row.nextElementSibling;
+                        if (next) next.remove();
+                        row.classList.remove('info-shown');
+                        var verBtn = document.getElementById('ver-' + id_articulo);
+                        if (verBtn) {
+                            verBtn.style.display = 'inline-block';
+                            document.getElementById('agregar-' + id_articulo).style.display = 'none';
+                        }
+                    }
+                }
+
+                // Si había una operación pendiente (agregar al pedido por proveedor faltante), reintentar
+                if (pendingAgregarPedidoId !== null) {
+                    var pid = pendingAgregarPedidoId;
+                    pendingAgregarPedidoId = null;
+                    agregarAlPedido(pid);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('miModal').style.display = "none";
             });
         });
-        
-        
-        
-        
-        // Cuando el usuario hace clic en el botón de cierre del modal, cierra el modal
-        var span = document.getElementsByClassName("close")[0];
-        span.onclick = function() {
-            document.getElementById('ModalCarrito').style.display = "none";  // Oculta el modal
+
+
+
+
+        var span = document.getElementsByClassName("close_carrito")[0];
+        if (span) {
+            span.onclick = function() {
+                document.getElementById('ModalCarrito').style.display = "none";
+            }
         }
-        
-        var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        // Cuando el usuario envía el formulario, envía los datos al endpoint
-        var formulario = document.getElementById('miFormularioCarrito');
-        formulario.addEventListener('submit', function(event) {
+
+        var formularioCarrito = document.getElementById('miFormularioCarrito');
+        formularioCarrito.addEventListener('submit', function(event) {
             event.preventDefault();
             var id_articulo = document.getElementById('id_articulo').value;
             var cantidad = document.getElementById('cantidad_agregar').value;
@@ -387,16 +353,16 @@
                 body: JSON.stringify({id_articulo: id_articulo, cantidad: cantidad, usuario_caja: usuario_caja}),
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken
+                    'X-CSRFToken': csrftokenForm
                 }
             })
             .catch(error => console.error('Error:', error))
             .finally(() => {
-                document.getElementById('ModalCarrito').style.display = "none";  // Oculta el modal
+                document.getElementById('ModalCarrito').style.display = "none";
             });
         });
-        
-        
+
+
     });
 
 
@@ -408,11 +374,27 @@
                 'X-CSRFToken': csrftoken
             }
         })
-        .catch(error => console.error('Error:', error))
-        .finally(() => {
-            location.reload();
+        .then(response => {
+            return response.json().catch(() => ({})).then(body => ({ ok: response.ok, status: response.status, body: body }));
+        })
+        .then(result => {
+            if (result.ok) {
+                location.reload();
+                return;
+            }
+            if (result.body && result.body.error === 'missing_proveedor') {
+                alert(result.body.message || 'El artículo no tiene proveedor asociado. Seleccioná uno y se reintentará.');
+                pendingAgregarPedidoId = id_articulo;
+                abrirModalEdicion(id_articulo);
+                return;
+            }
+            alert((result.body && result.body.message) || 'Error al agregar al pedido');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error de red al agregar al pedido');
         });
     }
-    
-    
+
+
 </script>
