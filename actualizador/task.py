@@ -10,50 +10,69 @@ from typing import Optional  # Para logging más detallado si es necesario
 # Configura un logger específico para este módulo si lo deseas, o usa el root logger
 logger = logging.getLogger(__name__)
 
-# --- Importación de tus tareas reales ---
-# Asegúrate de que estos archivos y funciones realmente existan en tu app 'actualizador'
-try:
-    from .actualizador_main import principal
+# --- Importación lazy de tareas reales ---
+# Se importan dentro de funciones para evitar 'populate() isn't reentrant'
+# cuando Django está inicializando
+_principal = None
+_principal_csv = None
+_apply_custom_round = None
+_buckup = None
 
-    logger.debug("Importado 'principal' desde .actualizador_main")
-except ImportError:
-    logger.error(
-        "No se pudo importar 'principal' desde .actualizador_main. La tarea no estará disponible."
-    )
+def get_principal():
+    global _principal
+    if _principal is None:
+        try:
+            from .actualizador_main import principal
+            _principal = principal
+            logger.debug("Importado 'principal' desde .actualizador_main")
+        except ImportError as e:
+            logger.error(f"No se pudo importar 'principal': {e}")
+            def dummy_principal():
+                logger.error("La tarea 'principal' no está disponible.")
+            _principal = dummy_principal
+    return _principal
 
-    def principal():  # Define una función dummy para evitar NameError más tarde
-        logger.error(
-            "La tarea 'principal' no está definida debido a un error de importación."
-        )
+def get_principal_csv():
+    global _principal_csv
+    if _principal_csv is None:
+        try:
+            from .actualizador_csv import principal_csv
+            _principal_csv = principal_csv
+            logger.debug("Importado 'principal_csv' desde .actualizador_csv")
+        except ImportError as e:
+            logger.error(f"No se pudo importar 'principal_csv': {e}")
+            def dummy():
+                logger.error("La tarea 'principal_csv' no está disponible.")
+            _principal_csv = dummy
+    return _principal_csv
 
+def get_apply_custom_round():
+    global _apply_custom_round
+    if _apply_custom_round is None:
+        try:
+            from .actualizador_csv import apply_custom_round
+            _apply_custom_round = apply_custom_round
+            logger.debug("Importado 'apply_custom_round' desde .actualizador_csv")
+        except ImportError as e:
+            logger.error(f"No se pudo importar 'apply_custom_round': {e}")
+            def dummy():
+                logger.error("La tarea 'apply_custom_round' no está disponible.")
+            _apply_custom_round = dummy
+    return _apply_custom_round
 
-try:
-    from .actualizador_csv import principal_csv, apply_custom_round
-
-    logger.debug(
-        "Importado 'principal_csv' y 'apply_custom_round' desde .actualizador_csv"
-    )
-except ImportError:
-    logger.error(
-        "No se pudo importar 'principal_csv' o 'apply_custom_round' desde .actualizador_csv."
-    )
-
-    def principal_csv():
-        logger.error("La tarea 'principal_csv' no está definida.")
-
-    def apply_custom_round():
-        logger.error("La tarea 'apply_custom_round' no está definida.")
-
-
-try:
-    from .sincronizador import buckup  # O 'backup' si el nombre correcto es ese
-
-    logger.debug("Importado 'buckup' desde .sincronizador")
-except ImportError:
-    logger.error("No se pudo importar 'buckup' desde .sincronizador.")
-
-    def buckup():
-        logger.error("La tarea 'buckup' no está definida.")
+def get_buckup():
+    global _buckup
+    if _buckup is None:
+        try:
+            from .sincronizador import buckup
+            _buckup = buckup
+            logger.debug("Importado 'buckup' desde .sincronizador")
+        except ImportError as e:
+            logger.error(f"No se pudo importar 'buckup': {e}")
+            def dummy():
+                logger.error("La tarea 'buckup' no está disponible.")
+            _buckup = dummy
+    return _buckup
 
 
 # --- Tus funciones existentes ---
@@ -289,9 +308,9 @@ def agregar_tareas_en_cola(hora_inicio: Optional[datetime.time] = None):
         worker = ColaTareasWorker()  # Obtiene la instancia Singleton
         # Asegúrate que las funciones referenciadas existan y estén importadas
         worker.hora_inicio = hora_inicio if hora_inicio else datetime.time(23, 59)
-        worker.agregar_tarea(principal)
-        worker.agregar_tarea(principal_csv)
-        worker.agregar_tarea(buckup)  # O backup si es el nombre correcto
+        worker.agregar_tarea(get_principal())
+        worker.agregar_tarea(get_principal_csv())
+        worker.agregar_tarea(get_buckup())  # O backup si el nombre correcto
         logger.info("Tareas estándar (principal, csv, backup) agregadas a la cola.")
     except NameError as ne:
         # Esto pasa si una de las funciones (principal, etc.) no se pudo importar
@@ -333,7 +352,7 @@ def recolectar_procesar():
     # El hilo 'principal' se ejecutará, pero no hay gestión centralizada.
     logger.info("Ejecutando recolectar_procesar (usando HiloManager local)...")
     hiloManager = HiloManager()
-    hiloManager.nuevo_hilo("principal", principal)  # Asume que 'principal' existe
+    hiloManager.nuevo_hilo("principal", get_principal())  # Asume que 'principal' existe
     hiloManager.iniciar_hilo("principal")
     # La función retorna inmediatamente, el hilo 'principal' queda corriendo.
     logger.info(
@@ -347,14 +366,14 @@ def actualizador():
     logger.info("Ejecutando actualizador (puede bloquear)...")
     logger.info("Se envio a actualizar via csv...")
     hiloManager = HiloManager()
-    hiloManager.nuevo_hilo("principal_csv", principal_csv)  # Asume que existe
+    hiloManager.nuevo_hilo("principal_csv", get_principal_csv())  # Asume que existe
     hiloManager.iniciar_hilo("principal_csv")
     logger.info(
         f"Hilo 'principal_csv' iniciado desde actualizador: {hiloManager.hilos.get('principal_csv')}"
     )
     # La siguiente línea BLOQUEARÁ hasta que 'principal_csv' termine.
     hiloManager.agregar_proceso(
-        "principal_csv", "apply_custom_round", apply_custom_round
+        "principal_csv", "apply_custom_round", get_apply_custom_round()
     )  # Asume que existen
     logger.info(
         f"Hilo 'apply_custom_round' iniciado después de 'principal_csv': {hiloManager.hilos.get('apply_custom_round')}"

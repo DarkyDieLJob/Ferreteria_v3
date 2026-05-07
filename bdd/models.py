@@ -242,6 +242,14 @@ class Item(models.Model):
     # Precio final en efectivo
     final_efectivo = models.FloatField(default=0.0, blank=True)
 
+    # Precios "base" sin factor_division aplicado.
+    # El actualizador escribe en estos campos. Los `final*` se derivan
+    # aplicando factor_division (si > 1) y redondeo via recompute_finales().
+    final_base = models.FloatField(default=0.0, blank=True)
+    final_efectivo_base = models.FloatField(default=0.0, blank=True)
+    final_rollo_base = models.FloatField(default=0.0, blank=True)
+    final_rollo_efectivo_base = models.FloatField(default=0.0, blank=True)
+
     # Lo trabajamos?
     trabajado = models.BooleanField(default=False)
 
@@ -268,6 +276,12 @@ class Item(models.Model):
     proveedor = models.ForeignKey(
         Proveedor, on_delete=models.CASCADE, blank=True, null=True
     )
+
+    # Factor de división para conversión unidad/caja en la UI del buscador.
+    # None o <= 1.0 = sin división activa.
+    # > 1.0 = los precios mostrados se dividen por este factor.
+    # No debe sobrescribirse durante actualizaciones desde CSV.
+    factor_division = models.FloatField(null=True, blank=True, default=None)
 
     # Tiene cartel?
     tiene_cartel = models.BooleanField(default=False)
@@ -340,6 +354,36 @@ class Item(models.Model):
 
     def marcar_desactualizado(self):
         self.actualizado = False
+
+    def recompute_finales(self):
+        """Deriva final/final_efectivo/final_rollo/final_rollo_efectivo desde sus
+        respectivos *_base, aplicando factor_division (si > 1) y redondeo.
+
+        Este método NO guarda el modelo: el caller es responsable de llamar
+        save() (con update_fields recomendado).
+        """
+        from utils.rounding import round_price
+
+        factor = self.factor_division
+        is_cartel = bool(self.tiene_cartel)
+        usar_factor = bool(factor and factor > 1)
+
+        pares = (
+            ("final", "final_base"),
+            ("final_efectivo", "final_efectivo_base"),
+            ("final_rollo", "final_rollo_base"),
+            ("final_rollo_efectivo", "final_rollo_efectivo_base"),
+        )
+        for destino, base in pares:
+            valor_base = getattr(self, base, 0.0) or 0.0
+            if usar_factor:
+                setattr(self, destino, round_price(valor_base / factor, is_cartel))
+            else:
+                # Si no hay factor activo, final = base. Aplicamos round_price
+                # solo cuando el base no es ya un valor redondeado (i.e. cuando
+                # factor estaba activo previamente y queremos volver al original
+                # tal cual viene del CSV). Mantener tal cual el base.
+                setattr(self, destino, valor_base)
 
 
 class Cod_Barras(models.Model):

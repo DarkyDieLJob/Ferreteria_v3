@@ -21,6 +21,9 @@ class ProveedorFinanciero(models.Model):
     descuento_boleta_B = models.DecimalField(max_digits=5, decimal_places=2, default=0)  # porcentaje
     punto_venta = models.CharField(max_length=8, default="0001")
 
+    class Meta:
+        app_label = 'administracion_financiera'
+
     def __str__(self):
         return f"Financiero {self.proveedor}"
 
@@ -35,6 +38,9 @@ class Cuenta(models.Model):
     activa_desde = models.DateField(blank=True, null=True)
     activa_hasta = models.DateField(blank=True, null=True)
 
+    class Meta:
+        app_label = 'administracion_financiera'
+
     def __str__(self):
         return f"{self.nombre} ({self.get_tipo_display()})"
 
@@ -47,6 +53,9 @@ class TarjetaCredito(models.Model):
     ult4 = models.CharField(max_length=4, blank=True, null=True)
     cierre_dia = models.PositiveSmallIntegerField()
     vencimiento_dia = models.PositiveSmallIntegerField()
+
+    class Meta:
+        app_label = 'administracion_financiera'
 
     def __str__(self):
         suf = f" ****{self.ult4}" if self.ult4 else ""
@@ -70,6 +79,9 @@ class Carga(models.Model):
 class Servicio(Carga):
     identificador_contrato = models.CharField(max_length=120, blank=True, null=True)
 
+    class Meta:
+        app_label = 'administracion_financiera'
+
     def __str__(self):
         return f"{self.nombre}"
 
@@ -82,6 +94,9 @@ class Impuesto(Carga):
 
     tipo = models.CharField(max_length=12, choices=Tipo.choices)
     jurisdiccion = models.CharField(max_length=120, blank=True, null=True)
+
+    class Meta:
+        app_label = 'administracion_financiera'
 
     def __str__(self):
         suf = f" - {self.jurisdiccion}" if self.jurisdiccion else ""
@@ -111,6 +126,7 @@ class Boleta(models.Model):
     semana_iso = models.CharField(max_length=8, blank=True, null=True)  # YYYY-Www
 
     class Meta:
+        app_label = 'administracion_financiera'
         constraints = [
             models.UniqueConstraint(
                 fields=["proveedor", "punto_venta", "numero_completo"],
@@ -135,6 +151,9 @@ class TicketDePago(models.Model):
     caduco = models.BooleanField(default=False)
     semana_iso = models.CharField(max_length=8, blank=True, null=True)  # YYYY-Www
 
+    class Meta:
+        app_label = 'administracion_financiera'
+
     def __str__(self):
         target = self.servicio or self.impuesto
         return f"Ticket {target} {self.periodo or ''} {self.monto}"
@@ -153,12 +172,18 @@ class Pago(models.Model):
     referencia = models.CharField(max_length=120, blank=True, null=True)
     semana_iso = models.CharField(max_length=8, blank=True, null=True)
 
+    class Meta:
+        app_label = 'administracion_financiera'
+
     def __str__(self):
         return f"Pago {self.importe} {self.get_medio_pago_display()}"
 
 
 class CtaCteProveedor(models.Model):
     proveedor = models.ForeignKey(Proveedor, on_delete=models.PROTECT)
+
+    class Meta:
+        app_label = 'administracion_financiera'
 
     def __str__(self):
         return f"Ctacte {self.proveedor}"
@@ -182,6 +207,9 @@ class MovimientoCtaCte(models.Model):
     monto = models.DecimalField(max_digits=12, decimal_places=2)
     saldo_acumulado = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
+    class Meta:
+        app_label = 'administracion_financiera'
+
 
 class Cheque(models.Model):
     class Estado(models.TextChoices):
@@ -202,6 +230,9 @@ class Cheque(models.Model):
     plaza = models.CharField(max_length=80, blank=True, null=True)
     estado = models.CharField(max_length=10, choices=Estado.choices, default=Estado.EMITIDO)
 
+    class Meta:
+        app_label = 'administracion_financiera'
+
     def __str__(self):
         return f"Cheque {self.numero} {self.monto} ({self.get_estado_display()})"
 
@@ -215,6 +246,7 @@ class DebitoAutomatico(models.Model):
     activo = models.BooleanField(default=True)
 
     class Meta:
+        app_label = 'administracion_financiera'
         constraints = [
             models.CheckConstraint(
                 check=(
