@@ -17,7 +17,15 @@ import logging
 # Third-party imports
 import django
 
-django.setup()
+# django.setup() debe llamarse dentro de una función, no a nivel de importación
+# para evitar 'populate() isn't reentrant'
+_django_setup_done = False
+
+def ensure_django_setup():
+    global _django_setup_done
+    if not _django_setup_done:
+        django.setup()
+        _django_setup_done = True
 
 import pandas as pd
 import openpyxl
@@ -124,15 +132,40 @@ def crear_o_actualizar_registro(row_original):
             # Decide si continuar sin sub_titulo o fallar
         # else: logger.warning(f"Falta 'sub_titulo' en fila para código {codigo_item}.")
 
-        # 3. Preparar datos para Item (eliminar 'codigo' y añadir relaciones)
+        # 3. Preparar datos para Item (eliminar 'codigo' y añadir relaciones).
+        # IMPORTANTE: los precios del CSV (final, final_efectivo, final_rollo,
+        # final_rollo_efectivo) se almacenan en sus campos *_base. Los
+        # final/final_efectivo/etc. se rederivan vía Item.recompute_finales()
+        # aplicando factor_division.
         defaults = {k: v for k, v in row.items() if k != "codigo"}
+        for src, dst in (
+            ("final", "final_base"),
+            ("final_efectivo", "final_efectivo_base"),
+            ("final_rollo", "final_rollo_base"),
+            ("final_rollo_efectivo", "final_rollo_efectivo_base"),
+        ):
+            if src in defaults:
+                defaults[dst] = defaults.pop(src)
         defaults["sub_carpeta"] = sub_carpeta
         defaults["sub_titulo"] = sub_titulo
         defaults["actualizado"] = True  # Marcar como actualizado
+        # Nunca sobrescribir factor_division desde el CSV
+        defaults.pop("factor_division", None)
 
         # 4. Usar update_or_create para atomicidad
         item, created = Item.objects.update_or_create(
             codigo=codigo_item, defaults=defaults
+        )
+
+        # Rederivar final* desde *_base aplicando factor_division.
+        item.recompute_finales()
+        item.save(
+            update_fields=[
+                "final",
+                "final_efectivo",
+                "final_rollo",
+                "final_rollo_efectivo",
+            ]
         )
 
         if created:
@@ -302,6 +335,7 @@ def marcar_revisar_carteles(id_proveedor):
 
 def principal():
     """Función principal que orquesta la actualización de planillas y datos."""
+    ensure_django_setup()
     logger.info("--- INICIO FUNCIÓN PRINCIPAL ---")
     patoba = None
     try:
