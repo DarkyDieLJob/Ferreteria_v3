@@ -873,7 +873,8 @@ $(document).ready(function(){
 
     // Polling periódico para actualizar badges de botones de carrito
     // (incluso cuando los carritos están cerrados)
-    setInterval(function() {
+    // Solo ejecutar si el usuario está autenticado
+    var badgesPollingInterval = setInterval(function() {
         if (typeof window.actualizarBadgesBotonesCarrito === 'function') {
             $.ajax({
                 url: '/consultar_carrito/',
@@ -883,10 +884,13 @@ $(document).ready(function(){
                     window.actualizarBadgesBotonesCarrito(data);
                 },
                 error: function(xhr, status, error) {
-                    // Silenciar error 401 (no autenticado) ya que es esperado
-                    if (xhr.status !== 401) {
-                        console.error('Error al actualizar badges de botones de carrito:', error);
+                    // Si el usuario no está autenticado (401), detener el polling
+                    if (xhr.status === 401) {
+                        console.log('Usuario no autenticado, deteniendo polling de badges');
+                        clearInterval(badgesPollingInterval);
+                        return;
                     }
+                    console.error('Error al actualizar badges de botones de carrito:', error);
                 }
             });
         }
