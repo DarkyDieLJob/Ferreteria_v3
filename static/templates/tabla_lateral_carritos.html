@@ -871,6 +871,24 @@ $(document).ready(function(){
         $("#tablaCarrito").hide();
     });
 
+    // Polling periódico para actualizar badges de botones de carrito
+    // (incluso cuando los carritos están cerrados)
+    setInterval(function() {
+        if (typeof window.actualizarBadgesBotonesCarrito === 'function') {
+            $.ajax({
+                url: '/consultar_carrito/',
+                type: 'get',
+                dataType: 'json',
+                success: function(data) {
+                    window.actualizarBadgesBotonesCarrito(data);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error al actualizar badges de botones de carrito:', error);
+                }
+            });
+        }
+    }, 5000); // Actualizar cada 5 segundos
+
     // Manejo del formulario de transacción
     $("#formTransaccion").submit(function(e) {
         e.preventDefault();

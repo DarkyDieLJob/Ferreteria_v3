@@ -298,6 +298,7 @@ def seleccionar_proveedor(request):
 
 
 def cambiar_cantidad_pedido(request, id_articulo, cantidad):
+    logger.debug(f"cambiar_cantidad_pedido: id={id_articulo}, cant={cantidad}")
     if request.method == "POST":
         logger.debug(f"POST cambiar cantidad: id={id_articulo}, cant={cantidad}")
         try:
@@ -330,13 +331,16 @@ def cambiar_cantidad_pedido(request, id_articulo, cantidad):
 
 
 def editar_item(request, id_articulo):
+    logger.debug(f"editar_item: id_articulo={id_articulo}, method={request.method}")
     try:
         articulo = _item_queryset_runtime_safe().select_related(
             "cajon", "proveedor", "sub_titulo"
         ).get(
             id=id_articulo
         )
+        logger.debug(f"editar_item: articulo encontrado, codigo={articulo.codigo}")
     except Item.DoesNotExist:
+        logger.warning(f"editar_item: articulo no encontrado, id={id_articulo}")
         return JsonResponse({"error": "Artículo no encontrado"}, status=404)
 
     if request.method == "GET":
@@ -382,8 +386,10 @@ def editar_item(request, id_articulo):
             return JsonResponse({"error": "Error al obtener datos"}, status=500)
 
     elif request.method == "POST":
+        logger.debug(f"editar_item POST: id_articulo={id_articulo}")
         try:
             data = json.loads(request.body)
+            logger.debug(f"editar_item POST: data={data}")
             articulo.stock = int(data.get("stock", articulo.stock))
             articulo.barras = data.get("barras", articulo.barras) or "0"
 
@@ -481,14 +487,17 @@ def editar_item(request, id_articulo):
 
 
 def agregar_articulo_a_carrito(request, id_articulo):
+    logger.debug(f"agregar_articulo_a_carrito: id_articulo={id_articulo}")
     if request.method != "POST":
         return JsonResponse({"error": "Método no permitido"}, status=405)
 
     if not request.user.is_authenticated:
+        logger.warning("agregar_articulo_a_carrito: usuario no autenticado")
         return JsonResponse({"error": "Usuario no autenticado"}, status=401)
 
     try:
         data = json.loads(request.body)
+        logger.debug(f"agregar_articulo_a_carrito: data={data}")
         # Permitir cantidades decimales (soportar coma como separador)
         raw_qty = data.get("cantidad", 0)
         if isinstance(raw_qty, str):
@@ -500,9 +509,11 @@ def agregar_articulo_a_carrito(request, id_articulo):
         usuario_caja_id = data.get("usuario_caja")
 
         if cantidad_a_agregar <= 0:
+            logger.warning(f"agregar_articulo_a_carrito: cantidad invalida={cantidad_a_agregar}")
             return JsonResponse({"error": "Cantidad debe ser positiva"}, status=400)
 
         item = _item_queryset_runtime_safe().get(id=id_articulo)
+        logger.debug(f"agregar_articulo_a_carrito: item encontrado, codigo={item.codigo}")
 
         if usuario_caja_id and _is_caja_general(request.user):
             usuario_objetivo = User.objects.get(id=usuario_caja_id)
@@ -672,8 +683,8 @@ def eliminar_articulo_pedido(request):
         cantidad = request.POST.get("quantity")
         confirmado = request.POST.get("confirmed", "false").lower() == "true"
 
-        logger.info(
-            f"POST eliminar/confirmar pedido ID: {pedido_id}, Cant: {cantidad}, Conf: {confirmado}"
+        logger.debug(
+            f"eliminar_articulo_pedido: ID={pedido_id}, Cant={cantidad}, Conf={confirmado}"
         )
 
         if not pedido_id:
