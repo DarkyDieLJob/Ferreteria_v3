@@ -883,7 +883,10 @@ $(document).ready(function(){
                     window.actualizarBadgesBotonesCarrito(data);
                 },
                 error: function(xhr, status, error) {
-                    console.error('Error al actualizar badges de botones de carrito:', error);
+                    // Silenciar error 401 (no autenticado) ya que es esperado
+                    if (xhr.status !== 401) {
+                        console.error('Error al actualizar badges de botones de carrito:', error);
+                    }
                 }
             });
         }
