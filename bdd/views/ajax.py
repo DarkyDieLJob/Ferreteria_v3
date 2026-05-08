@@ -5,6 +5,7 @@ import logging
 from django.conf import settings
 from django.http import FileResponse, JsonResponse, HttpResponse
 from django.shortcuts import render
+from django.db import connection
 from django.db.models import F
 from django.contrib.auth.models import User, Group
 import hashlib
@@ -27,6 +28,8 @@ from ..models import (
 from .utils import articulo_to_dict, calcular_total, carrito_to_dict
 
 logger = logging.getLogger(__name__)
+
+_ITEM_BASE_PRICE_COLUMNS_CACHE = None
 
 
 def _is_caja_general(user: User) -> bool:
@@ -164,7 +167,7 @@ def crear_modificar_lista_pedidos(request, proveedor_id=None):
                 )
 
             logger.debug(f"Código recibido: {codigo}")
-            item = Item.objects.get(codigo=codigo)
+            item = _item_queryset_runtime_safe().get(codigo=codigo)
 
             try:
                 abreviatura = "/" + codigo.split("/")[-1]
@@ -291,7 +294,9 @@ def cambiar_cantidad_pedido(request, id_articulo, cantidad):
 
 def editar_item(request, id_articulo):
     try:
-        articulo = Item.objects.select_related("cajon", "proveedor", "sub_titulo").get(
+        articulo = _item_queryset_runtime_safe().select_related(
+            "cajon", "proveedor", "sub_titulo"
+        ).get(
             id=id_articulo
         )
     except Item.DoesNotExist:
@@ -409,27 +414,29 @@ def editar_item(request, id_articulo):
 
             # Rederivar final/final_efectivo/final_rollo/final_rollo_efectivo
             # desde sus *_base aplicando factor_division (si > 1) y redondeo.
-            # Se ejecuta siempre porque tanto factor_division como tiene_cartel
-            # afectan la derivación, y es una operación barata.
-            articulo.recompute_finales()
-            update_fields += [
-                "final",
-                "final_efectivo",
-                "final_rollo",
-                "final_rollo_efectivo",
-            ]
+            # Solo si las columnas base existen en la DB (hotfix compatibility).
+            if _item_base_price_columns_exist():
+                articulo.recompute_finales()
+                update_fields += [
+                    "final",
+                    "final_efectivo",
+                    "final_rollo",
+                    "final_rollo_efectivo",
+                ]
             articulo.save(update_fields=update_fields)
 
-            return JsonResponse(
-                {
-                    "status": "ok",
-                    "message": "Artículo actualizado",
+            response_payload = {
+                "status": "ok",
+                "message": "Artículo actualizado",
+            }
+            if _item_base_price_columns_exist():
+                response_payload.update({
                     "final": articulo.final,
                     "final_efectivo": articulo.final_efectivo,
                     "final_rollo": articulo.final_rollo,
                     "final_rollo_efectivo": articulo.final_rollo_efectivo,
-                }
-            )
+                })
+            return JsonResponse(response_payload)
 
         except Exception as e:
             logger.error(f"Error POST editar_item: {e}", exc_info=True)
@@ -458,7 +465,7 @@ def agregar_articulo_a_carrito(request, id_articulo):
         if cantidad_a_agregar <= 0:
             return JsonResponse({"error": "Cantidad debe ser positiva"}, status=400)
 
-        item = Item.objects.get(id=id_articulo)
+        item = _item_queryset_runtime_safe().get(id=id_articulo)
 
         if usuario_caja_id and _is_caja_general(request.user):
             usuario_objetivo = User.objects.get(id=usuario_caja_id)
