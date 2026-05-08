@@ -45,6 +45,43 @@ def _is_caja_general(user: User) -> bool:
         return False
 
 
+def _item_base_price_columns_exist():
+    global _ITEM_BASE_PRICE_COLUMNS_CACHE
+    if _ITEM_BASE_PRICE_COLUMNS_CACHE is not None:
+        return _ITEM_BASE_PRICE_COLUMNS_CACHE
+
+    expected = {
+        "final_base",
+        "final_efectivo_base",
+        "final_rollo_base",
+        "final_rollo_efectivo_base",
+    }
+    try:
+        with connection.cursor() as cursor:
+            table = Item._meta.db_table
+            columns = {
+                column.name
+                for column in connection.introspection.get_table_description(cursor, table)
+            }
+        _ITEM_BASE_PRICE_COLUMNS_CACHE = expected.issubset(columns)
+    except Exception as e:
+        logger.warning(f"No se pudo inspeccionar columnas base de Item: {e}")
+        _ITEM_BASE_PRICE_COLUMNS_CACHE = False
+    return _ITEM_BASE_PRICE_COLUMNS_CACHE
+
+
+def _item_queryset_runtime_safe():
+    qs = Item.objects.all()
+    if not _item_base_price_columns_exist():
+        qs = qs.defer(
+            "final_base",
+            "final_efectivo_base",
+            "final_rollo_base",
+            "final_rollo_efectivo_base",
+        )
+    return qs
+
+
 def _get_cajeros_queryset():
     try:
         grupo = Group.objects.filter(name="cajeros").first()
