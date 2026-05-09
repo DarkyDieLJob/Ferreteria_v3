@@ -6,6 +6,7 @@ token.json
 *.ods
 *.csv
 __pycache__/
+**/__pycache__/
 Scraping/
 rust_mozprofile2tDZsO/
 /venv/
@@ -16,7 +17,6 @@ Sin.fis
 .vscode/
 *.sqlite3
 SECRET_KEY.txt
-migrations/
 db.sqlite3
 settings.py
 core_config/settings.py
