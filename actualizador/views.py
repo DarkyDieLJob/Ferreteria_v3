@@ -67,18 +67,14 @@ class Actualizar(MiVista):
         self.drive_service = patoba.drive_service
         logger.debug(f"Detectando path: {self.request.path}")
 
-        datos = Listado_Planillas.objects.filter(listo=False, descargar=False)
+        # CRÍTICO: Convertir a lista antes de iterar para evitar desmapeo de hojas
+        datos_qs = Listado_Planillas.objects.filter(listo=False, descargar=False)
+        datos_list = list(datos_qs)  # Lista fija para iteración
         hojas_por_item = []
-        ids_a_borrar_por_404 = []  # Opcional: para borrar en bloque después
+        ids_a_borrar_por_404 = []  # IDs de registros a borrar por 404
 
-        # Es buena idea iterar sobre una lista fija si vas a modificar la tabla
-        # durante la iteración, aunque .delete() dentro del bucle suele funcionar.
-        # datos_list = list(datos) # Descomenta si prefieres iterar sobre una lista
-
-        for dato in datos:  # o 'datos_list'
-            sheet_names = [
-                "",
-            ]
+        for dato in datos_list:
+            sheet_names = [""]
             try:
                 # Descargar el archivo de Excel desde Google Drive
                 logger.debug(
@@ -91,9 +87,8 @@ class Actualizar(MiVista):
                 downloader = MediaIoBaseDownload(file, request_drive)
                 done = False
                 while not done:
-                    # Esta línea puede lanzar HttpError 404
                     status, done = downloader.next_chunk()
-                    if status:  # status puede ser None si la descarga es muy pequeña
+                    if status:
                         logger.debug(
                             f"Progreso descarga {dato.identificador}: {int(status.progress() * 100)}%"
                         )
@@ -110,58 +105,41 @@ class Actualizar(MiVista):
                 )
 
             except HttpError as http_error:
-                # ¡Captura específica para errores HTTP de la API!
                 if http_error.resp.status == 404:
-                    # El archivo no existe en Google Drive
                     logger.warning(
-                        f"Archivo no encontrado en Drive (404): ID={dato.identificador}, Nombre='{dato.descripcion}'. Eliminando registro ID={dato.id}."
+                        f"Archivo no encontrado en Drive (404): ID={dato.identificador}, Nombre='{dato.descripcion}'. Marcando para eliminar."
                     )
-                    try:
-                        dato_id_para_borrar = dato.id  # Guarda el ID por si acaso
-                        dato.delete()  # Elimina el registro inconsistente de la BD
-                        logger.info(
-                            f"Registro Listado_Planillas con ID={dato_id_para_borrar} eliminado."
-                        )
-                        # NO AÑADAS NADA a hojas_por_item para este registro eliminado
-                        # Simplemente continuamos al siguiente 'dato' en el bucle
-                        continue  # Importante: salta el resto del bloque try y el except genérico
-                    except Exception as delete_error:
-                        # Loggear si incluso la eliminación falla
-                        logger.error(
-                            f"¡FALLO AL ELIMINAR! Error al intentar eliminar el registro ID={dato_id_para_borrar} después de un 404: {delete_error}"
-                        )
-                        # Decide qué hacer aquí. ¿Añadir lista vacía igualmente?
-                        hojas_por_item.append(
-                            []
-                        )  # Mantiene la correspondencia si la eliminación falla
+                    ids_a_borrar_por_404.append(dato.id)
+                    hojas_por_item.append([])  # Mantener correspondencia de índices
+                    continue
                 else:
-                    # Otro error HTTP (ej. 403 Forbidden, 500 Server Error)
                     logger.error(
                         f"Error HTTP ({http_error.resp.status}) al descargar archivo ID={dato.identificador}, Nombre='{dato.descripcion}': {http_error}"
                     )
-                    hojas_por_item.append(
-                        []
-                    )  # Añade lista vacía porque no se pudo procesar
+                    hojas_por_item.append([])
 
             except Exception as e:
-                # Captura cualquier otro error (ej. error de Pandas, problema de red antes de respuesta HTTP)
                 logger.error(
                     f"Error genérico al procesar archivo ID={dato.identificador}, Nombre='{dato.descripcion}'"
                 )
-                logger.exception(e)  # Loggea el traceback completo
-                hojas_por_item.append(
-                    []
-                )  # Añade lista vacía para mantener correspondencia
+                logger.exception(e)
+                hojas_por_item.append([])
 
-        # IMPORTANTE: Si eliminaste registros DENTRO del bucle, la variable 'datos' original
-        # (si era un QuerySet que no convertiste a lista) podría comportarse de forma
-        # inesperada si la reutilizas. Además, self.context['datos'] debe reflejar
-        # el estado ACTUAL de la base de datos para que coincida con 'hojas_por_item'.
-        # Es más seguro volver a consultar los datos que SÍ existen.
+        # Eliminar registros con 404 en bloque DESPUÉS del bucle
+        if ids_a_borrar_por_404:
+            deleted_count, _ = Listado_Planillas.objects.filter(
+                id__in=ids_a_borrar_por_404
+            ).delete()
+            logger.info(
+                f"Eliminados {deleted_count} registros con 404: {ids_a_borrar_por_404}"
+            )
+            # Volver a obtener la lista SIN los eliminados
+            datos_list = [d for d in datos_list if d.id not in ids_a_borrar_por_404]
+            # También limpiar hojas_por_item correspondientes
+            hojas_por_item = [h for d, h in zip(datos_list + [{'id': id} for id in ids_a_borrar_por_404], hojas_por_item) if d.id not in ids_a_borrar_por_404]
 
-        self.context["datos"] = Listado_Planillas.objects.filter(
-            listo=False, descargar=False
-        )
+        # Usar la lista filtrada para mantener correspondencia
+        self.context["datos"] = datos_list
         self.context["hojas_por_item"] = hojas_por_item
         seleccion_planillas = Listado_Planillas.objects.filter(listo=True)
         self.context["seleccion_planillas"] = seleccion_planillas
@@ -285,28 +263,29 @@ class Actualizar(MiVista):
                 "Procesando selección/actualización de estado 'listo' de planillas."
             )
             elementos_seleccionados = self.request.POST.getlist("elemento_seleccionado")
-            proveedores_post = self.request.POST.getlist(
-                "proveedor"
-            )  # Renombrado para evitar confusión
-
-            # Reiniciar 'listo' podría hacerse más eficientemente si es necesario
-            # Listado_Planillas.objects.update(listo=False) # CUIDADO: Esto afecta a TODAS las planillas
+            # CORRECCIÓN: Usar diccionario por ID en lugar de índices para evitar desmapeo
+            proveedores_post = self.request.POST.getlist("proveedor")
+            proveedores_dict = {}
+            for i, prov_id in enumerate(proveedores_post):
+                if prov_id:  # Solo agregar si no está vacío
+                    # Asumiendo que los elementos_seleccionados están en el mismo orden
+                    if i < len(elementos_seleccionados):
+                        id_str, _ = elementos_seleccionados[i].split(":")
+                        planilla_id = int(id_str)
+                        proveedores_dict[planilla_id] = prov_id
 
             elementos_a_actualizar = []
             ids_procesados = set()
 
-            for i, elemento in enumerate(elementos_seleccionados):
+            for elemento in elementos_seleccionados:
                 try:
-                    id_str, _ = elemento.split(
-                        ":"
-                    )  # El índice 'i' de POST no se usa aquí
+                    id_str, _ = elemento.split(":")
                     planilla_id = int(id_str)
                     ids_procesados.add(planilla_id)
 
                     planilla = Listado_Planillas.objects.get(id=planilla_id)
 
                     # Determinar si la planilla debe marcarse como lista
-                    # Asumiendo que 'elemento_seleccionado' viene como 'id:indice' o 'id:' si no se selecciona hoja
                     _, hoja_indice_str = elemento.split(":")
                     if hoja_indice_str == "":
                         planilla.listo = False
@@ -315,23 +294,23 @@ class Actualizar(MiVista):
                         )
                     else:
                         planilla.listo = True
-                        # Asignar proveedor si se proporcionó uno válido en la misma posición
-                        if i < len(proveedores_post) and proveedores_post[i]:
+                        # Asignar proveedor usando el diccionario por ID (no índice)
+                        if planilla_id in proveedores_dict:
                             try:
                                 proveedor_obj = Proveedor.objects.get(
-                                    id=proveedores_post[i]
+                                    id=proveedores_dict[planilla_id]
                                 )
                                 planilla.proveedor = proveedor_obj
                                 logger.debug(
-                                    f"Planilla ID {planilla_id}: Proveedor asignado ID {proveedores_post[i]}."
+                                    f"Planilla ID {planilla_id}: Proveedor asignado ID {proveedores_dict[planilla_id]}."
                                 )
                             except Proveedor.DoesNotExist:
                                 logger.warning(
-                                    f"Proveedor ID {proveedores_post[i]} no encontrado para planilla ID {planilla_id}."
+                                    f"Proveedor ID {proveedores_dict[planilla_id]} no encontrado para planilla ID {planilla_id}."
                                 )
                         else:
-                            logger.warning(
-                                f"Proveedor vacío o índice fuera de rango para planilla ID {planilla_id} en la posición {i}."
+                            logger.debug(
+                                f"No se proporcionó proveedor para planilla ID {planilla_id}."
                             )
 
                         # Asignar hoja si se proporcionó

@@ -20,46 +20,94 @@
             <form method="POST" id="form-actualizador-enviar">
             {% csrf_token %}
             <div class="py-2">
-                <table class="table table-striped w-auto">
-                    <thead class="bg-secondary text-white sticky-top">
-                        <tr>
-                            <th>Listo?</th>
-                            <th>Fecha</th>
-                            <th>[ xls o xlsx ]</th>
-                            <th>Proveedor</th>
-                            <th>Proveedor</th>
-                            <th>Hoja</th>
-                            <th>Hoja</th>
-                            <th>Borrar?</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    {% for d, hojas in datos|zip_lists:hojas_por_item %}
-                        <tr>
-                            <td><input type="checkbox" name="elemento_seleccionado" value="{{ d.id }}:{{ forloop.counter }}"{% if d.listo %}checked{% endif %}></td>
-                            <td>{{ d.fecha }}</td>
-                            <td>{{ d.descripcion }}</td>
-                            <td>{{ d.proveedor }}</td>
-                            <td>{{ form.proveedor.as_widget }}</td>
-                            <td>{{ d.hoja }}</td>
-                            <td>
-                                <select name="hoja_{{ d.id }}">
-                                    {% for hoja in hojas %}
-                                        <option value="{{ hoja }}">{{ hoja }}</option>
-                                    {% endfor %}
-                                </select>
-                            </td>
-                            <td><input type="checkbox" name="seleccionado_borrar" value="{{ d.id }}"></td>
-                        </tr>
-                    {% endfor %}
-
-                    </tbody>
-                </table>
-                <input type="hidden" name="tipo-boton" value="enviar">
-                <button class="btn btn-primary" id="submit-enviar">Enviar</button>
-
-            </form>
+                <!-- Mensajes de feedback -->
+                <div id="feedback-message" class="alert d-none"></div>
+                
+                <!-- Controles de tabla -->
+                <div class="mb-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <input type="checkbox" id="select-all" class="form-check-input me-2">
+                        <label for="select-all" class="form-check-label">Seleccionar todos</label>
+                    </div>
+                    <span class="text-muted small">{{ datos|length }} archivos disponibles</span>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="bg-secondary text-white">
+                            <tr>
+                                <th style="width: 50px;">Listo</th>
+                                <th>Fecha</th>
+                                <th>Archivo</th>
+                                <th>Proveedor actual</th>
+                                <th>Asignar proveedor</th>
+                                <th>Hoja actual</th>
+                                <th>Seleccionar hoja</th>
+                                <th style="width: 50px;">Borrar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for d, hojas in datos|zip_lists:hojas_por_item %}
+                            <tr class="{% if d.listo %}table-success{% endif %}">
+                                <td class="text-center">
+                                    <input type="checkbox" name="elemento_seleccionado" value="{{ d.id }}:{{ forloop.counter }}"{% if d.listo %}checked{% endif %}>
+                                </td>
+                                <td>{{ d.fecha|date:"d/m/Y" }}</td>
+                                <td>
+                                    <span class="fw-medium">{{ d.descripcion }}</span>
+                                    {% if d.listo %}
+                                        <span class="badge bg-success ms-1">Listo</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if d.proveedor %}
+                                        <span class="badge bg-primary">{{ d.proveedor }}</span>
+                                    {% else %}
+                                        <span class="text-muted">Sin asignar</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ form.proveedor.as_widget }}</td>
+                                <td>
+                                    {% if d.hoja %}
+                                        <span class="badge bg-info">{{ d.hoja }}</span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <select name="hoja_{{ d.id }}" class="form-select form-select-sm">
+                                        <option value="">-- Seleccionar --</option>
+                                        {% for hoja in hojas %}
+                                            <option value="{{ hoja }}" {% if d.hoja == hoja %}selected{% endif %}>{{ hoja }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                <td class="text-center">
+                                    <input type="checkbox" name="seleccionado_borrar" value="{{ d.id }}" class="delete-checkbox">
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">
+                                    No hay archivos pendientes de procesar
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="mt-3 d-flex gap-2">
+                    <input type="hidden" name="tipo-boton" value="enviar">
+                    <button class="btn btn-primary" id="submit-enviar">
+                        <i class="bi bi-check-circle"></i> Guardar selección
+                    </button>
+                    <button type="button" class="btn btn-danger" id="delete-selected" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                        <i class="bi bi-trash"></i> Eliminar seleccionados
+                    </button>
+                </div>
             </div>
+            </form>
         </div>
 
         
@@ -123,3 +171,91 @@
         </div>
     </div>
 </div>
+
+<!-- Modal de confirmación para borrar -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">Confirmar eliminación</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas eliminar los archivos seleccionados?</p>
+                <p class="text-muted small">Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirm-delete">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript para funcionalidades -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Funcionalidad de "Seleccionar todos"
+    const selectAllCheckbox = document.getElementById('select-all');
+    const elementCheckboxes = document.querySelectorAll('input[name="elemento_seleccionado"]');
+    
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            elementCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+        });
+    }
+    
+    // Contador de elementos seleccionados para borrar
+    const deleteCheckboxes = document.querySelectorAll('.delete-checkbox');
+    const deleteButton = document.getElementById('delete-selected');
+    
+    if (deleteButton) {
+        deleteButton.addEventListener('click', function() {
+            const selectedCount = document.querySelectorAll('.delete-checkbox:checked').length;
+            if (selectedCount === 0) {
+                alert('Por favor, selecciona al menos un archivo para eliminar.');
+                return false;
+            }
+        });
+    }
+    
+    // Confirmación de eliminación
+    const confirmDeleteButton = document.getElementById('confirm-delete');
+    if (confirmDeleteButton) {
+        confirmDeleteButton.addEventListener('click', function() {
+            // Crear un formulario temporal para enviar la solicitud de eliminación
+            const form = document.getElementById('form-actualizador-enviar');
+            const selectedIds = Array.from(document.querySelectorAll('.delete-checkbox:checked')).map(cb => cb.value);
+            
+            if (selectedIds.length > 0) {
+                // Agregar los IDs seleccionados como inputs ocultos
+                selectedIds.forEach(id => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'seleccionado_borrar';
+                    input.value = id;
+                    form.appendChild(input);
+                });
+                
+                // Cerrar modal y enviar formulario
+                const modal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+                modal.hide();
+                form.submit();
+            }
+        });
+    }
+    
+    // Feedback visual al guardar
+    const submitButton = document.getElementById('submit-enviar');
+    if (submitButton) {
+        submitButton.addEventListener('click', function() {
+            const feedbackDiv = document.getElementById('feedback-message');
+            feedbackDiv.className = 'alert alert-info';
+            feedbackDiv.textContent = 'Guardando selección...';
+            feedbackDiv.classList.remove('d-none');
+        });
+    }
+});
+</script>
