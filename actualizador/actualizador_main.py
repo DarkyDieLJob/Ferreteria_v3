@@ -103,6 +103,28 @@ def _load_django_deps():
 # --- Logger Setup ---
 logger = logging.getLogger(__name__)
 
+# --- Retry Helper Functions ---
+
+
+def retry_with_backoff(func, max_retries=3, initial_delay=1, backoff_factor=2):
+    """
+    Ejecuta una función con reintentos y backoff exponencial.
+    Útil para operaciones de red que pueden fallar por timeouts temporales.
+    """
+    for attempt in range(max_retries):
+        try:
+            return func()
+        except (TimeoutError, HttpError) as e:
+            if attempt == max_retries - 1:
+                raise  # Re-raise en el último intento
+            delay = initial_delay * (backoff_factor ** attempt)
+            logger.warning(
+                f"Intento {attempt + 1}/{max_retries} falló: {e}. Reintentando en {delay}s..."
+            )
+            time.sleep(delay)
+    return None
+
+
 # --- Utility Functions ---
 
 
@@ -595,12 +617,19 @@ def principal():
             logger.info(
                 f"Descargando datos 'BDD' de plantilla '{nombre_plantilla}' (ID: {id_archivo_plantilla})..."
             )
-            result_bdd = (
-                patoba.sheet_service.spreadsheets()
-                .values()
-                .get(spreadsheetId=id_archivo_plantilla, range="BDD")
-                .execute()
-            )
+            
+            def descargar_bdd_con_timeout():
+                """Descarga datos BDD con timeout aumentado."""
+                request = (
+                    patoba.sheet_service.spreadsheets()
+                    .values()
+                    .get(spreadsheetId=id_archivo_plantilla, range="BDD")
+                )
+                # Aumentar timeout a 300 segundos (5 minutos)
+                request.http.timeout = 300
+                return request.execute()
+            
+            result_bdd = retry_with_backoff(descargar_bdd_con_timeout, max_retries=3, initial_delay=2)
             values_bdd = result_bdd.get("values", [])
 
             if not values_bdd:
