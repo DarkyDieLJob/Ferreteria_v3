@@ -625,11 +625,11 @@ def principal():
                     .values()
                     .get(spreadsheetId=id_archivo_plantilla, range="BDD")
                 )
-                # Aumentar timeout a 300 segundos (5 minutos)
-                request.http.timeout = 300
+                # Aumentar timeout a 600 segundos (10 minutos) para planillas muy grandes
+                request.http.timeout = 600
                 return request.execute()
             
-            result_bdd = retry_with_backoff(descargar_bdd_con_timeout, max_retries=3, initial_delay=2)
+            result_bdd = retry_with_backoff(descargar_bdd_con_timeout, max_retries=5, initial_delay=5, backoff_factor=2)
             values_bdd = result_bdd.get("values", [])
 
             if not values_bdd:
