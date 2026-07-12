@@ -5,6 +5,15 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
+# Cargar variables de entorno desde .env si existe
+try:
+    from dotenv import load_dotenv
+    dotenv_path = os.path.join(BASE_DIR, '.env')
+    if os.path.exists(dotenv_path):
+        load_dotenv(dotenv_path)
+except ImportError:
+    pass  # python-dotenv no está instalado
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core_config.settings")
 os.environ.setdefault("RUNNING_ACTUALIZADOR_SCRIPT", "1")
 
@@ -32,25 +41,64 @@ import openpyxl
 from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload
 from googleapiclient.errors import HttpError  # Import HttpError
 
-# Django imports
-from django.conf import (
-    settings as const,
-)  # Renamed to avoid conflict with logging.settings
-from django.db import transaction  # Import transaction for atomic operations
-from asgiref.sync import sync_to_async  # Assuming this is used elsewhere
+# Django imports (lazy loading)
+_const = None
+_transaction = None
+_sync_to_async = None
+_Listado_Planillas = None
+_Item = None
+_Sub_Carpeta = None
+_Sub_Titulo = None
+_ListaProveedores = None
+_Patoba = None
+_get_emails = None
+_Carteles = None
+_CartelesCajon = None
+_buscar_modificar_registros_lotes = None
 
-# App imports (adjust paths if necessary)
-from bdd.models import (
-    Listado_Planillas,
-    Item,
-    Sub_Carpeta,
-    Sub_Titulo,
-    ListaProveedores,
-)
-from bdd.classes import Patoba
-from bdd.funtions import get_emails  # Assuming this function exists and works
-from x_cartel.models import Carteles, CartelesCajon
-from actualizador.actualizador_csv import buscar_modificar_registros_lotes
+def _load_django_deps():
+    global _const, _transaction, _sync_to_async
+    global _Listado_Planillas, _Item, _Sub_Carpeta, _Sub_Titulo, _ListaProveedores
+    global _Patoba, _get_emails, _Carteles, _CartelesCajon, _buscar_modificar_registros_lotes
+    global const, transaction, sync_to_async
+    global Listado_Planillas, Item, Sub_Carpeta, Sub_Titulo, ListaProveedores
+    global Patoba, get_emails, Carteles, CartelesCajon, buscar_modificar_registros_lotes
+    ensure_django_setup()
+    if _const is None:
+        from django.conf import settings as const
+        from django.db import transaction
+        from asgiref.sync import sync_to_async
+        from bdd.models import Listado_Planillas, Item, Sub_Carpeta, Sub_Titulo, ListaProveedores
+        from bdd.classes import Patoba
+        from bdd.funtions import get_emails
+        from x_cartel.models import Carteles, CartelesCajon
+        from actualizador.actualizador_csv import buscar_modificar_registros_lotes
+        _const = const
+        _transaction = transaction
+        _sync_to_async = sync_to_async
+        _Listado_Planillas = Listado_Planillas
+        _Item = Item
+        _Sub_Carpeta = Sub_Carpeta
+        _Sub_Titulo = Sub_Titulo
+        _ListaProveedores = ListaProveedores
+        _Patoba = Patoba
+        _get_emails = get_emails
+        _Carteles = Carteles
+        _CartelesCajon = CartelesCajon
+        _buscar_modificar_registros_lotes = buscar_modificar_registros_lotes
+    const = _const
+    transaction = _transaction
+    sync_to_async = _sync_to_async
+    Listado_Planillas = _Listado_Planillas
+    Item = _Item
+    Sub_Carpeta = _Sub_Carpeta
+    Sub_Titulo = _Sub_Titulo
+    ListaProveedores = _ListaProveedores
+    Patoba = _Patoba
+    get_emails = _get_emails
+    Carteles = _Carteles
+    CartelesCajon = _CartelesCajon
+    buscar_modificar_registros_lotes = _buscar_modificar_registros_lotes
 
 # --- Logger Setup ---
 logger = logging.getLogger(__name__)
@@ -93,6 +141,7 @@ def descargar_archivo_drive(
 # Refactored version similar to the previous script
 def crear_o_actualizar_registro(row_original):
     """Intenta crear o actualizar un registro Item basado en una fila de datos."""
+    _load_django_deps()
     row = row_original.copy()
     codigo_item = row.get("codigo", "N/A")
     logger.debug(f"Procesando registro individual para código: {codigo_item}")
@@ -183,6 +232,7 @@ def crear_o_actualizar_registro(row_original):
 
 def desactualizar_anteriores(filtro):
     """Marca items como no actualizados basado en un filtro de código."""
+    _load_django_deps()
     logger.info(
         f"Marcando como no actualizados items con código terminando en: '{filtro}'"
     )
@@ -199,6 +249,7 @@ def desactualizar_anteriores(filtro):
 
 def buscar_modificar_registros(csv_file, filtro):
     """Procesa un CSV registro por registro."""
+    _load_django_deps()
     # Nota: Esta función es menos eficiente que el procesamiento por lotes.
     logger.info(
         f"Iniciando procesamiento INDIVIDUAL desde CSV: '{csv_file}' para filtro: '{filtro}'"
@@ -315,6 +366,7 @@ def fusionar_hojas(wb):  # Modificado para recibir Workbook, no file path/object
 
 def marcar_revisar_carteles(id_proveedor):
     """Marca carteles asociados a un proveedor para revisión."""
+    _load_django_deps()
     logger.info(f"Marcando carteles para revisar para proveedor ID: {id_proveedor}")
     try:
         count_c = Carteles.objects.filter(proveedor=id_proveedor).update(revisar=True)
@@ -335,7 +387,7 @@ def marcar_revisar_carteles(id_proveedor):
 
 def principal():
     """Función principal que orquesta la actualización de planillas y datos."""
-    ensure_django_setup()
+    _load_django_deps()
     logger.info("--- INICIO FUNCIÓN PRINCIPAL ---")
     patoba = None
     try:

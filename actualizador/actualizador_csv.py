@@ -9,6 +9,15 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
+# Cargar variables de entorno desde .env si existe
+try:
+    from dotenv import load_dotenv
+    dotenv_path = os.path.join(BASE_DIR, '.env')
+    if os.path.exists(dotenv_path):
+        load_dotenv(dotenv_path)
+except ImportError:
+    pass  # python-dotenv no está instalado
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core_config.settings")
 
 import django
