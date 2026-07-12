@@ -163,7 +163,7 @@ class Actualizar(MiVista):
         )
         self.context["seleccion_descargar"] = Listado_Planillas.objects.filter(
             descargar=True
-        ).reverse()  # Usar reverse() en lugar de [::-1]
+        ).order_by('-fecha')  # Ordenar por fecha descendente (más recientes primero)
 
         # --- Lógica de limpieza de archivos viejos ---
         logger.info("Iniciando limpieza de archivos y registros antiguos de planillas.")
