@@ -70,6 +70,20 @@ def _item_base_price_columns_exist():
     return _ITEM_BASE_PRICE_COLUMNS_CACHE
 
 
+def _item_factor_division_column_exists():
+    try:
+        with connection.cursor() as cursor:
+            table = Item._meta.db_table
+            columns = {
+                column.name
+                for column in connection.introspection.get_table_description(cursor, table)
+            }
+        return "factor_division" in columns
+    except Exception as e:
+        logger.warning(f"No se pudo inspeccionar columna factor_division de Item: {e}")
+        return False
+
+
 def _item_queryset_runtime_safe():
     qs = Item.objects.all()
     if not _item_base_price_columns_exist():
@@ -79,6 +93,8 @@ def _item_queryset_runtime_safe():
             "final_rollo_base",
             "final_rollo_efectivo_base",
         )
+    if not _item_factor_division_column_exists():
+        qs = qs.defer("factor_division")
     return qs
 
 
@@ -442,8 +458,8 @@ def editar_item(request, id_articulo):
                         )
                 update_fields.append("sub_titulo")
 
-            # Factor de división
-            if "factor_division" in data:
+            # Factor de división (solo si la columna existe en la DB)
+            if "factor_division" in data and _item_factor_division_column_exists():
                 fd_raw = data.get("factor_division")
                 if fd_raw in ["", None, "null"]:
                     articulo.factor_division = None
