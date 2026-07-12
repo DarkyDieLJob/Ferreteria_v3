@@ -94,8 +94,51 @@ def armar_tabla(id_carpeta_inbox, id_carpeta_plantillas, credentials):
 # ID de la carpeta en Google Drive donde se guardarán los archivos
 folder_id = const.INBOX
 
-# Diccionario con los nombres de archivo para cada remitente
-file_names = {}
+# Configuración de mapeo de remitentes a nombres de archivo
+# Formato: {patrón_email: regla_nombre}
+# regla puede ser: "subject" (usar asunto), "email_name" (extraer de email), o un string fijo
+EMAIL_NAME_MAPPING = {
+    # Emails que usan el subject del email
+    "carlosvimercati2@gmail.com": "subject",
+    "pyfpaoli@yahoo.com.ar": "subject",
+    "laferreteatrobarcultural@gmail.com": "subject",
+    
+    # Mapeo directo de email a nombre
+    "magliasrl1@gmail.com": "Maglia",
+    
+    # Puedes agregar más mapeos aquí
+}
+
+def extract_name_from_email(email):
+    """Extrae el nombre base de una dirección de email."""
+    if not email:
+        return "default_name"
+    
+    # Extraer parte antes del @
+    local_part = email.split("@")[0]
+    
+    # Eliminar números y caracteres especiales comunes
+    import re
+    name = re.sub(r'[0-9_\-\.]', ' ', local_part)
+    
+    # Capitalizar palabras
+    name = ' '.join(word.capitalize() for word in name.split())
+    
+    return name if name else "default_name"
+
+def clean_subject(subject):
+    """Limpia el subject del email para usar como nombre de archivo."""
+    if not subject:
+        return "default_name"
+    
+    # Eliminar caracteres inválidos para nombres de archivo
+    import re
+    cleaned = re.sub(r'[<>:"/\\|?*]', '', subject)
+    
+    # Limitar longitud (máximo 100 caracteres)
+    cleaned = cleaned[:100].strip()
+    
+    return cleaned if cleaned else "default_name"
 
 
 def get_emails(gmail_service, drive_service):
@@ -150,14 +193,25 @@ def get_emails(gmail_service, drive_service):
                             )
                             data = att["data"]
                         file_data = base64.urlsafe_b64decode(data.encode("UTF-8"))
-                        if (
-                            "carlosvimercati2@gmail.com" in sender
-                            or "pyfpaoli@yahoo.com.ar" in sender
-                            or "laferreteatrobarcultural@gmail.com" in sender
-                        ):
-                            file_name = subject
+                        
+                        # Determinar el nombre del archivo según el remitente
+                        file_name = None
+                        sender_lower = sender.lower()
+                        
+                        # Buscar coincidencia exacta en el mapeo
+                        if sender_lower in EMAIL_NAME_MAPPING:
+                            rule = EMAIL_NAME_MAPPING[sender_lower]
+                            if rule == "subject":
+                                file_name = clean_subject(subject)
+                            elif rule == "email_name":
+                                file_name = extract_name_from_email(sender)
+                            else:
+                                file_name = rule  # Nombre fijo
                         else:
-                            file_name = file_names.get(sender, "default_name")
+                            # Fallback: intentar extraer nombre del email
+                            file_name = extract_name_from_email(sender)
+                        
+                        logger.info(f"Email de {sender} -> archivo: {file_name}")
 
                         file_metadata = {"name": file_name, "parents": [folder_id]}
                         media = MediaIoBaseUpload(
