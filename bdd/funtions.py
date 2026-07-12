@@ -197,9 +197,10 @@ def get_emails(gmail_service, drive_service):
                                 )
                                 .execute()
                             )
-                        try:
-                            gmail_service.users().messages().delete(
-                                userId="me", id=msg["id"]
-                            ).execute()
-                        except Exception as e:
-                            logger.error("Error al querer borrar el email: %s", e)
+                        # Comentado: Eliminación de emails deshabilitada por falta de scopes
+                        # try:
+                        #     gmail_service.users().messages().delete(
+                        #         userId="me", id=msg["id"]
+                        #     ).execute()
+                        # except Exception as e:
+                        #     logger.error("Error al querer borrar el email: %s", e)
