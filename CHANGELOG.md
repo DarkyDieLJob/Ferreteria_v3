@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.9.6](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.9.5...v3.9.6) (2025-05-26)
+
+
+### Bug Fixes
+
+* **Actualizador:** :hammer: Se implementan los logs al actualizador. segundo intento. ([0782466](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/07824664873a04d1f390addf2169bfd8e063e8dc))
+* **Actualizador:** :rewind: Se revirtio un cambio que no funciono del todo bien. Se va a refactorizar mas adelante. ([c66b907](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/c66b907146065410c0fc316fa32638d6988e1807))
+* **Actualizador:** :rewind: Se revitio un cambio que no funciono del todo bien. ([ed747e4](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/ed747e4abb204e94d3b195442b0c9524faa37287))
+* **core:** :zap: Se agrego testeo a la rama pre-release en el push ([2d7194f](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/2d7194fed265a3829e18033078296baa89c26cb7))
+* **core:** :zap: Se incorpora github actions y se corrigen los tests para core_andamios ([70e007e](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/70e007ec7b8f9404c1e52463192f81658037e504))
+* **Facturacion:** :ambulance: Se corrigio un error de filtrado de cierres Zs ([d888b8b](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/d888b8b014c419c374192c81f9bf0a28d4ff31d2))
+* **Facturacion:** :ambulance: Se corrigio un error por el cual se filtraban mal los cierres Zs al finalizar el cierre Z. ([997c89e](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/997c89edd7553422e0d6b09066aa97333a0e66ac))
+* **Facturacion:** :bug: Se corrigio un error por el cual no se guardaban los cierres Z ([1434e0d](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/1434e0d2a09a5b33f43ec8adccae55b68b9cb15e))
+* **Facturacion:** :hammer: Se implementa una forma distinta sin bloqueos de actualizar las planillas. ([28c03f7](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/28c03f7d213639fa501232c9e233c06f79268d0c))
+
 ### [3.9.5](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.9.4...v3.9.5) (2025-04-20)
 
 
