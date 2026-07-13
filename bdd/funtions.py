@@ -114,17 +114,35 @@ def extract_name_from_email(email):
     if not email:
         return "default_name"
     
+    # Extraer solo el email si viene con formato "Name <email@domain>"
+    import re
+    email_match = re.search(r'<([^>]+)>', email)
+    if email_match:
+        email = email_match.group(1)
+    
     # Extraer parte antes del @
     local_part = email.split("@")[0]
     
     # Eliminar números y caracteres especiales comunes
-    import re
     name = re.sub(r'[0-9_\-\.]', ' ', local_part)
     
     # Capitalizar palabras
     name = ' '.join(word.capitalize() for word in name.split())
     
     return name if name else "default_name"
+
+def extract_email_address(from_header):
+    """Extrae solo la dirección de email de un header 'From'.
+    Ej: 'Carlos Vimercati <carlosvimercati2@gmail.com>' -> 'carlosvimercati2@gmail.com'
+    """
+    if not from_header:
+        return ""
+    import re
+    email_match = re.search(r'<([^>]+)>', from_header)
+    if email_match:
+        return email_match.group(1).lower().strip()
+    # Si no tiene formato Name <email>, devolver tal cual
+    return from_header.lower().strip()
 
 def clean_subject(subject):
     """Limpia el subject del email para usar como nombre de archivo."""
@@ -196,11 +214,11 @@ def get_emails(gmail_service, drive_service):
                         
                         # Determinar el nombre del archivo según el remitente
                         file_name = None
-                        sender_lower = sender.lower()
+                        sender_email = extract_email_address(sender)
                         
                         # Buscar coincidencia exacta en el mapeo
-                        if sender_lower in EMAIL_NAME_MAPPING:
-                            rule = EMAIL_NAME_MAPPING[sender_lower]
+                        if sender_email in EMAIL_NAME_MAPPING:
+                            rule = EMAIL_NAME_MAPPING[sender_email]
                             if rule == "subject":
                                 file_name = clean_subject(subject)
                             elif rule == "email_name":

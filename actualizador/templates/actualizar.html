@@ -177,11 +177,13 @@
                                 <th>Proveedor</th>
                                 <th>Descargar XLS</th>
                                 <th>Descargar ODS</th>
+                                <th>Estado</th>
+                                <th>Marcar descargado</th>
                             </tr>
                         </thead>
                         <tbody>
                         {% for sp in seleccion_descargar %}
-                            <tr>
+                            <tr class="{% if sp.descargado %}table-secondary{% endif %}">
                                 <td>{{ sp.fecha|date:"d/m/Y" }}</td>
                                 <td>
                                     <span class="fw-medium">{{ sp.proveedor }}</span>
@@ -196,10 +198,35 @@
                                         <i class="bi bi-file-earmark-spreadsheet"></i> ODS
                                     </a>
                                 </td>
+                                <td>
+                                    {% if sp.descargado %}
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-circle"></i> Descargado
+                                        </span>
+                                        {% if sp.usuario_descarga %}
+                                            <small class="text-muted d-block">por {{ sp.usuario_descarga.username }}</small>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="badge bg-warning">
+                                            <i class="bi bi-clock"></i> Pendiente
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if not sp.descargado %}
+                                        <button type="button" class="btn btn-sm btn-outline-success btn-marcar-descargado" data-id="{{ sp.id }}">
+                                            <i class="bi bi-check"></i> Marcar
+                                        </button>
+                                    {% else %}
+                                        <button type="button" class="btn btn-sm btn-outline-secondary btn-desmarcar-descargado" data-id="{{ sp.id }}">
+                                            <i class="bi bi-arrow-counterclockwise"></i> Desmarcar
+                                        </button>
+                                    {% endif %}
+                                </td>
                             </tr>
                         {% empty %}
                             <tr>
-                                <td colspan="4" class="text-center text-muted py-4">
+                                <td colspan="6" class="text-center text-muted py-4">
                                     No hay archivos procesados disponibles para descarga
                                 </td>
                             </tr>
@@ -295,6 +322,53 @@ document.addEventListener('DOMContentLoaded', function() {
             feedbackDiv.className = 'alert alert-info';
             feedbackDiv.textContent = 'Guardando selección...';
             feedbackDiv.classList.remove('d-none');
+        });
+    }
+    
+    // Manejar botones de marcar/desmarcar como descargado
+    const marcarButtons = document.querySelectorAll('.btn-marcar-descargado');
+    const desmarcarButtons = document.querySelectorAll('.btn-desmarcar-descargado');
+    
+    marcarButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const planillaId = this.getAttribute('data-id');
+            marcarComoDescargado(planillaId, true);
+        });
+    });
+    
+    desmarcarButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const planillaId = this.getAttribute('data-id');
+            marcarComoDescargado(planillaId, false);
+        });
+    });
+    
+    function marcarComoDescargado(planillaId, marcar) {
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        fetch('/actualizador/marcar_descargado/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                planilla_id: planillaId,
+                marcar: marcar
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Recargar la página para actualizar el estado
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al marcar la planilla como descargada');
         });
     }
 });

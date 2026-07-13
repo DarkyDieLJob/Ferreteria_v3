@@ -7,9 +7,9 @@ import os
 import pandas as pd
 from django.conf import settings
 from django.db.models import Max
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, View
 from googleapiclient.http import MediaIoBaseDownload
 
 # Configuración del logger
@@ -576,3 +576,42 @@ class Reckup(TemplateView):
             logger.exception(e)
             # Considera devolver una respuesta de error más informativa
             return HttpResponse(f"Error al descargar la base de datos: {e}", status=500)
+
+
+class MarcarDescargado(View):
+    """Vista AJAX para marcar/desmarcar una planilla como descargada."""
+
+    def post(self, request, *args, **kwargs):
+        import json
+        from datetime import datetime
+
+        try:
+            data = json.loads(request.body)
+            planilla_id = data.get("planilla_id")
+            marcar = data.get("marcar", True)
+
+            if not planilla_id:
+                return JsonResponse({"success": False, "error": "Falta planilla_id"}, status=400)
+
+            planilla = Listado_Planillas.objects.get(id=planilla_id)
+
+            if marcar:
+                planilla.descargado = True
+                planilla.fecha_descarga = datetime.now()
+                planilla.usuario_descarga = request.user if request.user.is_authenticated else None
+                logger.info(f"Planilla ID {planilla_id} marcada como descargada por {request.user}")
+            else:
+                planilla.descargado = False
+                planilla.fecha_descarga = None
+                planilla.usuario_descarga = None
+                logger.info(f"Planilla ID {planilla_id} desmarcada como descargada")
+
+            planilla.save()
+            return JsonResponse({"success": True})
+
+        except Listado_Planillas.DoesNotExist:
+            logger.error(f"Planilla ID {planilla_id} no encontrada")
+            return JsonResponse({"success": False, "error": "Planilla no encontrada"}, status=404)
+        except Exception as e:
+            logger.error(f"Error al marcar planilla como descargada: {e}", exc_info=True)
+            return JsonResponse({"success": False, "error": str(e)}, status=500)
