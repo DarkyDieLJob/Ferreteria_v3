@@ -2,6 +2,37 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.10.0](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.9.5...v3.10.0) (2026-07-13)
+
+
+### Features
+
+* **buscador:** campo sub_titulo con Select2 (busqueda y autocomplete) ([329f83f](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/329f83fd687ad62a0d71e03847e9a89ce454b8cc))
+* **carrito:** badge con cantidad de articulos en cada boton de carrito ([276f253](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/276f2531324f167aac1c5ea7077a560261b1b8e9))
+* **clientes:** selector de destino con buscador en modal de eliminacion ([fc20428](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/fc204285baaa09f98c790e2fa0d64f73b0f74c65))
+* **core_config:** vista staff para descarga de logs por rango con selección multi-app y presets; estilos mínimos y compatibilidad cross-browser ([50290c8](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/50290c8225807e0bb8223fc906d5cb42fa9701ba))
+* **facturacion:** CRUD completo de Clientes + mejoras carrito ([47d0397](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/47d0397541e3941f9f760e63de43589c359386b7))
+* **reportes:** emular notebook y control desde Drive; salida solo a Drive; parser numérico; columnas y totales ([9828667](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/9828667c7dca36166db4c2f490f82f6beaa83a30)), closes [#2](https://github.com/DarkyDieLJob/Ferreteria_v3/issues/2) [#3](https://github.com/DarkyDieLJob/Ferreteria_v3/issues/3)
+* **ui:** favicon SVG inline para evitar 404 de /media/imagenes/favicon.ico ([7a8d866](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/7a8d8660b771e556a9dab8a0bfdafba267149ddf))
+
+
+### Bug Fixes
+
+* **Actualizador:** :zap: Se implementa una vista para actualizar en 1 minuto ([caaa4c3](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/caaa4c3f12e5ffb41124c396ca8c380efc602eb8))
+* **Actualizador:** :zap: Se implementa una vista para actualizar en 1 minuto ([60412e6](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/60412e6411873d2430d9ffe2a0e0306004a37f79))
+* add missing helper functions for base price column compatibility ([d424add](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/d424add8aea7c1ffba985bacc2e1e9bf4fc45d7f))
+* also defer factor_division column when it doesn't exist in DB ([c30e6d7](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/c30e6d7d2bf1c62109398b9d2f567cd1175a4ad3))
+* **buscador:** botones de carrito ya no se solapan con el formulario en mobile ([9b9c588](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/9b9c588bf1f9320c693629543ec292e3a6e11f32))
+* **buscador:** TypeError en cierre del ModalCarrito por clase inexistente ([1d59938](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/1d599380ae5e56ca8dec5021b7ebdc88267a990b))
+* **changelog:** resolver conflictos de merge en CHANGELOG.md y mejorar estilos del template change_log ([0ade13d](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/0ade13d4386a9a9f3cdb2283b283257e8ff9246b))
+* comentarios Django multilinea con {% comment %} en lugar de {# #} ([19e8056](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/19e8056280b9f64b427cc5db11e97a013cc21969))
+* **Facturacion:** :ambulance: Se corrigio un error de filtrado de cierres Zs ([d888b8b](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/d888b8b014c419c374192c81f9bf0a28d4ff31d2))
+* **Facturacion:** :ambulance: Se corrigio un error por el cual se filtraban mal los cierres Zs al finalizar el cierre Z. ([997c89e](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/997c89edd7553422e0d6b09066aa97333a0e66ac))
+* **Facturacion:** :bug: Se corrigio un error por el cual no se guardaban los cierres Z ([1434e0d](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/1434e0d2a09a5b33f43ec8adccae55b68b9cb15e))
+* **Facturacion:** :hammer: Se implementa una forma distinta sin bloqueos de actualizar las planillas. ([28c03f7](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/28c03f7d213639fa501232c9e233c06f79268d0c))
+* silence 401 errors in cart badges polling (expected when not authenticated) ([6ce9053](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/6ce9053cdfe4014efc514683207fca3ad3909da1))
+* stop polling when user is not authenticated (401) ([f23dbbe](https://github.com/DarkyDieLJob/Ferreteria_v3/commit/f23dbbe73d3ec5de290744aa482efda237f9935f))
+
 ### [3.9.5](https://github.com/DarkyDieLJob/Ferreteria_v3/compare/v3.9.4...v3.9.5) (2025-04-20)
 
 
