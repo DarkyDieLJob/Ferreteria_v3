@@ -65,9 +65,8 @@ docker stop $OLD_CONTAINER
 echo "Contenedor $OLD_CONTAINER detenido (no eliminado, para rollback)"
 
 echo ""
-echo "=== FASE 4: BUILD Y START CON COMPOSE ==="
+echo "=== FASE 4: START CON COMPOSE (imagen pre-build) ==="
 cd /home/diel/Ferreteria_v3
-docker compose build
 docker compose up -d db
 echo "Esperando a que PostgreSQL este listo..."
 sleep 10

@@ -20,7 +20,7 @@ services:
       - ferreteria_net
 
   web:
-    build: .
+    image: ferreteria_web:latest
     container_name: ferreteria_web
     restart: unless-stopped
     env_file:
