@@ -17,7 +17,6 @@ Sin.fis
 .vscode/
 *.sqlite3
 SECRET_KEY.txt
-migrations/
 db.sqlite3
 settings.py
 core_config/settings.py
@@ -102,3 +101,7 @@ staticfiles/
 # Node.js / npm
 node_modules/
 package-lock.json
+
+# Docker
+.env.production
+.dockerignore

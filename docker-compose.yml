@@ -1,0 +1,55 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: ferreteria_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ferreteria}
+      POSTGRES_USER: ${POSTGRES_USER:-ferreteria}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ferreteria_pass}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ferreteria} -d ${POSTGRES_DB:-ferreteria}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - ferreteria_net
+
+  web:
+    build: .
+    container_name: ferreteria_web
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    environment:
+      - DATABASE_URL=postgres://${POSTGRES_USER:-ferreteria}:${POSTGRES_PASSWORD:-ferreteria_pass}@db:5432/${POSTGRES_DB:-ferreteria}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=${POSTGRES_DB:-ferreteria}
+      - DB_USER=${POSTGRES_USER:-ferreteria}
+      - DB_PASSWORD=${POSTGRES_PASSWORD:-ferreteria_pass}
+    volumes:
+      - media:/Ferreteria_v3/media
+      - logs:/Ferreteria_v3/logs
+      - static:/Ferreteria_v3/static
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - ferreteria_net
+
+volumes:
+  pgdata:
+  media:
+  logs:
+  static:
+
+networks:
+  ferreteria_net:
+    driver: bridge
