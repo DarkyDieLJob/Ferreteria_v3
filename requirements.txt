@@ -19,13 +19,13 @@ django-allauth==0.63.6
 sphinx==7.4.7
 myst-parser==4.0.1
 furo==2024.8.6
-django-crispy-forms==2.3
-crispy-bootstrap4==2024.10
+django-crispy-forms==2.0
+crispy-bootstrap4==2022.1
 mercadopago==2.2.3
 django-phonenumber-field==8.0.0
 phonenumbers==8.13.52
 django-autocomplete-light==3.12.1
-django-bootstrap4==24.3
+django-bootstrap4==24.1
 pytest-django==4.11.1
 faker==37.1.0
 django-dynamic-fixture==4.0.1
