@@ -159,6 +159,47 @@ def clean_subject(subject):
     return cleaned if cleaned else "default_name"
 
 
+def _extraer_attachments(parts, msg_id, gmail_service):
+    """Recorre recursivamente las partes del email buscando attachments Excel.
+    Retorna lista de (filename, file_data) para cada attachment valido.
+    """
+    attachments = []
+    if not parts:
+        return attachments
+    for part in parts:
+        filename = part.get("filename")
+        # Skip partes sin filename o con filename vacio
+        if not filename:
+            # Si la parte tiene sub-partes (nested multipart), recorrerlas
+            sub_parts = part.get("parts")
+            if sub_parts:
+                attachments.extend(
+                    _extraer_attachments(sub_parts, msg_id, gmail_service)
+                )
+            continue
+        # Verificar extension de forma segura (case-insensitive)
+        if not filename.lower().endswith((".xls", ".xlsx")):
+            continue
+        try:
+            if "data" in part["body"]:
+                data = part["body"]["data"]
+            else:
+                att_id = part["body"]["attachmentId"]
+                att = (
+                    gmail_service.users()
+                    .messages()
+                    .attachments()
+                    .get(userId="me", messageId=msg_id, id=att_id)
+                    .execute()
+                )
+                data = att["data"]
+            file_data = base64.urlsafe_b64decode(data.encode("UTF-8"))
+            attachments.append((filename, file_data))
+        except Exception as e:
+            logger.error("Error al descargar attachment '%s' del msg %s: %s", filename, msg_id, e)
+    return attachments
+
+
 def get_emails(gmail_service, drive_service):
     # Obtener la fecha de ayer en formato RFC 3339
     yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y/%m/%d")
@@ -172,8 +213,11 @@ def get_emails(gmail_service, drive_service):
     messages = result.get("messages")
     if messages is None:
         logger.info("No se encontraron mensajes")
-    else:
-        for msg in messages:
+        return
+
+    logger.info("Se encontraron %d mensajes para procesar.", len(messages))
+    for msg in messages:
+        try:
             txt = (
                 gmail_service.users()
                 .messages()
@@ -181,7 +225,7 @@ def get_emails(gmail_service, drive_service):
                 .execute()
             )
             payload = txt["payload"]
-            headers = payload["headers"]
+            headers = payload.get("headers", [])
             subject = next(
                 (i["value"] for i in headers if i["name"] == "Subject"),
                 "default_subject",
@@ -190,89 +234,91 @@ def get_emails(gmail_service, drive_service):
                 (i["value"] for i in headers if i["name"] == "From"), "default_sender"
             )
             parts = payload.get("parts")
-            if parts:
-                for part in parts:
-                    filename = part.get("filename")
-                    if (
-                        filename.endswith(".xls")
-                        or filename.endswith(".xlsx")
-                        or filename.endswith(".XLS")
-                    ):
-                        if "data" in part["body"]:
-                            data = part["body"]["data"]
-                        else:
-                            att_id = part["body"]["attachmentId"]
-                            att = (
-                                gmail_service.users()
-                                .messages()
-                                .attachments()
-                                .get(userId="me", messageId=msg["id"], id=att_id)
-                                .execute()
-                            )
-                            data = att["data"]
-                        file_data = base64.urlsafe_b64decode(data.encode("UTF-8"))
-                        
-                        # Determinar el nombre del archivo según el remitente
-                        file_name = None
-                        sender_email = extract_email_address(sender)
-                        
-                        # Buscar coincidencia exacta en el mapeo
-                        if sender_email in EMAIL_NAME_MAPPING:
-                            rule = EMAIL_NAME_MAPPING[sender_email]
-                            if rule == "subject":
-                                file_name = clean_subject(subject)
-                            elif rule == "email_name":
-                                file_name = extract_name_from_email(sender)
-                            else:
-                                file_name = rule  # Nombre fijo
-                        else:
-                            # Fallback: intentar extraer nombre del email
-                            file_name = extract_name_from_email(sender)
-                        
-                        logger.info(f"Email de {sender} -> archivo: {file_name}")
+            if not parts:
+                logger.debug("Mensaje %s sin partes, saltando.", msg["id"])
+                continue
 
-                        file_metadata = {"name": file_name, "parents": [folder_id]}
-                        media = MediaIoBaseUpload(
-                            io.BytesIO(file_data), mimetype="application/vnd.ms-excel"
+            # Extraer attachments recursivamente (manja nested multipart)
+            attachments = _extraer_attachments(parts, msg["id"], gmail_service)
+            if not attachments:
+                logger.debug("Mensaje %s sin attachments Excel, saltando.", msg["id"])
+                continue
+
+            for filename, file_data in attachments:
+                # Determinar el nombre del archivo según el remitente
+                sender_email = extract_email_address(sender)
+
+                # Buscar coincidencia exacta en el mapeo
+                if sender_email in EMAIL_NAME_MAPPING:
+                    rule = EMAIL_NAME_MAPPING[sender_email]
+                    if rule == "subject":
+                        file_name = clean_subject(subject)
+                    elif rule == "email_name":
+                        file_name = extract_name_from_email(sender)
+                    else:
+                        file_name = rule  # Nombre fijo
+                else:
+                    # Fallback: intentar extraer nombre del email
+                    file_name = extract_name_from_email(sender)
+
+                logger.info("Email de %s -> archivo: %s (attachment original: %s)", sender, file_name, filename)
+
+                file_metadata = {"name": file_name, "parents": [folder_id]}
+                media = MediaIoBaseUpload(
+                    io.BytesIO(file_data), mimetype="application/vnd.ms-excel"
+                )
+
+                try:
+                    # Buscar archivos con el mismo nombre en la carpeta especificada
+                    results = (
+                        drive_service.files()
+                        .list(
+                            q=f"name='{file_name}' and trashed = false and parents in '{folder_id}'"
                         )
+                        .execute()
+                    )
+                    items = results.get("files", [])
+                except Exception as e:
+                    logger.warning(
+                        "No se encontro el archivo en Inbox de Drive: nombre=%s, error=%s",
+                        file_name,
+                        e,
+                    )
+                    items = []
 
+                if items:
+                    # Eliminar archivos duplicados y subir el nuevo
+                    for item in items:
+                        logger.info("Archivo duplicado detectado id=%s name=%s, eliminando para reemplazar.", item.get('id'), item.get('name'))
                         try:
-                            # Buscar archivos con el mismo nombre en la carpeta especificada
-                            logger.debug("Verificando existencia previa: nombre=%s, folder_id=%s", file_name, folder_id)
-                            results = (
-                                drive_service.files()
-                                .list(
-                                    q=f"name='{file_name}' and trashed = false and parents in '{folder_id}'"
-                                )
-                                .execute()
+                            drive_service.files().delete(fileId=item['id']).execute()
+                        except Exception as del_e:
+                            logger.error("Error al eliminar archivo duplicado id=%s: %s", item.get('id'), del_e)
+                    # Subir el nuevo archivo
+                    try:
+                        _ = (
+                            drive_service.files()
+                            .create(
+                                body=file_metadata, media_body=media, fields="id"
                             )
-                            items = results.get("files", [])
-                        except Exception as e:
-                            logger.warning(
-                                "No se encontro el archivo en Inbox de Drive: nombre=%s, error=%s",
-                                file_name,
-                                e,
+                            .execute()
+                        )
+                        logger.info("Archivo '%s' subido a Drive (reemplazo de duplicado).", file_name)
+                    except Exception as up_e:
+                        logger.error("Error al subir archivo '%s' despues de eliminar duplicado: %s", file_name, up_e)
+                else:
+                    try:
+                        _ = (
+                            drive_service.files()
+                            .create(
+                                body=file_metadata, media_body=media, fields="id"
                             )
-                            items = False
-
-                        # Si se encuentra un archivo con el mismo nombre, eliminarlo
-                        if items:
-                            for item in items:
-                                logger.info("Archivo duplicado detectado id=%s name=%s (no eliminado)", item.get('id'), item.get('name'))
-                                # drive_service.files().delete(fileId=item['id']).execute()
-                                # plantilla = Listado_Planillas.objects.filter(identificador=item['id']).delete()
-                        else:
-                            _ = (
-                                drive_service.files()
-                                .create(
-                                    body=file_metadata, media_body=media, fields="id"
-                                )
-                                .execute()
-                            )
-                        # Comentado: Eliminación de emails deshabilitada por falta de scopes
-                        # try:
-                        #     gmail_service.users().messages().delete(
-                        #         userId="me", id=msg["id"]
-                        #     ).execute()
-                        # except Exception as e:
-                        #     logger.error("Error al querer borrar el email: %s", e)
+                            .execute()
+                        )
+                        logger.info("Archivo '%s' subido a Drive (nuevo).", file_name)
+                    except Exception as up_e:
+                        logger.error("Error al subir archivo '%s' a Drive: %s", file_name, up_e)
+        except Exception as e:
+            logger.error("Error al procesar mensaje id=%s: %s", msg.get("id", "?"), e)
+            logger.exception(e)
+            continue
