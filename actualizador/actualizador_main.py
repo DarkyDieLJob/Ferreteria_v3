@@ -673,7 +673,7 @@ def principal():
                         )
                         # Procesamiento por lotes (rápido)
                         buscar_modificar_registros_lotes(
-                            csv_file_path, abreviatura_filtro
+                            csv_file_path, abreviatura_filtro, proveedor_obj=proveedor_obj
                         )
 
                         marcar_revisar_carteles(

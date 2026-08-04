@@ -65,10 +65,7 @@ class Proveedor(models.Model):
     corredor_telefono = models.CharField(max_length=50)
 
     def __str__(self):
-        text = "{}".format(
-            self.text_display,
-        )
-        return text
+        return self.text_display or ""
 
 
 class Condiciones(models.Model):
@@ -574,8 +571,8 @@ class Compras(models.Model):
     observaciones = models.TextField()
 
     def __str__(self):
-        text = "{} - {}".format(self.proveedor, self.fecha)
-        return text
+        prov = str(self.proveedor) if self.proveedor else "Sin proveedor"
+        return "{} - {}".format(prov, self.fecha)
 
 
 class Listado_Planillas(models.Model):
@@ -608,8 +605,8 @@ class Listado_Planillas(models.Model):
     )
 
     def __str__(self):
-        text = "{} - {}".format(self.proveedor, self.fecha)
-        return text
+        prov = str(self.proveedor) if self.proveedor else "Sin proveedor"
+        return "{} - {}".format(prov, self.fecha)
 
 
 #########################################################################

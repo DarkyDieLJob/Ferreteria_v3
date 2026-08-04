@@ -305,11 +305,11 @@ def crear_o_actualizar_registro(row_original):
             )
 
 
-def crear_o_actualizar_registros_en_lotes(rows, tamaño_lote=1000):
+def crear_o_actualizar_registros_en_lotes(rows, tamaño_lote=1000, proveedor_obj=None):
     """Procesa y guarda registros de Item en lotes usando bulk_update."""
     _load_django_deps()
     logger.info(
-        f"Iniciando procesamiento por lotes. Tamaño del lote: {tamaño_lote}. Filas totales: {len(rows)}"
+        f"Iniciando procesamiento por lotes. Tamaño del lote: {tamaño_lote}. Filas totales: {len(rows)}. Proveedor: {proveedor_obj}"
     )
     items_para_crear = []
     mapa_items_para_actualizar = {}  # codigo -> item_preparado
@@ -417,6 +417,7 @@ def crear_o_actualizar_registros_en_lotes(rows, tamaño_lote=1000):
                 "sub_titulo": sub_titulo,
                 "descripcion": descripcion_limpia,
                 "actualizado": True,
+                "proveedor": proveedor_obj,
                 # Añadir el resto de campos desde 'row', convirtiendo tipos si es necesario
                 "precio_base": row.get("precio_base", 0),  # Asume conversión necesaria
                 "final_base": final_f if "final" in row else 0,
@@ -703,7 +704,7 @@ def buscar_modificar_registros(csv_file, filtro):
         )
 
 
-def buscar_modificar_registros_lotes(csv_file, filtro):
+def buscar_modificar_registros_lotes(csv_file, filtro, proveedor_obj=None):
     """Carga un CSV y procesa los registros en lotes (más eficiente)."""
     _load_django_deps()
     batch_size = get_batch_size()
@@ -773,7 +774,7 @@ def buscar_modificar_registros_lotes(csv_file, filtro):
         )
         if rows:
             crear_o_actualizar_registros_en_lotes(
-                rows, tamaño_lote=batch_size
+                rows, tamaño_lote=batch_size, proveedor_obj=proveedor_obj
             )  # Llama a la función de lotes con tamaño configurable
         else:
             logger.info(
