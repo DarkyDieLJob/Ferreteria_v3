@@ -407,10 +407,18 @@ class Actualizar(MiVista):
                     nombre_proveedor_desc = (
                         sp.descripcion
                     )  # El nombre original del archivo
-                    nombre_plantilla_gdrive = str(
-                        sp.proveedor
-                    )  # Asumiendo que el __str__ del modelo Proveedor es el nombre en Drive
-                    nombre_descargable = f"{sp.proveedor}-{sp.fecha}"  # Nombre final
+
+                    # Obtener nombre de plantilla desde ListaProveedores del proveedor
+                    nombre_plantilla_gdrive = None
+                    if sp.proveedor:
+                        lp_obj = getattr(sp.proveedor, "identificador", None)
+                        if lp_obj:
+                            nombre_plantilla_gdrive = lp_obj.nombre
+                    if not nombre_plantilla_gdrive:
+                        nombre_plantilla_gdrive = str(sp.proveedor) if sp.proveedor else sp.descripcion
+
+                    fecha_str = sp.fecha.strftime("%Y-%m-%d") if sp.fecha else "sin_fecha"
+                    nombre_descargable = f"{nombre_plantilla_gdrive}-{fecha_str}"
                     hoja_seleccionada = sp.hoja
 
                     logger.info(
