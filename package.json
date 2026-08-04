@@ -1,4 +1,7 @@
 {
-    "version": "3.9.5",
-    "standard-version": {}
+    "version": "3.10.0",
+    "standard-version": {},
+    "devDependencies": {
+        "standard-version": "^9.5.0"
+    }
 }

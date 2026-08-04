@@ -594,6 +594,18 @@ class Listado_Planillas(models.Model):
     )
     id_sp = models.CharField(max_length=50, default="", null=True, blank=True)
     hojas = models.TextField(max_length=300, default="", null=True, blank=True)
+    
+    # Campos de seguimiento de descargas
+    descargado = models.BooleanField(default=False, help_text="Indica si la planilla fue descargada por el usuario")
+    fecha_descarga = models.DateTimeField(null=True, blank=True, help_text="Fecha y hora en que se descargó la planilla")
+    usuario_descarga = models.ForeignKey(
+        'auth.User', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        related_name='planillas_descargadas',
+        help_text="Usuario que descargó la planilla"
+    )
 
     def __str__(self):
         text = "{} - {}".format(self.proveedor, self.fecha)

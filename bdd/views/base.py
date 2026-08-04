@@ -215,8 +215,9 @@ class MiVista(TemplateView):
             context["nuevas_planillas"] = Listado_Planillas.objects.filter(
                 listo=False, descargar=False
             ).count()
+            # Contar planillas disponibles para descargar que aún no han sido descargadas
             context["nuevas_planillas_descarga"] = Listado_Planillas.objects.filter(
-                fecha=datetime.now().date(), descargar=True
+                descargar=True, descargado=False
             ).count()
             logger.debug(
                 f"Planillas para descargar: {context['seleccion_descargar'].count()}, Nuevas: {context['nuevas_planillas']}, Nuevas para hoy: {context['nuevas_planillas_descarga']}"
