@@ -14,7 +14,7 @@
         {% for sp in seleccion_descargar %}
             <tr>
                 <td>{{ sp.fecha }}</td>
-                <td>{{ sp.proveedor }}</td>
+                <td>{{ sp.proveedor|default:"Sin proveedor" }}</td>
                 <td><a href="/{{ sp.link_descarga }}">XLS</a></td>
                 <td><a href="/{{ sp.link_descarga_ods }}">ODS</a></td>
             </tr>
