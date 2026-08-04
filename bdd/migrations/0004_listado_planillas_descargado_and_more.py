@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('bdd', '0003_item_final_base_fields'),
+        ('bdd', '0003_item_final_base_item_final_efectivo_base_and_more'),
     ]
 
     operations = [
