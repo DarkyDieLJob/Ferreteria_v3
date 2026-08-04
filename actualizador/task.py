@@ -245,31 +245,20 @@ class ColaTareasWorker:
     def ejecutar_tareas(self):
         """
         Método ejecutado por el hilo trabajador. Espera y procesa tareas de la cola.
+        Las tareas se procesan inmediatamente al ser agregadas, sin sleep inicial bloqueante.
         """
         logger.info(
             f"Hilo trabajador [{threading.current_thread().name}] iniciado. Esperando tareas..."
         )
-
-        # Lógica de espera inicial (opcional) - Afecta al primer arranque antes de la hora
-        ahora = datetime.datetime.now()
-        fecha_inicio_hoy = datetime.date.today()
-        proxima_ejecucion_inicial = datetime.datetime.combine(
-            fecha_inicio_hoy, self.hora_inicio
-        )
-
-        if ahora < proxima_ejecucion_inicial:
-            tiempo_espera = (proxima_ejecucion_inicial - ahora).total_seconds()
-            if tiempo_espera > 0:
-                logger.info(
-                    f"Hilo trabajador esperando {tiempo_espera:.2f} segundos hasta las {self.hora_inicio}..."
-                )
-                time.sleep(tiempo_espera)
-
         logger.info("Hilo trabajador activo y procesando cola...")
         while True:
             try:
-                # get() es bloqueante por defecto, esperará si la cola está vacía
-                tarea_func, args, kwargs = self.cola_tareas.get()
+                # get() con timeout para no bloquear indefinidamente
+                # y permitir procesar tareas en cualquier momento
+                try:
+                    tarea_func, args, kwargs = self.cola_tareas.get(timeout=60)
+                except queue.Empty:
+                    continue
                 tarea_nombre = getattr(tarea_func, "__name__", repr(tarea_func))
                 logger.info(f"Procesando tarea '{tarea_nombre}'...")
                 try:
@@ -283,10 +272,6 @@ class ColaTareasWorker:
                     )
                 finally:
                     self.cola_tareas.task_done()  # Marca la tarea como completada
-            except queue.Empty:
-                # Teóricamente no debería pasar con get() bloqueante sin timeout
-                logger.warning("La cola estaba vacía inesperadamente? Esperando...")
-                time.sleep(1)
             except Exception as e:
                 # Error en el propio bucle del worker
                 logger.error(
