@@ -200,13 +200,13 @@ def _extraer_attachments(parts, msg_id, gmail_service):
     return attachments
 
 
-def get_emails(gmail_service, drive_service):
-    # Obtener la fecha de ayer en formato RFC 3339
-    yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y/%m/%d")
+def get_emails(gmail_service, drive_service, days_back=1):
+    # Obtener la fecha de hace days_back dias en formato RFC 3339
+    after_date = (datetime.now() - timedelta(days=days_back)).strftime("%Y/%m/%d")
     result = (
         gmail_service.users()
         .messages()
-        .list(userId="me", labelIds=["INBOX"], q=f"after:{yesterday}")
+        .list(userId="me", labelIds=["INBOX"], q=f"after:{after_date}")
         .execute()
     )
 
