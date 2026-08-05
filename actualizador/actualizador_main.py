@@ -798,6 +798,261 @@ def principal():
     logger.info("--- FIN FUNCIÓN PRINCIPAL ---")
 
 
+def procesar_planillas_listas():
+    """Procesa solo las planillas marcadas como listo=True. No procesa emails ni detecta nuevas."""
+    _load_django_deps()
+    logger.info("--- INICIO PROCESAMIENTO DE PLANILLAS LISTAS ---")
+    patoba = None
+    try:
+        patoba = Patoba(None)
+        if not patoba.drive_service:
+            logger.critical("Servicio de Google Drive no inicializado. Abortando.")
+            return
+    except Exception as e:
+        logger.critical(f"Error al inicializar Patoba: {e}")
+        logger.exception(e)
+        return
+
+    # --- Procesar Planillas Marcadas como 'listo=True' ---
+    logger.info("Procesando planillas marcadas como 'listo=True'...")
+    lista_procesar = Listado_Planillas.objects.filter(listo=True)
+    if not lista_procesar.exists():
+        logger.info("No hay planillas marcadas como 'listo=True' para procesar.")
+        return
+    else:
+        logger.info(f"Planillas a procesar: {lista_procesar.count()}")
+
+    mi_diccionario = {}  # Para mapeo de descarga
+
+    for sp in lista_procesar:
+        nombre_proveedor_desc = sp.descripcion  # Nombre original del archivo en Drive
+        proveedor_obj = sp.proveedor  # Objeto Proveedor asociado
+        # Intentar obtener el nombre de la plantilla desde el proveedor
+        nombre_plantilla = None
+        if proveedor_obj:
+            lp_obj = getattr(
+                proveedor_obj, "identificador", None
+            )  # Asume relación inversa a ListaProveedores
+            if lp_obj:
+                nombre_plantilla = (
+                    lp_obj.nombre
+                )  # Nombre de ListaProveedores es el nombre de la plantilla
+        # else: logger.warning(f"Planilla ID {sp.id} no tiene Proveedor asociado.")
+
+        if not nombre_plantilla or nombre_plantilla.lower() == "otros":
+            logger.warning(
+                f"Saltando planilla ID {sp.id} (Desc: '{sp.descripcion}') porque no tiene proveedor válido o es 'Otros'."
+            )
+            continue
+
+        logger.info(
+            f"--- Procesando planilla lista: '{nombre_plantilla}' (ID DB: {sp.id}, ID Drive: {sp.identificador}) ---"
+        )
+        fecha_str = sp.fecha.strftime("%Y-%m-%d") if sp.fecha else "sin_fecha"
+        nombre_descargable = f"{nombre_plantilla}-{fecha_str}"
+        hoja_seleccionada = sp.hoja
+
+        logger.debug(
+            f"Datos: nombre_prov='{nombre_proveedor_desc}', nombre_plantilla='{nombre_plantilla}', hoja='{hoja_seleccionada}'"
+        )
+
+        id_archivo_proveedor = sp.identificador  # ID del archivo original descargado
+        id_archivo_plantilla = None
+        id_hoja_reemplazable = None
+
+        try:
+            # Obtener ID de la plantilla y hoja reemplazable
+            id_archivo_plantilla = patoba.obtener_id_por_nombre(
+                nombre_plantilla, const.PLANTILLAS
+            )
+            if not id_archivo_plantilla:
+                logger.error(
+                    f"No se encontró ID de plantilla en Drive para '{nombre_plantilla}'. Saltando."
+                )
+                continue
+            sp.id_sp = id_archivo_plantilla  # Guardar ID plantilla en BD
+
+            id_hoja_reemplazable = patoba.obtener_id_hoja_por_nombre(
+                "Reemplazable", id_archivo_plantilla
+            )
+            if not id_hoja_reemplazable:
+                logger.error(
+                    f"No se encontró hoja 'Reemplazable' en plantilla ID '{id_archivo_plantilla}'. Saltando."
+                )
+                continue
+
+            # --- Descargar datos 'BDD' de la plantilla y procesar CSV ---
+            logger.info(
+                f"Descargando datos 'BDD' de plantilla '{nombre_plantilla}' (ID: {id_archivo_plantilla})..."
+            )
+
+            def descargar_bdd_con_timeout():
+                """Descarga datos BDD con timeout aumentado."""
+                request = (
+                    patoba.sheet_service.spreadsheets()
+                    .values()
+                    .get(spreadsheetId=id_archivo_plantilla, range="BDD")
+                )
+                # Aumentar timeout a 600 segundos (10 minutos) para planillas muy grandes
+                request.http.timeout = 600
+                return request.execute()
+
+            result_bdd = retry_with_backoff(descargar_bdd_con_timeout, max_retries=5, initial_delay=5, backoff_factor=2)
+            values_bdd = result_bdd.get("values", [])
+
+            if not values_bdd:
+                logger.warning(
+                    f"No se encontraron datos en la hoja 'BDD' de la plantilla '{nombre_plantilla}'. No se procesará CSV."
+                )
+            else:
+                csv_file_path = f"{nombre_plantilla}.csv"
+                try:
+                    with open(csv_file_path, "w", encoding="utf-8", newline="") as f:
+                        writer = csv.writer(f)
+                        writer.writerows(values_bdd)
+                    logger.info(f"Datos 'BDD' guardados en '{csv_file_path}'.")
+
+                    # --- Procesar el CSV ---
+                    # Obtener la abreviatura del proveedor (asumiendo está en ListaProveedores)
+                    abreviatura_filtro = None
+                    if (
+                        proveedor_obj
+                        and hasattr(proveedor_obj, "identificador")
+                        and proveedor_obj.identificador
+                    ):
+                        abreviatura_filtro = proveedor_obj.identificador.abreviatura
+
+                    if abreviatura_filtro:
+                        logger.info(
+                            f"Procesando archivo CSV '{csv_file_path}' con filtro '{abreviatura_filtro}'..."
+                        )
+                        # Procesamiento por lotes (rápido)
+                        buscar_modificar_registros_lotes(
+                            csv_file_path, abreviatura_filtro, proveedor_obj=proveedor_obj
+                        )
+
+                        marcar_revisar_carteles(
+                            proveedor_obj.id
+                        )  # Marcar carteles después de procesar datos
+                    else:
+                        logger.warning(
+                            f"No se pudo obtener abreviatura para proveedor '{nombre_plantilla}'. No se puede procesar CSV."
+                        )
+
+                except IOError as ioe:
+                    logger.error(
+                        f"Error de I/O al escribir/leer CSV '{csv_file_path}': {ioe}"
+                    )
+                except Exception as csv_e:
+                    logger.error(f"Error al procesar CSV para '{nombre_plantilla}'.")
+                    logger.exception(csv_e)
+
+            # --- Copiar datos del proveedor a la hoja "Reemplazable" ---
+            if not hoja_seleccionada:
+                logger.warning(
+                    f"Planilla '{nombre_plantilla}' (ID DB: {sp.id}) no tiene hoja seleccionada. Saltando copia Drive."
+                )
+                sp.listo = False
+                sp.save()
+                continue
+
+            if not id_archivo_proveedor:
+                logger.warning(
+                    f"No se encontró archivo proveedor '{nombre_proveedor_desc}' en Inbox para planilla ID {sp.id}."
+                )
+                sp.listo = False
+                sp.save()
+                continue
+
+            try:
+                patoba.copiar_reemplazable(
+                    id_archivo_proveedor=id_archivo_proveedor,
+                    hoja_seleccionada=hoja_seleccionada,
+                    id_hoja_reemplazable=id_hoja_reemplazable,
+                    id_archivo_plantilla=id_archivo_plantilla,
+                )
+                logger.info(
+                    f"Contenido de '{hoja_seleccionada}' copiado a hoja 'Reemplazable' en plantilla '{nombre_plantilla}'."
+                )
+            except Exception as copy_e:
+                logger.error(
+                    f"Error al copiar hoja '{hoja_seleccionada}' desde archivo proveedor (ID: {id_archivo_proveedor}) hacia plantilla '{nombre_plantilla}'."
+                )
+                logger.exception(copy_e)
+                sp.listo = False
+                sp.save()
+                continue
+
+            # --- Generar archivos de descarga locales (legacy): MEDIA_ROOT/descargas/*.xlsx y *.ods ---
+            try:
+                spreadsheet = patoba.obtener_g_sheet_por_id(id_archivo_plantilla)
+                patoba.actualizar_plantilla(spreadsheet, sp)
+                logger.info(
+                    f"Archivos locales de descarga generados para '{nombre_descargable}' en MEDIA_ROOT/descargas."
+                )
+            except Exception as gen_e:
+                logger.error(
+                    f"Error al generar archivos locales de descarga para '{nombre_descargable}'."
+                )
+                logger.exception(gen_e)
+
+            # --- Marcar planilla como procesada y limpiar ---
+            sp.listo = False  # Marcar como ya no lista para procesar de nuevo
+            sp.save()
+            logger.info(
+                f"Planilla '{nombre_plantilla}' (ID DB: {sp.id}) marcada como lista=False."
+            )
+
+            # Borrar archivo original de Inbox en Drive, una vez finalizado el procesamiento
+            try:
+                if id_archivo_proveedor:
+                    patoba.borrar_por_id(id_archivo_proveedor)
+                    logger.info(
+                        f"Archivo original de Inbox eliminado (Drive ID: {id_archivo_proveedor})."
+                    )
+                else:
+                    logger.warning(
+                        "No se encontró ID del archivo de Inbox para eliminar."
+                    )
+            except Exception as del_e:
+                logger.error(
+                    f"Error al eliminar el archivo original de Inbox (Drive ID: {id_archivo_proveedor})."
+                )
+                logger.exception(del_e)
+
+            # Marcar ListaProveedor para que se vuelva a generar CSV la próxima vez?
+            if (
+                proveedor_obj
+                and hasattr(proveedor_obj, "identificador")
+                and proveedor_obj.identificador
+            ):
+                try:
+                    lp_instance = (
+                        proveedor_obj.identificador
+                    )  # Obtener ListaProveedores
+                    lp_instance.hay_csv_pendiente = True
+                    lp_instance.save()
+                    logger.info(
+                        f"ListaProveedores '{nombre_plantilla}' marcada con hay_csv_pendiente=True."
+                    )
+                except Exception as lp_e:
+                    logger.error(
+                        f"Error al marcar hay_csv_pendiente=True para ListaProveedores '{nombre_plantilla}': {lp_e}"
+                    )
+
+        except HttpError as http_e:
+            logger.error(
+                f"Error HTTP procesando planilla '{nombre_plantilla}': Status {http_e.resp.status}, {http_e}"
+            )
+        except Exception as e:
+            logger.error(f"Error inesperado procesando planilla '{nombre_plantilla}'.")
+            logger.exception(e)
+
+        logger.info(f"--- Fin procesamiento planilla lista: '{nombre_plantilla}' ---")
+
+    logger.info("--- FIN PROCESAMIENTO DE PLANILLAS LISTAS ---")
+
+
 # --- Script Execution ---
 if __name__ == "__main__":
     # Configurar logging básico si se ejecuta directamente
