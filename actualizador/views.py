@@ -134,9 +134,10 @@ class Actualizar(MiVista):
                 f"Eliminados {deleted_count} registros con 404: {ids_a_borrar_por_404}"
             )
             # Volver a obtener la lista SIN los eliminados
+            datos_list_original = datos_list
             datos_list = [d for d in datos_list if d.id not in ids_a_borrar_por_404]
             # También limpiar hojas_por_item correspondientes
-            hojas_por_item = [h for d, h in zip(datos_list + [{'id': id} for id in ids_a_borrar_por_404], hojas_por_item) if d.id not in ids_a_borrar_por_404]
+            hojas_por_item = [h for d, h in zip(datos_list_original, hojas_por_item) if d.id not in ids_a_borrar_por_404]
 
         # Usar la lista filtrada para mantener correspondencia
         self.context["datos"] = datos_list
