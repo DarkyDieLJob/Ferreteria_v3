@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from actualizador.actualizador_main import _load_django_deps
 from bdd.classes import Patoba
-from bdd import const
+from django.conf import settings as const
 from bdd.models import Listado_Planillas
 from googleapiclient.errors import HttpError
 import pandas as pd
