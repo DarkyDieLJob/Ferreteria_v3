@@ -133,7 +133,7 @@ def custom_round(price):
         return 0
 
 
-def get_batch_size(default=1000):
+def get_batch_size(default=200):
     """Obtiene el tamaño de lote desde settings (ACT_CSV_BATCH_SIZE) o variable de entorno, por defecto 1000."""
     _load_django_deps()
     try:
@@ -481,18 +481,22 @@ def crear_o_actualizar_registros_en_lotes(rows, tamaño_lote=1000, proveedor_obj
             for field in Item._meta.fields
             if not field.primary_key and field.name != "factor_division"
         ]
-        try:
-            with transaction.atomic():
-                Item.objects.bulk_update(
-                    items_actualizar_lista, campos_actualizar, batch_size=tamaño_lote
+        total_actualizar = len(items_actualizar_lista)
+        actualizados_total = 0
+        for i in range(0, total_actualizar, tamaño_lote):
+            chunk = items_actualizar_lista[i : i + tamaño_lote]
+            try:
+                with transaction.atomic():
+                    Item.objects.bulk_update(
+                        chunk, campos_actualizar, batch_size=tamaño_lote
+                    )
+                actualizados_total += len(chunk)
+                logger.info(
+                    f"Bulk Update chunk {i // tamaño_lote + 1}: {len(chunk)} items (total: {actualizados_total}/{total_actualizar})"
                 )
-            logger.info(
-                f"Bulk Update completado para {len(items_actualizar_lista)} items."
-            )
-        except Exception as e:
-            logger.error(f"Error durante Bulk Update.")
-            logger.exception(e)
-            # Aquí podrías intentar guardar individualmente o loguear más detalle
+            except Exception as e:
+                logger.error(f"Error durante Bulk Update chunk {i // tamaño_lote + 1}.")
+                logger.exception(e)
 
     fin_db = time.time()
     logger.info(f"Fase 2 completada en {fin_db - inicio_db:.2f} seg.")
