@@ -71,10 +71,6 @@ class Command(BaseCommand):
             except Exception as e:
                 self.stderr.write(f"  Error leyendo hojas de '{dato.descripcion}': {e}")
 
-        # Paso 4: Marcar como descargar=True
-        marcadas = Listado_Planillas.objects.filter(
-            listo=False, descargar=False
-        ).exclude(hojas="").update(descargar=True)
         self.stdout.write(self.style.SUCCESS(
-            f"Deteccion finalizada. {marcadas} planillas listas para etiquetar."
+            f"Deteccion finalizada. {created_count} planillas listas para etiquetar."
         ))
