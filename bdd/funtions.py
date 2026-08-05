@@ -287,25 +287,8 @@ def get_emails(gmail_service, drive_service, days_back=1):
                     items = []
 
                 if items:
-                    # Eliminar archivos duplicados y subir el nuevo
-                    for item in items:
-                        logger.info("Archivo duplicado detectado id=%s name=%s, eliminando para reemplazar.", item.get('id'), item.get('name'))
-                        try:
-                            drive_service.files().delete(fileId=item['id']).execute()
-                        except Exception as del_e:
-                            logger.error("Error al eliminar archivo duplicado id=%s: %s", item.get('id'), del_e)
-                    # Subir el nuevo archivo
-                    try:
-                        _ = (
-                            drive_service.files()
-                            .create(
-                                body=file_metadata, media_body=media, fields="id"
-                            )
-                            .execute()
-                        )
-                        logger.info("Archivo '%s' subido a Drive (reemplazo de duplicado).", file_name)
-                    except Exception as up_e:
-                        logger.error("Error al subir archivo '%s' despues de eliminar duplicado: %s", file_name, up_e)
+                    # El archivo ya existe en Inbox, no re-subir para preservar el ID
+                    logger.info("Archivo '%s' ya existe en Inbox (id=%s). Saltando upload.", file_name, items[0].get('id'))
                 else:
                     try:
                         _ = (
