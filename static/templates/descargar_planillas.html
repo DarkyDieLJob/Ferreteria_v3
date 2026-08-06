@@ -1,25 +1,118 @@
 {% load custom_filters %}
 <!-- descargar_planillas.html -->
-<div class="overflow-auto h-100">
-    <table class="table table-striped w-auto">
-        <thead class="bg-secondary text-white sticky-top">
-            <tr>
-                <th>Fecha</th>
-                <th>Proveedor</th>
-                <th>Descargar xls</th>
-                <th>Descargar ods</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for sp in seleccion_descargar %}
-            <tr>
-                <td>{{ sp.fecha }}</td>
-                <td>{{ sp.proveedor|default:"Sin proveedor" }}</td>
-                <td><a href="/{{ sp.link_descarga }}">XLS</a></td>
-                <td><a href="/{{ sp.link_descarga_ods }}">ODS</a></td>
-            </tr>
-        {% endfor %}
+<div class="py-2">
+    <div class="alert alert-success">
+        <i class="bi bi-download"></i> Archivos procesados disponibles para descarga
+    </div>
 
-        </tbody>
-    </table>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="bg-secondary text-white">
+                <tr>
+                    <th>Fecha</th>
+                    <th>Proveedor</th>
+                    <th>Descargar XLS</th>
+                    <th>Descargar ODS</th>
+                    <th>Estado</th>
+                    <th>Marcar descargado</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for sp in seleccion_descargar %}
+                <tr class="{% if sp.descargado %}table-secondary{% endif %}">
+                    <td>{{ sp.fecha|date:"d/m/Y" }}</td>
+                    <td>
+                        <span class="fw-medium">{{ sp.proveedor|default:"Sin proveedor" }}</span>
+                    </td>
+                    <td>
+                        <a href="/{{ sp.link_descarga }}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-file-earmark-excel"></i> XLS
+                        </a>
+                    </td>
+                    <td>
+                        <a href="/{{ sp.link_descarga_ods }}" class="btn btn-sm btn-outline-success">
+                            <i class="bi bi-file-earmark-spreadsheet"></i> ODS
+                        </a>
+                    </td>
+                    <td>
+                        {% if sp.descargado %}
+                            <span class="badge bg-success">
+                                <i class="bi bi-check-circle"></i> Descargado
+                            </span>
+                            {% if sp.usuario_descarga %}
+                                <small class="text-muted d-block">por {{ sp.usuario_descarga.username }}</small>
+                            {% endif %}
+                        {% else %}
+                            <span class="badge bg-warning">
+                                <i class="bi bi-clock"></i> Pendiente
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if not sp.descargado %}
+                            <button type="button" class="btn btn-sm btn-outline-success btn-marcar-descargado" data-id="{{ sp.id }}">
+                                <i class="bi bi-check"></i> Marcar
+                            </button>
+                        {% else %}
+                            <button type="button" class="btn btn-sm btn-outline-secondary btn-desmarcar-descargado" data-id="{{ sp.id }}">
+                                <i class="bi bi-arrow-counterclockwise"></i> Desmarcar
+                            </button>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">
+                        No hay archivos procesados disponibles para descarga
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const marcarButtons = document.querySelectorAll('.btn-marcar-descargado');
+    const desmarcarButtons = document.querySelectorAll('.btn-desmarcar-descargado');
+
+    marcarButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const planillaId = this.getAttribute('data-id');
+            marcarComoDescargado(planillaId, true);
+        });
+    });
+
+    desmarcarButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const planillaId = this.getAttribute('data-id');
+            marcarComoDescargado(planillaId, false);
+        });
+    });
+
+    function marcarComoDescargado(planillaId, marcar) {
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+        const headers = {'Content-Type': 'application/json'};
+        if (csrfToken) headers['X-CSRFToken'] = csrfToken;
+
+        fetch('/actualizador/marcar_descargado/', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({planilla_id: planillaId, marcar: marcar})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al marcar la planilla como descargada');
+        });
+    }
+});
+</script>
