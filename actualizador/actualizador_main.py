@@ -657,12 +657,30 @@ def principal():
                         writer.writerows(values_bdd)
                     logger.info(f"Datos 'BDD' guardados en '{csv_file_path}'.")
 
-                    # --- Verificar columnas obligatorias (Codigo, Descripcion, Publico) ---
-                    header = values_bdd[0] if values_bdd else []
-                    columnas_obligatorias = ["Codigo", "Descripcion", "Publico"]
+                    # --- Verificar columnas obligatorias en hoja 'Publico' (Codigo, Descripcion, Final) ---
+                    def descargar_hoja_con_timeout(sheet_name):
+                        req = (
+                            patoba.sheet_service.spreadsheets()
+                            .values()
+                            .get(spreadsheetId=id_archivo_plantilla, range=sheet_name)
+                        )
+                        req.http.timeout = 600
+                        return req.execute()
+
+                    try:
+                        result_publico = retry_with_backoff(
+                            lambda: descargar_hoja_con_timeout("Publico"),
+                            max_retries=3, initial_delay=3, backoff_factor=2
+                        )
+                        values_publico = result_publico.get("values", [])
+                    except Exception:
+                        values_publico = []
+
+                    header_pub = values_publico[0] if values_publico else []
+                    columnas_obligatorias = ["Codigo", "Descripcion", "Final"]
                     indices_col = {}
                     for col_name in columnas_obligatorias:
-                        for idx, h in enumerate(header):
+                        for idx, h in enumerate(header_pub):
                             if h and h.strip().lower() == col_name.lower():
                                 indices_col[col_name] = idx
                                 break
@@ -674,7 +692,7 @@ def principal():
                         else:
                             idx = indices_col[col_name]
                             tiene_datos = False
-                            for row in values_bdd[1:]:
+                            for row in values_publico[1:]:
                                 if idx < len(row) and row[idx] and str(row[idx]).strip():
                                     tiene_datos = True
                                     break
@@ -684,7 +702,7 @@ def principal():
                     if columnas_vacias:
                         error_msg = ", ".join(columnas_vacias)
                         logger.error(
-                            f"Columnas vacias en BDD de '{nombre_plantilla}': {error_msg}. No se generaran descargables."
+                            f"Columnas vacias en hoja 'Publico' de '{nombre_plantilla}': {error_msg}. No se generaran descargables."
                         )
                         sp.error_columnas = error_msg
                         sp.descargar = True
@@ -988,12 +1006,30 @@ def procesar_planillas_listas():
                         writer.writerows(values_bdd)
                     logger.info(f"Datos 'BDD' guardados en '{csv_file_path}'.")
 
-                    # --- Verificar columnas obligatorias (Codigo, Descripcion, Publico) ---
-                    header = values_bdd[0] if values_bdd else []
-                    columnas_obligatorias = ["Codigo", "Descripcion", "Publico"]
+                    # --- Verificar columnas obligatorias en hoja 'Publico' (Codigo, Descripcion, Final) ---
+                    def descargar_hoja_con_timeout(sheet_name):
+                        req = (
+                            patoba.sheet_service.spreadsheets()
+                            .values()
+                            .get(spreadsheetId=id_archivo_plantilla, range=sheet_name)
+                        )
+                        req.http.timeout = 600
+                        return req.execute()
+
+                    try:
+                        result_publico = retry_with_backoff(
+                            lambda: descargar_hoja_con_timeout("Publico"),
+                            max_retries=3, initial_delay=3, backoff_factor=2
+                        )
+                        values_publico = result_publico.get("values", [])
+                    except Exception:
+                        values_publico = []
+
+                    header_pub = values_publico[0] if values_publico else []
+                    columnas_obligatorias = ["Codigo", "Descripcion", "Final"]
                     indices_col = {}
                     for col_name in columnas_obligatorias:
-                        for idx, h in enumerate(header):
+                        for idx, h in enumerate(header_pub):
                             if h and h.strip().lower() == col_name.lower():
                                 indices_col[col_name] = idx
                                 break
@@ -1005,7 +1041,7 @@ def procesar_planillas_listas():
                         else:
                             idx = indices_col[col_name]
                             tiene_datos = False
-                            for row in values_bdd[1:]:
+                            for row in values_publico[1:]:
                                 if idx < len(row) and row[idx] and str(row[idx]).strip():
                                     tiene_datos = True
                                     break
@@ -1015,7 +1051,7 @@ def procesar_planillas_listas():
                     if columnas_vacias:
                         error_msg = ", ".join(columnas_vacias)
                         logger.error(
-                            f"Columnas vacias en BDD de '{nombre_plantilla}': {error_msg}. No se generaran descargables."
+                            f"Columnas vacias en hoja 'Publico' de '{nombre_plantilla}': {error_msg}. No se generaran descargables."
                         )
                         sp.error_columnas = error_msg
                         sp.descargar = True
