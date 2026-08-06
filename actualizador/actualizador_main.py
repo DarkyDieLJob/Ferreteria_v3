@@ -677,7 +677,7 @@ def principal():
                         values_publico = []
 
                     header_pub = values_publico[0] if values_publico else []
-                    columnas_obligatorias = ["Codigo", "Descripcion", "Final"]
+                    columnas_obligatorias = ["Codigo", "Descripcion", "Publico"]
                     indices_col = {}
                     for col_name in columnas_obligatorias:
                         for idx, h in enumerate(header_pub):
@@ -1026,7 +1026,7 @@ def procesar_planillas_listas():
                         values_publico = []
 
                     header_pub = values_publico[0] if values_publico else []
-                    columnas_obligatorias = ["Codigo", "Descripcion", "Final"]
+                    columnas_obligatorias = ["Codigo", "Descripcion", "Publico"]
                     indices_col = {}
                     for col_name in columnas_obligatorias:
                         for idx, h in enumerate(header_pub):
