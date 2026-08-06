@@ -921,6 +921,42 @@ def procesar_planillas_listas():
                 )
                 continue
 
+            # --- Copiar datos del proveedor a la hoja "Reemplazable" (ANTES de leer BDD) ---
+            if not hoja_seleccionada:
+                logger.warning(
+                    f"Planilla '{nombre_plantilla}' (ID DB: {sp.id}) no tiene hoja seleccionada. Saltando copia Drive."
+                )
+                sp.listo = False
+                sp.save()
+                continue
+
+            if not id_archivo_proveedor:
+                logger.warning(
+                    f"No se encontró archivo proveedor '{nombre_proveedor_desc}' en Inbox para planilla ID {sp.id}."
+                )
+                sp.listo = False
+                sp.save()
+                continue
+
+            try:
+                patoba.copiar_reemplazable(
+                    id_archivo_proveedor=id_archivo_proveedor,
+                    hoja_seleccionada=hoja_seleccionada,
+                    id_hoja_reemplazable=id_hoja_reemplazable,
+                    id_archivo_plantilla=id_archivo_plantilla,
+                )
+                logger.info(
+                    f"Contenido de '{hoja_seleccionada}' copiado a hoja 'Reemplazable' en plantilla '{nombre_plantilla}'."
+                )
+            except Exception as copy_e:
+                logger.error(
+                    f"Error al copiar hoja '{hoja_seleccionada}' desde archivo proveedor (ID: {id_archivo_proveedor}) hacia plantilla '{nombre_plantilla}'."
+                )
+                logger.exception(copy_e)
+                sp.listo = False
+                sp.save()
+                continue
+
             # --- Descargar datos 'BDD' de la plantilla y procesar CSV ---
             logger.info(
                 f"Descargando datos 'BDD' de plantilla '{nombre_plantilla}' (ID: {id_archivo_plantilla})..."
@@ -1026,42 +1062,6 @@ def procesar_planillas_listas():
                 except Exception as csv_e:
                     logger.error(f"Error al procesar CSV para '{nombre_plantilla}'.")
                     logger.exception(csv_e)
-
-            # --- Copiar datos del proveedor a la hoja "Reemplazable" ---
-            if not hoja_seleccionada:
-                logger.warning(
-                    f"Planilla '{nombre_plantilla}' (ID DB: {sp.id}) no tiene hoja seleccionada. Saltando copia Drive."
-                )
-                sp.listo = False
-                sp.save()
-                continue
-
-            if not id_archivo_proveedor:
-                logger.warning(
-                    f"No se encontró archivo proveedor '{nombre_proveedor_desc}' en Inbox para planilla ID {sp.id}."
-                )
-                sp.listo = False
-                sp.save()
-                continue
-
-            try:
-                patoba.copiar_reemplazable(
-                    id_archivo_proveedor=id_archivo_proveedor,
-                    hoja_seleccionada=hoja_seleccionada,
-                    id_hoja_reemplazable=id_hoja_reemplazable,
-                    id_archivo_plantilla=id_archivo_plantilla,
-                )
-                logger.info(
-                    f"Contenido de '{hoja_seleccionada}' copiado a hoja 'Reemplazable' en plantilla '{nombre_plantilla}'."
-                )
-            except Exception as copy_e:
-                logger.error(
-                    f"Error al copiar hoja '{hoja_seleccionada}' desde archivo proveedor (ID: {id_archivo_proveedor}) hacia plantilla '{nombre_plantilla}'."
-                )
-                logger.exception(copy_e)
-                sp.listo = False
-                sp.save()
-                continue
 
             # --- Generar archivos de descarga locales (legacy): MEDIA_ROOT/descargas/*.xlsx y *.ods ---
             try:
