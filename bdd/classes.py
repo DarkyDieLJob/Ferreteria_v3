@@ -32,7 +32,7 @@ SCOPES = [
 class Patoba:
     def __init__(self, request) -> None:
         self.request = request
-        if self.request == None:
+        if self.request == None or not getattr(self.request.user, 'is_authenticated', False):
             social_token = SocialToken.objects.get(account__user=1)
         else:
             logger.debug("Usuario: %s", self.request.user)
