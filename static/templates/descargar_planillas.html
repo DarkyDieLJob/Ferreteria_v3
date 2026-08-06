@@ -19,23 +19,35 @@
             </thead>
             <tbody>
             {% for sp in seleccion_descargar %}
-                <tr class="{% if sp.descargado %}table-secondary{% endif %}">
+                <tr class="{% if sp.error_columnas %}table-danger{% elif sp.descargado %}table-secondary{% endif %}">
                     <td>{{ sp.fecha|date:"d/m/Y" }}</td>
                     <td>
                         <span class="fw-medium">{{ sp.proveedor|default:"Sin proveedor" }}</span>
                     </td>
                     <td>
-                        <a href="/{{ sp.link_descarga }}" class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-file-earmark-excel"></i> XLS
-                        </a>
+                        {% if sp.error_columnas %}
+                            <a href="https://drive.google.com/drive/folders/1G-TtSaGhLa5-d_PnIbLqnz59henhngwo" target="_blank" rel="noopener" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-exclamation-triangle"></i> Corregir en Drive
+                            </a>
+                        {% else %}
+                            <a href="/{{ sp.link_descarga }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-file-earmark-excel"></i> XLS
+                            </a>
+                        {% endif %}
                     </td>
                     <td>
-                        <a href="/{{ sp.link_descarga_ods }}" class="btn btn-sm btn-outline-success">
-                            <i class="bi bi-file-earmark-spreadsheet"></i> ODS
-                        </a>
+                        {% if not sp.error_columnas %}
+                            <a href="/{{ sp.link_descarga_ods }}" class="btn btn-sm btn-outline-success">
+                                <i class="bi bi-file-earmark-spreadsheet"></i> ODS
+                            </a>
+                        {% endif %}
                     </td>
                     <td>
-                        {% if sp.descargado %}
+                        {% if sp.error_columnas %}
+                            <span class="badge bg-danger" title="Columnas vacias: {{ sp.error_columnas }}">
+                                <i class="bi bi-exclamation-triangle"></i> Error: {{ sp.error_columnas }}
+                            </span>
+                        {% elif sp.descargado %}
                             <span class="badge bg-success">
                                 <i class="bi bi-check-circle"></i> Descargado
                             </span>
@@ -49,14 +61,16 @@
                         {% endif %}
                     </td>
                     <td>
-                        {% if not sp.descargado %}
-                            <button type="button" class="btn btn-sm btn-outline-success btn-marcar-descargado" data-id="{{ sp.id }}">
-                                <i class="bi bi-check"></i> Marcar
-                            </button>
-                        {% else %}
-                            <button type="button" class="btn btn-sm btn-outline-secondary btn-desmarcar-descargado" data-id="{{ sp.id }}">
-                                <i class="bi bi-arrow-counterclockwise"></i> Desmarcar
-                            </button>
+                        {% if not sp.error_columnas %}
+                            {% if not sp.descargado %}
+                                <button type="button" class="btn btn-sm btn-outline-success btn-marcar-descargado" data-id="{{ sp.id }}">
+                                    <i class="bi bi-check"></i> Marcar
+                                </button>
+                            {% else %}
+                                <button type="button" class="btn btn-sm btn-outline-secondary btn-desmarcar-descargado" data-id="{{ sp.id }}">
+                                    <i class="bi bi-arrow-counterclockwise"></i> Desmarcar
+                                </button>
+                            {% endif %}
                         {% endif %}
                     </td>
                 </tr>
