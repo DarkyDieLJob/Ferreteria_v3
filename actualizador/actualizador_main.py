@@ -657,6 +657,46 @@ def principal():
                         writer.writerows(values_bdd)
                     logger.info(f"Datos 'BDD' guardados en '{csv_file_path}'.")
 
+                    # --- Verificar columnas obligatorias (Codigo, Descripcion, Publico) ---
+                    header = values_bdd[0] if values_bdd else []
+                    columnas_obligatorias = ["Codigo", "Descripcion", "Publico"]
+                    indices_col = {}
+                    for col_name in columnas_obligatorias:
+                        for idx, h in enumerate(header):
+                            if h and h.strip().lower() == col_name.lower():
+                                indices_col[col_name] = idx
+                                break
+
+                    columnas_vacias = []
+                    for col_name in columnas_obligatorias:
+                        if col_name not in indices_col:
+                            columnas_vacias.append(col_name)
+                        else:
+                            idx = indices_col[col_name]
+                            tiene_datos = False
+                            for row in values_bdd[1:]:
+                                if idx < len(row) and row[idx] and str(row[idx]).strip():
+                                    tiene_datos = True
+                                    break
+                            if not tiene_datos:
+                                columnas_vacias.append(col_name)
+
+                    if columnas_vacias:
+                        error_msg = ", ".join(columnas_vacias)
+                        logger.error(
+                            f"Columnas vacias en BDD de '{nombre_plantilla}': {error_msg}. No se generaran descargables."
+                        )
+                        sp.error_columnas = error_msg
+                        sp.descargar = True
+                        sp.link_descarga = ""
+                        sp.link_descarga_ods = ""
+                        sp.listo = False
+                        sp.save()
+                        continue
+                    else:
+                        sp.error_columnas = ""
+                        sp.save()
+
                     # --- Procesar el CSV ---
                     # Obtener la abreviatura del proveedor (asumiendo está en ListaProveedores)
                     abreviatura_filtro = None
@@ -911,6 +951,46 @@ def procesar_planillas_listas():
                         writer = csv.writer(f)
                         writer.writerows(values_bdd)
                     logger.info(f"Datos 'BDD' guardados en '{csv_file_path}'.")
+
+                    # --- Verificar columnas obligatorias (Codigo, Descripcion, Publico) ---
+                    header = values_bdd[0] if values_bdd else []
+                    columnas_obligatorias = ["Codigo", "Descripcion", "Publico"]
+                    indices_col = {}
+                    for col_name in columnas_obligatorias:
+                        for idx, h in enumerate(header):
+                            if h and h.strip().lower() == col_name.lower():
+                                indices_col[col_name] = idx
+                                break
+
+                    columnas_vacias = []
+                    for col_name in columnas_obligatorias:
+                        if col_name not in indices_col:
+                            columnas_vacias.append(col_name)
+                        else:
+                            idx = indices_col[col_name]
+                            tiene_datos = False
+                            for row in values_bdd[1:]:
+                                if idx < len(row) and row[idx] and str(row[idx]).strip():
+                                    tiene_datos = True
+                                    break
+                            if not tiene_datos:
+                                columnas_vacias.append(col_name)
+
+                    if columnas_vacias:
+                        error_msg = ", ".join(columnas_vacias)
+                        logger.error(
+                            f"Columnas vacias en BDD de '{nombre_plantilla}': {error_msg}. No se generaran descargables."
+                        )
+                        sp.error_columnas = error_msg
+                        sp.descargar = True
+                        sp.link_descarga = ""
+                        sp.link_descarga_ods = ""
+                        sp.listo = False
+                        sp.save()
+                        continue
+                    else:
+                        sp.error_columnas = ""
+                        sp.save()
 
                     # --- Procesar el CSV ---
                     # Obtener la abreviatura del proveedor (asumiendo está en ListaProveedores)

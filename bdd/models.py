@@ -603,6 +603,9 @@ class Listado_Planillas(models.Model):
         related_name='planillas_descargadas',
         help_text="Usuario que descargó la planilla"
     )
+    
+    # Campo de error por columnas vacias
+    error_columnas = models.CharField(max_length=200, default="", null=True, blank=True, help_text="Columnas vacias detectadas (Codigo, Descripcion, Publico)")
 
     def __str__(self):
         prov = str(self.proveedor) if self.proveedor else "Sin proveedor"
