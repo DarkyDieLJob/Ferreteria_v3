@@ -245,7 +245,7 @@ class ColaTareasWorker:
     def ejecutar_tareas(self):
         """
         Método ejecutado por el hilo trabajador. Espera y procesa tareas de la cola.
-        Las tareas se procesan inmediatamente al ser agregadas, sin sleep inicial bloqueante.
+        Si hora_inicio está configurada, las tareas esperan hasta esa hora antes de ejecutarse.
         """
         logger.info(
             f"Hilo trabajador [{threading.current_thread().name}] iniciado. Esperando tareas..."
@@ -260,6 +260,19 @@ class ColaTareasWorker:
                 except queue.Empty:
                     continue
                 tarea_nombre = getattr(tarea_func, "__name__", repr(tarea_func))
+
+                # --- Esperar hasta hora_inicio si está configurada ---
+                if self.hora_inicio and self.hora_inicio != datetime.time(23, 59):
+                    ahora = datetime.datetime.now()
+                    hora_objetivo = datetime.datetime.combine(ahora.date(), self.hora_inicio)
+                    if ahora < hora_objetivo:
+                        espera_segundos = (hora_objetivo - ahora).total_seconds()
+                        logger.info(
+                            f"Tarea '{tarea_nombre}' encolada. Esperando {espera_segundos:.0f}s "
+                            f"hasta las {self.hora_inicio.strftime('%H:%M')} para ejecutar."
+                        )
+                        time.sleep(espera_segundos)
+
                 logger.info(f"Procesando tarea '{tarea_nombre}'...")
                 try:
                     # Ejecutar la tarea
@@ -287,16 +300,17 @@ def agregar_tareas_en_cola(hora_inicio: Optional[datetime.time] = None):
     """
     Función auxiliar para agregar el conjunto estándar de tareas
     (principal, csv, backup) a la cola compartida. Retorna inmediatamente.
+    Por defecto las tareas esperan hasta las 21:00 antes de ejecutarse.
     """
     logger.info("Solicitud para agregar tareas estándar a la cola...")
     try:
         worker = ColaTareasWorker()  # Obtiene la instancia Singleton
         # Asegúrate que las funciones referenciadas existan y estén importadas
-        worker.hora_inicio = hora_inicio if hora_inicio else datetime.time(23, 59)
+        worker.hora_inicio = hora_inicio if hora_inicio else datetime.time(21, 0)
         worker.agregar_tarea(get_principal())
         worker.agregar_tarea(get_principal_csv())
         worker.agregar_tarea(get_buckup())  # O backup si el nombre correcto
-        logger.info("Tareas estándar (principal, csv, backup) agregadas a la cola.")
+        logger.info(f"Tareas estándar (principal, csv, backup) agregadas a la cola. Ejecución diferida hasta las {worker.hora_inicio.strftime('%H:%M')}.")
     except NameError as ne:
         # Esto pasa si una de las funciones (principal, etc.) no se pudo importar
         logger.error(
