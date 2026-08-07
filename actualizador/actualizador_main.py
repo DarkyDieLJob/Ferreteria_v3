@@ -546,17 +546,17 @@ def principal():
         f"Obtención de nombres de hojas completada. Procesados: {processed_sheets}, Errores: {errors_sheets}, Eliminados (404): {deleted_404_sheets}"
     )
 
-    # --- 4. Marcar planillas como listas para etiquetado (descargar=True) ---
-    logger.info("Marcando planillas con hojas obtenidas como listas para etiquetado...")
+    # --- 4. Planillas con hojas obtenidas quedan listas para etiquetado (listo=False, descargar=False) ---
+    logger.info("Planillas con hojas obtenidas quedan como listo=False, descargar=False para etiquetado.")
     try:
         marcadas_count = Listado_Planillas.objects.filter(
             listo=False, descargar=False
-        ).exclude(hojas="").update(descargar=True)
+        ).exclude(hojas="").count()
         logger.info(
-            f"{marcadas_count} planillas marcadas como descargar=True (listas para etiquetado)."
+            f"{marcadas_count} planillas disponibles para etiquetado."
         )
     except Exception as e:
-        logger.error("Error al marcar planillas como descargar=True.")
+        logger.error("Error al contar planillas para etiquetado.")
         logger.exception(e)
 
     # --- 5. Procesar Planillas Marcadas como 'listo=True' ---
