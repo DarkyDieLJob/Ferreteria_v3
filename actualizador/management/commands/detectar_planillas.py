@@ -6,6 +6,7 @@ from bdd.models import Listado_Planillas
 from googleapiclient.errors import HttpError
 import pandas as pd
 import logging
+import hashlib
 
 
 def leer_nombres_hojas(buffer, mime_type, nombre_archivo):
@@ -101,20 +102,38 @@ class Command(BaseCommand):
             self.stderr.write(f"Error listando Drive: {e}")
             return
 
-        # Paso 3: Leer hojas de planillas pendientes
+        # Paso 3: Leer hojas de planillas pendientes y detectar duplicados por hash
         self.stdout.write("Leyendo hojas de planillas pendientes...")
         datos_pendientes = Listado_Planillas.objects.filter(listo=False, descargar=False)
+        duplicados_count = 0
         for dato in datos_pendientes:
             try:
                 from actualizador.actualizador_main import descargar_archivo_drive
                 file_sheets, metadata = descargar_archivo_drive(
                     drive_service, dato.identificador
                 )
+                # Calcular hash del contenido
+                file_data = file_sheets.read()
+                file_hash = hashlib.md5(file_data).hexdigest()
+                file_sheets.seek(0)
+
+                # Verificar si ya existe una planilla procesada con el mismo hash
+                duplicado = Listado_Planillas.objects.filter(
+                    file_hash=file_hash, descargar=True
+                ).exclude(id=dato.id).first()
+                if duplicado:
+                    self.stdout.write(f"  DUPLICADO: '{dato.descripcion}' ya procesada como '{duplicado.descripcion}' (hash={file_hash[:8]}). Eliminando.")
+                    logger.info("Duplicado detectado: '%s' == '%s' (hash=%s). Eliminando.", dato.descripcion, duplicado.descripcion, file_hash)
+                    dato.delete()
+                    duplicados_count += 1
+                    continue
+
                 mime_type = metadata.get("mimeType", "")
                 nombres = leer_nombres_hojas(file_sheets, mime_type, dato.descripcion)
                 sheet_names = [""]
                 sheet_names.extend(nombres)
                 dato.hojas = ";".join(sheet_names)
+                dato.file_hash = file_hash
                 dato.save()
                 self.stdout.write(f"  Hojas de '{dato.descripcion}': {dato.hojas}")
             except HttpError as http_e:
@@ -127,5 +146,5 @@ class Command(BaseCommand):
                 self.stderr.write(f"  Error leyendo hojas de '{dato.descripcion}': {e}")
 
         self.stdout.write(self.style.SUCCESS(
-            f"Deteccion finalizada. {created_count} planillas listas para etiquetar."
+            f"Deteccion finalizada. {created_count} planillas nuevas, {duplicados_count} duplicados eliminados."
         ))
