@@ -75,6 +75,15 @@ class Actualizar(MiVista):
 
         for dato in datos_list:
             sheet_names = [""]
+            # Si ya tenemos las hojas guardadas (por detectar_planillas), usarlas
+            if dato.hojas:
+                hojas_guardadas = dato.hojas.split(";")
+                sheet_names.extend(hojas_guardadas[1:] if len(hojas_guardadas) > 1 else hojas_guardadas)
+                hojas_por_item.append(sheet_names)
+                logger.debug(
+                    f"Hojas ya guardadas para {dato.identificador}: {sheet_names}"
+                )
+                continue
             try:
                 # Descargar el archivo de Excel desde Google Drive
                 logger.debug(
@@ -95,10 +104,33 @@ class Actualizar(MiVista):
 
                 # Leer el contenido del archivo de Excel
                 file.seek(0)
-                xls = pd.read_excel(file, sheet_name=None)
+                es_xls = dato.descripcion.lower().endswith('.xls')
+                if es_xls:
+                    try:
+                        import xlrd2
+                        wb = xlrd2.open_workbook(file_contents=file.read())
+                        sheet_names.extend(wb.sheet_names())
+                        file.seek(0)
+                    except Exception:
+                        file.seek(0)
+                        from xls2xlsx import XLS2XLSX
+                        import tempfile, os
+                        with tempfile.NamedTemporaryFile(suffix='.xls', delete=False) as tmp:
+                            tmp.write(file.read())
+                            tmp_path = tmp.name
+                        file.seek(0)
+                        x2x = XLS2XLSX(tmp_path)
+                        xlsx_path = tmp_path + '.xlsx'
+                        x2x.to_xlsx(xlsx_path)
+                        xls = pd.read_excel(xlsx_path, sheet_name=None, engine='openpyxl')
+                        sheet_names.extend(xls.keys())
+                        os.unlink(tmp_path)
+                        if os.path.exists(xlsx_path):
+                            os.unlink(xlsx_path)
+                else:
+                    xls = pd.read_excel(file, sheet_name=None)
+                    sheet_names.extend(xls.keys())
 
-                # Obtener los nombres de las hojas
-                sheet_names.extend(xls.keys())
                 hojas_por_item.append(sheet_names)
                 logger.debug(
                     f"Archivo {dato.identificador} leído, hojas: {sheet_names}"
