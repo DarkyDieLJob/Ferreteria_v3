@@ -124,6 +124,12 @@ class Command(BaseCommand):
                 if duplicado:
                     self.stdout.write(f"  DUPLICADO: '{dato.descripcion}' ya procesada como '{duplicado.descripcion}' (hash={file_hash[:8]}). Eliminando.")
                     logger.info("Duplicado detectado: '%s' == '%s' (hash=%s). Eliminando.", dato.descripcion, duplicado.descripcion, file_hash)
+                    # Eliminar archivo de Drive
+                    try:
+                        drive_service.files().delete(fileId=dato.identificador).execute()
+                        logger.info("Archivo duplicado eliminado de Drive: '%s' (ID=%s)", dato.descripcion, dato.identificador)
+                    except Exception as del_e:
+                        logger.warning("No se pudo eliminar archivo duplicado de Drive '%s': %s", dato.descripcion, del_e)
                     dato.delete()
                     duplicados_count += 1
                     continue
