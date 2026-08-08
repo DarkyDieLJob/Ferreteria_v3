@@ -23,8 +23,28 @@ def leer_nombres_hojas(buffer, mime_type, nombre_archivo):
             return sheet_names
         except Exception as e1:
             buffer.seek(0)
-            logger.error("xlrd2 fallo leyendo '%s': %s", nombre_archivo, e1)
-            raise
+            logger.warning("xlrd2 fallo leyendo '%s': %s. Intentando con xls2xlsx.", nombre_archivo, e1)
+            try:
+                from xls2xlsx import XLS2XLSX
+                import tempfile, os
+                with tempfile.NamedTemporaryFile(suffix='.xls', delete=False) as tmp:
+                    tmp.write(buffer.read())
+                    tmp_path = tmp.name
+                buffer.seek(0)
+                x2x = XLS2XLSX(tmp_path)
+                xlsx_path = tmp_path + '.xlsx'
+                x2x.to_xlsx(xlsx_path)
+                xls = pd.read_excel(xlsx_path, sheet_name=None, engine='openpyxl')
+                sheet_names = list(xls.keys())
+                os.unlink(tmp_path)
+                if os.path.exists(xlsx_path):
+                    os.unlink(xlsx_path)
+                buffer.seek(0)
+                return sheet_names
+            except Exception as e2:
+                buffer.seek(0)
+                logger.error("xls2xlsx tambien fallo leyendo '%s': %s", nombre_archivo, e2)
+                raise
     else:
         try:
             xls = pd.read_excel(buffer, sheet_name=None, engine='openpyxl')
