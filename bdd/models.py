@@ -607,6 +607,9 @@ class Listado_Planillas(models.Model):
     # Campo de error por columnas vacias
     error_columnas = models.CharField(max_length=200, default="", null=True, blank=True, help_text="Columnas vacias detectadas (Codigo, Descripcion, Publico)")
 
+    # Hash del contenido del archivo para detectar duplicados
+    file_hash = models.CharField(max_length=64, default="", null=True, blank=True, help_text="Hash MD5 del contenido del archivo para deteccion de duplicados")
+
     def __str__(self):
         prov = str(self.proveedor) if self.proveedor else "Sin proveedor"
         return "{} - {}".format(prov, self.fecha)
