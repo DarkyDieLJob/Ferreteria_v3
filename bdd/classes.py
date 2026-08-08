@@ -318,7 +318,46 @@ class Patoba:
 
         # Lee el contenido del archivo en un DataFrame
         xls_file.seek(0)
-        df = pd.read_excel(xls_file, sheet_name=hoja_seleccionada).fillna("")
+        file_name = ""
+        try:
+            file_meta = self.drive_service.files().get(fileId=id_archivo_proveedor, fields="name").execute()
+            file_name = file_meta.get("name", "")
+        except Exception:
+            pass
+
+        es_xls = file_name.lower().endswith(".xls")
+        if es_xls:
+            try:
+                import xlrd2
+                wb = xlrd2.open_workbook(file_contents=xls_file.read())
+                ws = wb.sheet_by_name(hoja_seleccionada)
+                import pandas as pd_xls
+                data = []
+                for row_idx in range(ws.nrows):
+                    data.append([ws.cell_value(row_idx, col_idx) for col_idx in range(ws.ncols)])
+                if data:
+                    df = pd_xls.DataFrame(data[1:], columns=data[0]).fillna("")
+                else:
+                    df = pd_xls.DataFrame().fillna("")
+                xls_file.seek(0)
+            except Exception:
+                xls_file.seek(0)
+                from xls2xlsx import XLS2XLSX
+                import tempfile, os
+                with tempfile.NamedTemporaryFile(suffix='.xls', delete=False) as tmp:
+                    tmp.write(xls_file.read())
+                    tmp_path = tmp.name
+                xls_file.seek(0)
+                x2x = XLS2XLSX(tmp_path)
+                xlsx_path = tmp_path + '.xlsx'
+                x2x.to_xlsx(xlsx_path)
+                import pandas as pd_xls
+                df = pd_xls.read_excel(xlsx_path, sheet_name=hoja_seleccionada, engine='openpyxl').fillna("")
+                os.unlink(tmp_path)
+                if os.path.exists(xlsx_path):
+                    os.unlink(xlsx_path)
+        else:
+            df = pd.read_excel(xls_file, sheet_name=hoja_seleccionada).fillna("")
 
         # Convierte los datos del DataFrame a una lista de listas
         valores = [df.columns.values.tolist()] + df.values.tolist()
