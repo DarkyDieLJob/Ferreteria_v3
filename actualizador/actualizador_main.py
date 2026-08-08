@@ -133,19 +133,13 @@ def descargar_archivo_drive(
     file_id,
     export_mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 ):
-    """Descarga un archivo de Drive, usando export cuando es un Google Sheet o .xls."""
+    """Descarga un archivo de Drive, usando export cuando es un Google Sheet."""
     metadata = (
         drive_service.files().get(fileId=file_id, fields="mimeType,name").execute()
     )
     mime_type = metadata.get("mimeType", "")
-    file_name = metadata.get("name", "")
     buffer = io.BytesIO()
     if mime_type.startswith("application/vnd.google-apps"):
-        request = drive_service.files().export_media(
-            fileId=file_id, mimeType=export_mime
-        )
-    elif file_name.lower().endswith(".xls"):
-        # .xls viejo: exportar como xlsx para evitar problemas con xlrd
         request = drive_service.files().export_media(
             fileId=file_id, mimeType=export_mime
         )

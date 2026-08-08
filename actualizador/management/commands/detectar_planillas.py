@@ -10,20 +10,34 @@ import logging
 
 def leer_nombres_hojas(buffer, mime_type, nombre_archivo):
     """Lee los nombres de las hojas de un archivo Excel.
-    Los .xls se exportan como xlsx desde Drive, asi que siempre usamos openpyxl."""
+    Usa xlrd2 para .xls viejos y openpyxl para .xlsx."""
     sheet_names = []
-    try:
-        xls = pd.read_excel(buffer, sheet_name=None, engine='openpyxl')
-        sheet_names = list(xls.keys())
-    except Exception as e1:
-        buffer.seek(0)
-        logger.warning("openpyxl fallo leyendo '%s': %s. Intentando sin engine explicito.", nombre_archivo, e1)
+    es_xls = nombre_archivo.lower().endswith('.xls')
+
+    if es_xls:
         try:
-            xls = pd.read_excel(buffer, sheet_name=None)
-            sheet_names = list(xls.keys())
-        except Exception as e2:
-            logger.error("No se pudieron leer hojas de '%s': %s", nombre_archivo, e2)
+            import xlrd2
+            wb = xlrd2.open_workbook(file_contents=buffer.read())
+            sheet_names = wb.sheet_names()
+            buffer.seek(0)
+            return sheet_names
+        except Exception as e1:
+            buffer.seek(0)
+            logger.error("xlrd2 fallo leyendo '%s': %s", nombre_archivo, e1)
             raise
+    else:
+        try:
+            xls = pd.read_excel(buffer, sheet_name=None, engine='openpyxl')
+            sheet_names = list(xls.keys())
+        except Exception as e1:
+            buffer.seek(0)
+            logger.warning("openpyxl fallo leyendo '%s': %s. Intentando sin engine explicito.", nombre_archivo, e1)
+            try:
+                xls = pd.read_excel(buffer, sheet_name=None)
+                sheet_names = list(xls.keys())
+            except Exception as e2:
+                logger.error("No se pudieron leer hojas de '%s': %s", nombre_archivo, e2)
+                raise
     buffer.seek(0)
     return sheet_names
 
