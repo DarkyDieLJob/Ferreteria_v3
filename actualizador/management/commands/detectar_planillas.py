@@ -7,6 +7,26 @@ from googleapiclient.errors import HttpError
 import pandas as pd
 import logging
 
+
+def leer_nombres_hojas(buffer, mime_type, nombre_archivo):
+    """Lee los nombres de las hojas de un archivo Excel.
+    Los .xls se exportan como xlsx desde Drive, asi que siempre usamos openpyxl."""
+    sheet_names = []
+    try:
+        xls = pd.read_excel(buffer, sheet_name=None, engine='openpyxl')
+        sheet_names = list(xls.keys())
+    except Exception as e1:
+        buffer.seek(0)
+        logger.warning("openpyxl fallo leyendo '%s': %s. Intentando sin engine explicito.", nombre_archivo, e1)
+        try:
+            xls = pd.read_excel(buffer, sheet_name=None)
+            sheet_names = list(xls.keys())
+        except Exception as e2:
+            logger.error("No se pudieron leer hojas de '%s': %s", nombre_archivo, e2)
+            raise
+    buffer.seek(0)
+    return sheet_names
+
 logger = logging.getLogger(__name__)
 
 
@@ -56,9 +76,10 @@ class Command(BaseCommand):
                 file_sheets, metadata = descargar_archivo_drive(
                     drive_service, dato.identificador
                 )
-                xls = pd.read_excel(file_sheets, sheet_name=None)
+                mime_type = metadata.get("mimeType", "")
+                nombres = leer_nombres_hojas(file_sheets, mime_type, dato.descripcion)
                 sheet_names = [""]
-                sheet_names.extend(list(xls.keys()))
+                sheet_names.extend(nombres)
                 dato.hojas = ";".join(sheet_names)
                 dato.save()
                 self.stdout.write(f"  Hojas de '{dato.descripcion}': {dato.hojas}")
