@@ -174,6 +174,7 @@ class Actualizar(MiVista):
         # Usar la lista filtrada para mantener correspondencia
         self.context["datos"] = datos_list
         self.context["hojas_por_item"] = hojas_por_item
+        self.context["proveedores"] = Proveedor.objects.all().order_by("text_display")
         seleccion_planillas = Listado_Planillas.objects.filter(listo=True)
         self.context["seleccion_planillas"] = seleccion_planillas
 
@@ -296,16 +297,6 @@ class Actualizar(MiVista):
                 "Procesando selección/actualización de estado 'listo' de planillas."
             )
             elementos_seleccionados = self.request.POST.getlist("elemento_seleccionado")
-            # CORRECCIÓN: Usar diccionario por ID en lugar de índices para evitar desmapeo
-            proveedores_post = self.request.POST.getlist("proveedor")
-            proveedores_dict = {}
-            for i, prov_id in enumerate(proveedores_post):
-                if prov_id:  # Solo agregar si no está vacío
-                    # Asumiendo que los elementos_seleccionados están en el mismo orden
-                    if i < len(elementos_seleccionados):
-                        id_str, _ = elementos_seleccionados[i].split(":")
-                        planilla_id = int(id_str)
-                        proveedores_dict[planilla_id] = prov_id
 
             elementos_a_actualizar = []
             ids_procesados = set()
@@ -327,19 +318,18 @@ class Actualizar(MiVista):
                         )
                     else:
                         planilla.listo = True
-                        # Asignar proveedor usando el diccionario por ID (no índice)
-                        if planilla_id in proveedores_dict:
+                        # Asignar proveedor buscando por nombre único (proveedor_{planilla_id})
+                        prov_id = self.request.POST.get(f"proveedor_{planilla_id}")
+                        if prov_id:
                             try:
-                                proveedor_obj = Proveedor.objects.get(
-                                    id=proveedores_dict[planilla_id]
-                                )
+                                proveedor_obj = Proveedor.objects.get(id=prov_id)
                                 planilla.proveedor = proveedor_obj
                                 logger.debug(
-                                    f"Planilla ID {planilla_id}: Proveedor asignado ID {proveedores_dict[planilla_id]}."
+                                    f"Planilla ID {planilla_id}: Proveedor asignado ID {prov_id}."
                                 )
                             except Proveedor.DoesNotExist:
                                 logger.warning(
-                                    f"Proveedor ID {proveedores_dict[planilla_id]} no encontrado para planilla ID {planilla_id}."
+                                    f"Proveedor ID {prov_id} no encontrado para planilla ID {planilla_id}."
                                 )
                         else:
                             logger.debug(

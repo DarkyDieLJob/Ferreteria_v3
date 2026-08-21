@@ -76,7 +76,14 @@
                                         <span class="text-muted">Sin asignar</span>
                                     {% endif %}
                                 </td>
-                                <td>{{ form.proveedor.as_widget }}</td>
+                                <td>
+                                    <select name="proveedor_{{ d.id }}" class="form-select form-select-sm">
+                                        <option value="">-- Seleccionar --</option>
+                                        {% for prov in proveedores %}
+                                            <option value="{{ prov.id }}" {% if d.proveedor_id == prov.id %}selected{% endif %}>{{ prov }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
                                 <td>
                                     {% if d.hoja %}
                                         <span class="badge bg-info">{{ d.hoja }}</span>
