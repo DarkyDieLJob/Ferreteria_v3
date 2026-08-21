@@ -114,7 +114,7 @@ class Actualizar(MiVista):
                     except Exception:
                         file.seek(0)
                         from xls2xlsx import XLS2XLSX
-                        import tempfile, os
+                        import tempfile
                         with tempfile.NamedTemporaryFile(suffix='.xls', delete=False) as tmp:
                             tmp.write(file.read())
                             tmp_path = tmp.name
