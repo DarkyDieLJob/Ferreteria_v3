@@ -2,7 +2,7 @@ services:
   db:
     image: postgres:16-alpine
     container_name: ferreteria_db
-    restart: unless-stopped
+    restart: "no"
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-ferreteria}
       POSTGRES_USER: ${POSTGRES_USER:-ferreteria}
@@ -22,7 +22,7 @@ services:
   web:
     image: ferreteria_web:latest
     container_name: ferreteria_web
-    restart: unless-stopped
+    restart: "no"
     env_file:
       - .env.production
     environment:

@@ -29,7 +29,7 @@ python manage.py dumpdata \
     --exclude contenttypes \
     --exclude auth.permission \
     --exclude sessions.session \
-    --exclude django.admin.log \
+    --exclude admin.logentry \
     --indent 2 \
     --output /tmp/fulldump.json
 echo "Dump creado: $(wc -c < /tmp/fulldump.json) bytes"
@@ -39,7 +39,7 @@ export DB_HOST="$DB_HOST_BACKUP"
 
 # Paso 2: Verificar que PostgreSQL esta vacio
 echo "=== Paso 2: Verificar PostgreSQL ==="
-TABLE_COUNT=$(python -c "
+TABLE_COUNT=$(DJANGO_SETTINGS_MODULE=core_config.settings python -c "
 import django, os
 django.setup()
 from django.db import connection
@@ -57,6 +57,8 @@ echo "Datos cargados exitosamente."
 # Paso 4: Verificar
 echo "=== Paso 4: Verificar conteos ==="
 python -c "
+import os
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core_config.settings')
 import django
 django.setup()
 from bdd.models import Item
